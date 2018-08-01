@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class KafkaConfig {
+public class KafkaPropertyFactory {
 
     private static final String BOOTSTRAP_SERVERS = getBootstrapServers();
 
@@ -21,7 +21,6 @@ public class KafkaConfig {
         props.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-
         return props;
     }
 
