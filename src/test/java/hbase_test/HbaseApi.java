@@ -33,7 +33,7 @@ public class HbaseApi {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try(Connection connection = ConnectionFactory.createConnection(config)) {
+        try (Connection connection = ConnectionFactory.createConnection(config)) {
             Admin admin = connection.getAdmin();
         } catch (IOException e) {
             e.printStackTrace();
