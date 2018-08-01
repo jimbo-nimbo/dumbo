@@ -3,11 +3,10 @@ package hbase_test;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,7 +14,7 @@ import java.io.IOException;
 
 public class HbaseApi {
 
-    private TableName table1 = TableName.valueOf("Table1");
+    private TableName table1 = TableName.valueOf("testTable");
     private String family1 = "Family1";
     private String family2 = "Family2";
 
@@ -35,6 +34,10 @@ public class HbaseApi {
         }
         try(Connection connection = ConnectionFactory.createConnection(config)) {
             Admin admin = connection.getAdmin();
+            HTableDescriptor desc = new HTableDescriptor(table1);
+            desc.addFamily(new HColumnDescriptor(family1));
+            desc.addFamily(new HColumnDescriptor(family2));
+            admin.createTable(desc);
         } catch (IOException e) {
             e.printStackTrace();
         }
