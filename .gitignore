@@ -8,6 +8,7 @@
 *.iml
 
 target/
+target/*
 
 # BlueJ files
 *.ctxt

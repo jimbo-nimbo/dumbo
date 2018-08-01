@@ -4,7 +4,6 @@ package ir.sahab.nimbo.jimbo;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
