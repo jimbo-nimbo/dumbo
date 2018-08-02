@@ -1,10 +1,10 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -30,14 +30,38 @@ public class LruCacheTest {
   }
 
   @Test(expected = CloneNotSupportedException.class)
-  public void testDuplicURL() throws CloneNotSupportedException {
+  public void testDuplicateURL() throws CloneNotSupportedException {
     lruCache.add(GOOGLE);
     lruCache.add(GOOGLE);
   }
 
   @Test
-  public void testUniqAddURL() throws CloneNotSupportedException {
+  public void testUniqueAddURL() throws CloneNotSupportedException {
     lruCache.add(GOOGLE);
     lruCache.add(YAHOO);
   }
+
+  @Test
+  public void testExpirationTime() throws CloneNotSupportedException {
+      lruCache.add(GOOGLE);
+      try {
+          TimeUnit.SECONDS.sleep(30);
+      } catch (InterruptedException i) {
+          Assert.fail();
+      }
+      lruCache.add(GOOGLE);
+
+  }
+
+    @Test(expected = CloneNotSupportedException.class)
+    public void testYetToExpire() throws CloneNotSupportedException {
+        lruCache.add(GOOGLE);
+        try {
+            TimeUnit.SECONDS.sleep(29);
+        } catch (InterruptedException i) {
+            Assert.fail();
+        }
+        lruCache.add(GOOGLE);
+
+    }
 }
