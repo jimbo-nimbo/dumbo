@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import ir.sahab.nimbo.jimbo.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
