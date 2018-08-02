@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo;
 
 
+import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -19,8 +20,8 @@ public class KafkaProducerExample {
         try {
             for (long index = time; index < time + sendMessageCount; index++) {
                 final ProducerRecord<Long, String> record =
-                        new ProducerRecord<>(TOPIC, index,
-                                "Hello Mom " + index);
+                        new ProducerRecord<>(TOPIC, null,
+                                "Hello Mom (distribute to partitions) " + index);
                 producer.send(record, (metadata, exception) -> {
                     long elapsedTime = System.currentTimeMillis() - time;
                     if (metadata != null) {
