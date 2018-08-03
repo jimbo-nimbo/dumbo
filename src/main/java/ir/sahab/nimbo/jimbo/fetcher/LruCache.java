@@ -19,7 +19,7 @@ public class LruCache {
 
   private LruCache() {}
 
-  public static LruCache getInstance() {
+  synchronized public static LruCache getInstance() {
     if (lruCache == null) lruCache = new LruCache();
     return lruCache;
   }
