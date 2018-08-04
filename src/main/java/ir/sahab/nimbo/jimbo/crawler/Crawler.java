@@ -1,7 +1,5 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
-import ir.sahab.nimbo.jimbo.fetcher.FetcherThread;
-import ir.sahab.nimbo.jimbo.parser.PageExtractor;
 import org.jsoup.nodes.Document;
 
 import java.util.concurrent.ArrayBlockingQueue;

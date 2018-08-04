@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PageExtractor implements Runnable {
     private static final Producer<Long, String> PRODUCER = new KafkaProducer<>(
@@ -84,6 +85,22 @@ public class PageExtractor implements Runnable {
         public String getText() {
             return text;
         }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Link link = (Link) o;
+            return Objects.equals(href, link.href) &&
+                    Objects.equals(text, link.text);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(href, text);
+        }
     }
 
     class Metadata {
@@ -107,6 +124,23 @@ public class PageExtractor implements Runnable {
 
         String getContent() {
             return content;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Metadata metadata = (Metadata) o;
+            return Objects.equals(name, metadata.name) &&
+                    Objects.equals(property, metadata.property) &&
+                    Objects.equals(content, metadata.content);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(name, property, content);
         }
     }
 }
