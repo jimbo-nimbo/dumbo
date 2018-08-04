@@ -26,43 +26,43 @@ public class LruCacheTest {
   }
 
   @Test
-  public void add() throws CloneNotSupportedException {
-      lruCache.add(GOOGLE);
-  }
-
-  @Test(expected = CloneNotSupportedException.class)
-  public void testDuplicateURL() throws CloneNotSupportedException {
-    lruCache.add(GOOGLE);
-    lruCache.add(GOOGLE);
+  public void add(){
+      assertTrue(lruCache.add(GOOGLE));
   }
 
   @Test
-  public void testUniqueAddURL() throws CloneNotSupportedException {
-    lruCache.add(GOOGLE);
-    lruCache.add(YAHOO);
+  public void testDuplicateURL(){
+    assertTrue(lruCache.add(GOOGLE));
+    assertFalse(lruCache.add(GOOGLE));
   }
 
   @Test
-  public void testExpirationTime() throws CloneNotSupportedException {
-      lruCache.add(GOOGLE);
+  public void testUniqueAddURL(){
+    assertTrue(lruCache.add(GOOGLE));
+    assertTrue(lruCache.add(YAHOO));
+  }
+
+  @Test
+  public void testExpirationTime(){
+      assertTrue(lruCache.add(GOOGLE));
       try {
-          TimeUnit.SECONDS.sleep(30);
+          TimeUnit.SECONDS.sleep(31);
       } catch (InterruptedException i) {
           Assert.fail();
       }
-      lruCache.add(GOOGLE);
+      assertTrue(lruCache.add(GOOGLE));
 
   }
 
-    @Test(expected = CloneNotSupportedException.class)
-    public void testYetToExpire() throws CloneNotSupportedException {
-        lruCache.add(GOOGLE);
+    @Test
+    public void testYetToExpire(){
+        assertTrue(lruCache.add(GOOGLE));
         try {
             TimeUnit.SECONDS.sleep(29);
         } catch (InterruptedException i) {
             Assert.fail();
         }
-        lruCache.add(GOOGLE);
+        assertFalse(lruCache.add(GOOGLE));
 
     }
 
@@ -71,4 +71,5 @@ public class LruCacheTest {
     assertEquals(30, lruCache.getDuration());
       assertEquals(10000, lruCache.getMaxCacheSize());
   }
+
 }

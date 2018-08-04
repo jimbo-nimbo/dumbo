@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 public class SeederTest {
 
-  Seeder seeder;
+  private Seeder seeder;
   @Before
   public void setUp() throws Exception {
     seeder = Seeder.getInstance();

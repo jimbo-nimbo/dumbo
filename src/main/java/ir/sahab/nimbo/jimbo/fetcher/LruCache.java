@@ -59,15 +59,20 @@ class LruCache
      * @throws CloneNotSupportedException
      *      if domain is in cache throw exception, else add it
      */
-    synchronized void add(String url) throws CloneNotSupportedException
+    synchronized boolean add(String url)
     {
 
-        if (cache.getIfPresent(url) != null){
-            throw new CloneNotSupportedException("url is in LRU");
+        if (exist(url)){
+            return false;
         }
-            cache.put(url, 1);
+        cache.put(url, 1);
+        return true;
     }
 
+    boolean exist(String url){
+        return cache.getIfPresent(url) != null;
+
+    }
     int getMaxCacheSize()
     {
         return maxCacheSize;
