@@ -19,7 +19,7 @@ public class ValidateTest {
   @Test
   public void isEnglish() {
     try {
-      String temp = Jsoup.connect("https://stackoverflow.com/").get().text();
+      String temp = Jsoup.connect("https://stackoverflow.com/").get().text(); 
       Date f = new Date(System.currentTimeMillis());
       assertTrue(validate.isEnglish(temp));
       Date s = new Date(System.currentTimeMillis());

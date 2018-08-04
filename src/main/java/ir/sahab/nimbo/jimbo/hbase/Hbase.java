@@ -8,6 +8,7 @@ import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class Hbase {
 
@@ -16,12 +17,12 @@ public class Hbase {
     static Connection connection = null;
     TableName tableName;
     static final String family1 = "Family1";
-    static final String family2 = "Family2";
+    private static final String family2 = "Family2";
 
     public Hbase() {
         tableName = TableName.valueOf(TABLE_NAME);
         Configuration config = HBaseConfiguration.create();
-        String path = this.getClass().getClassLoader().getResource(PROP_DIR).getPath();
+        String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(PROP_DIR)).getPath();
         config.addResource(new Path(path));
         boolean conn = true;
         while (conn) {
@@ -44,8 +45,8 @@ public class Hbase {
                         ColumnFamilyDescriptorBuilder.newBuilder(family1.getBytes());
                 ColumnFamilyDescriptorBuilder columnFamilyDescriptorBuilder2 =
                         ColumnFamilyDescriptorBuilder.newBuilder(family2.getBytes());
-                //columnFamilyDescriptorBuilder.setValue(col1.getBytes(), val1.getBytes());
-                //columnFamilyDescriptorBuilder2.setValue(col2.getBytes(), val2.getBytes());
+                columnFamilyDescriptorBuilder.setValue("col1".getBytes(), "val1".getBytes());
+                columnFamilyDescriptorBuilder2.setValue("col2".getBytes(), "val2".getBytes());
                 tableDescriptorBuilder.setColumnFamily(columnFamilyDescriptorBuilder.build());
                 tableDescriptorBuilder.setColumnFamily(columnFamilyDescriptorBuilder2.build());
                 admin.createTable(tableDescriptorBuilder.build());
