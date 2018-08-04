@@ -14,7 +14,7 @@ public class KafkaProducerExample {
 
     static void runProducer(final int sendMessageCount) throws Exception {
         final Producer<Long, String> producer =
-                new KafkaProducer<>(KafkaPropertyFactory.getProducerProperties("KafkaProducerExample"));
+                new KafkaProducer<>(KafkaPropertyFactory.getProducerProperties());
         long time = System.currentTimeMillis();
         final CountDownLatch countDownLatch = new CountDownLatch(sendMessageCount);
         try {

@@ -28,7 +28,7 @@ public class PageExtractor implements Runnable {
         }
         PRODUCER = new KafkaProducer<>(
                 KafkaPropertyFactory.getProducerProperties(
-                        s + "-PageExtractorProducer"));
+                ));
     }
 
     private final Document doc;
@@ -78,6 +78,5 @@ public class PageExtractor implements Runnable {
     @Override
     public void run() {
         sendLinksToKafka(extractLinks());
-
     }
 }

@@ -7,41 +7,25 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 public class KafkaPropertyFactory {
 
-    private static final String BOOTSTRAP_SERVERS = getBootstrapServers();
-
-    public static Properties getProducerProperties(String clientId) {
+    public static Properties getProducerProperties() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, KafkaConfig.BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         return props;
     }
 
-    public static Properties getConsumerProperties(String groupId) {
+    public static Properties getConsumerProperties() {
         final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, KafkaConfig.CONSUMER_GROUP_ID);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         return props;
-    }
-
-    private static String getBootstrapServers() {
-        String resourceName = "kafka.properties";
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        Properties props = new Properties();
-        try (InputStream resourceStream = loader.getResourceAsStream(resourceName);){
-            props.load(resourceStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return props.getProperty("bootstrap_servers");
     }
 }

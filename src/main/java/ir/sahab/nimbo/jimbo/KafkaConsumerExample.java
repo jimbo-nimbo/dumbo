@@ -12,7 +12,7 @@ public class KafkaConsumerExample {
 
     static void runConsumer() throws InterruptedException {
         final Consumer<Long, String> consumer =
-                new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties("KafkaExampleConsumer"));
+                new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties());
         consumer.subscribe(Collections.singletonList(TOPIC));
         final int giveUp = 100;
         int noRecordsCount = 0;
