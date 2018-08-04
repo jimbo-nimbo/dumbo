@@ -10,9 +10,10 @@ import static org.junit.Assert.*;
 
 public class LruCacheTest {
 
-  LruCache lruCache;
-  static final String  GOOGLE = "google.com";
-  static final String  YAHOO = "yahoo.com";
+  private LruCache lruCache;
+  private static final String  GOOGLE = "google.com";
+  private static final String  YAHOO = "yahoo.com";
+
   @Before
   public void setup(){
     lruCache = LruCache.getInstance();

@@ -2,7 +2,7 @@ package ir.sahab.nimbo.jimbo;
 
 import java.util.Scanner;
 
-public class Seeder {
+class Seeder {
 
     private static final String SEED_NAME = "top-200.csv";
     private static Seeder seeder = null;
@@ -12,13 +12,13 @@ public class Seeder {
         inp = new Scanner((classLoader.getResourceAsStream(SEED_NAME)));
     }
 
-    synchronized public static Seeder getInstance(){
+    synchronized static Seeder getInstance(){
         if(seeder == null)
             seeder = new Seeder();
         return seeder;
     }
 
-    public String getNextSite(){
+    String getNextSite(){
         return inp.next();
     }
 

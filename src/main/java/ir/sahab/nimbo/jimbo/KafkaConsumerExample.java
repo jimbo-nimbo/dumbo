@@ -8,7 +8,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import java.util.Collections;
 
 public class KafkaConsumerExample {
-    private final static String TOPIC = "TestTopic";
+    private final static String TOPIC = "TutorialTopic";
 
     static void runConsumer() throws InterruptedException {
         final Consumer<Long, String> consumer =

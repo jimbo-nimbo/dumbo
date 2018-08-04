@@ -9,37 +9,39 @@ import java.net.MalformedURLException;
 import java.util.Collections;
 
 public class FetcherThreadHandler {
-    private final static String TOPIC = "TestTopic";
 
-    private static FetcherThreadHandler ourInstance = new FetcherThreadHandler();
+    private final static String TOPIC = KafkaTopics.URL_FRONTIER.toString();
 
-    public static FetcherThreadHandler getInstance() { return ourInstance; }
+    private final static Consumer<Long, String> CONSUMER =new KafkaConsumer<>(
+            KafkaPropertyFactory.getConsumerProperties());
+
+    private static FetcherThreadHandler ourInstance;
 
 
-    final static Consumer<Long, String> consumer =
-            new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties());
+    public synchronized static FetcherThreadHandler getInstance() {
+        if (ourInstance == null)
+            ourInstance = new FetcherThreadHandler();
+        return ourInstance;
+    }
+
+    private FetcherThreadHandler() {
+    }
 
     private static void runConsumer() {
-        consumer.subscribe(Collections.singletonList(TOPIC));
-        final int giveUp = 100;
-        int noRecordsCount = 0;
-        while (noRecordsCount < giveUp) {
-            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(10000);
-            if (consumerRecords.count() == 0)
-                noRecordsCount++;
-            consumerRecords.forEach(record -> {
-                try {
-                    new FetcherThread(record.value()).run();
-                } catch (MalformedURLException m) {
-                    m.printStackTrace();
-                }
-            });
-            consumer.commitAsync();
-        }
-        consumer.close();
+        CONSUMER.subscribe(Collections.singletonList(TOPIC));
+
+        final ConsumerRecords<Long, String> consumerRecords = CONSUMER.poll(10000);
+
+        consumerRecords.forEach(record -> {
+            try {
+                new FetcherThread(record.value()).run();
+            } catch (MalformedURLException m) {
+                m.printStackTrace();
+            }
+        });
+
+        CONSUMER.commitAsync();
+        CONSUMER.close();
     }
 
-    public static void main(String[] args) {
-        runConsumer();
-    }
 }

@@ -3,7 +3,6 @@ package ir.sahab.nimbo.jimbo.fetcher;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import javax.swing.plaf.PanelUI;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,7 +15,7 @@ public class FetcherThread implements Runnable {
      * @param url
      * @throws MalformedURLException
      */
-    public  FetcherThread(String url) throws MalformedURLException {
+    FetcherThread(String url) throws MalformedURLException {
         this.url = new URL(url);
     }
 

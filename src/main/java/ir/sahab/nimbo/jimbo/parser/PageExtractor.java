@@ -16,20 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PageExtractor implements Runnable {
-    private static final Producer<Long, String> PRODUCER;
+    private static final Producer<Long, String> PRODUCER = new KafkaProducer<>(
+            KafkaPropertyFactory.getProducerProperties());
     private static final String KAFKA_TOPIC = "TestTopic";
-
-    static {
-        String s = "";
-        try {
-            s = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        PRODUCER = new KafkaProducer<>(
-                KafkaPropertyFactory.getProducerProperties(
-                ));
-    }
 
     private final Document doc;
 
