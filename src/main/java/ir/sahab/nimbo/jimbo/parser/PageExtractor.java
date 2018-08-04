@@ -1,32 +1,29 @@
 package ir.sahab.nimbo.jimbo.parser;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractor implements Runnable {
-    private static final Producer<Long, String> PRODUCER = new KafkaProducer<>(
-            KafkaPropertyFactory.getProducerProperties());
     private static final String KAFKA_TOPIC = "TestTopic";
 
-    private final Document doc;
+    private final Producer<Long, String> producer;
+    private final ArrayBlockingQueue<Document> queue;
 
-    public PageExtractor(Document doc) {
-        this.doc = doc;
+    public PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
+        this.producer = producer;
+        this.queue = queue;
     }
 
-    List<Metadata> extractMetadata() {
+    List<Metadata> extractMetadata(Document doc) {
         Elements metaTags = doc.getElementsByTag("meta");
         List<Metadata> metadatas = new ArrayList<>();
         for (Element metaTag : metaTags) {
@@ -38,7 +35,7 @@ public class PageExtractor implements Runnable {
         return metadatas;
     }
 
-    List<Link> extractLinks() {
+    List<Link> extractLinks(Document doc) {
         Elements aTags = doc.getElementsByTag("a");
         List<Link> links = new ArrayList<>();
 
@@ -60,12 +57,23 @@ public class PageExtractor implements Runnable {
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(KAFKA_TOPIC, null, link.getHref().toString());
-            PRODUCER.send(record);
+            producer.send(record);
         }
     }
 
     @Override
     public void run() {
-        sendLinksToKafka(extractLinks());
+        while (true) {
+            if (queue.isEmpty()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            Document doc = queue.poll();
+            sendLinksToKafka(extractLinks(doc));
+        }
+
     }
 }

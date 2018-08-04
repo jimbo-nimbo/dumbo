@@ -8,6 +8,7 @@ public class KafkaConfig {
     public static final String BOOTSTRAP_SERVERS;
     public static final String PRODUCER_CLIENT_ID;
     public static final String CONSUMER_GROUP_ID;
+    public static final int MAX_POLL_RECORDS = 20;
 
     static {
         String resourceName = "kafka.properties";
