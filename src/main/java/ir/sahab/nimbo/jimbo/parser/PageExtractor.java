@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.parser;
 
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.kafaconfig.KafkaTopics;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -8,21 +9,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PageExtractor implements Runnable {
     private static final Producer<Long, String> PRODUCER = new KafkaProducer<>(
             KafkaPropertyFactory.getProducerProperties());
-    private static final String KAFKA_TOPIC = "TestTopic";
+    private static final String TOPIC = KafkaTopics.URL_FRONTIER.toString();
 
     private final Document doc;
 
-    public PageExtractor(Document doc) {
+    PageExtractor(Document doc) {
         this.doc = doc;
     }
 
@@ -59,7 +58,7 @@ public class PageExtractor implements Runnable {
     void sendLinksToKafka(List<Link> links) {
         for (Link link : links) {
             ProducerRecord<Long, String> record =
-                    new ProducerRecord<>(KAFKA_TOPIC, null, link.getHref().toString());
+                    new ProducerRecord<>(TOPIC, null, link.getHref().toString());
             PRODUCER.send(record);
         }
     }
@@ -67,5 +66,47 @@ public class PageExtractor implements Runnable {
     @Override
     public void run() {
         sendLinksToKafka(extractLinks());
+    }
+
+    class Link {
+        private URL href;
+        private String text;
+
+        Link(URL href, String text) {
+            this.href = href;
+            this.text = text;
+        }
+
+        URL getHref() {
+            return href;
+        }
+
+        public String getText() {
+            return text;
+        }
+    }
+
+    class Metadata {
+        private String name;
+        private String property;
+        private String content;
+
+        Metadata(String name, String property, String content) {
+            this.name = name;
+            this.property = property;
+            this.content = content;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        String getProperty() {
+            return property;
+        }
+
+        String getContent() {
+            return content;
+        }
     }
 }
