@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo.fetcher;
+package ir.sahab.nimbo.jimbo.kafaconfig;
 
 public enum KafkaTopics
 {
