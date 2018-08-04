@@ -64,4 +64,10 @@ public class LruCacheTest {
         lruCache.add(GOOGLE);
 
     }
+
+  @Test
+  public void readProp() {
+    assertEquals(30, lruCache.getDuration());
+      assertEquals(10000, lruCache.getMaxCacheSize());
+  }
 }

@@ -37,8 +37,7 @@ public class KafkaPropertyFactory {
         String resourceName = "kafka.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Properties props = new Properties();
-        InputStream resourceStream = loader.getResourceAsStream(resourceName);
-        try {
+        try (InputStream resourceStream = loader.getResourceAsStream(resourceName);){
             props.load(resourceStream);
         } catch (IOException e) {
             e.printStackTrace();
