@@ -39,6 +39,9 @@ public class Fetcher implements Runnable {
         return null;
     }
 
+    boolean isEnglish(Document article){
+        return true;
+    }
     private void linkProcess(String url){
         try {
             Document body = getUrlBody(new URL(url));
