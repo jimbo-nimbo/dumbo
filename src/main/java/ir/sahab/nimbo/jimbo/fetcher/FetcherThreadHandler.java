@@ -26,12 +26,12 @@ public class FetcherThreadHandler {
     final static Consumer<Long, String> consumer =
             new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties("KafkaExampleConsumer"));
 
-    static void runConsumer() throws InterruptedException {
+    private static void runConsumer() {
         consumer.subscribe(Collections.singletonList(TOPIC));
         final int giveUp = 100;
         int noRecordsCount = 0;
         while (noRecordsCount < giveUp) {
-            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(10000);
             if (consumerRecords.count() == 0)
                 noRecordsCount++;
             consumerRecords.forEach(record -> {
@@ -46,7 +46,7 @@ public class FetcherThreadHandler {
         consumer.close();
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         runConsumer();
     }
 }
