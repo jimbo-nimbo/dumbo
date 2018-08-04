@@ -20,6 +20,7 @@ import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -44,7 +45,7 @@ public class Fetcher implements Runnable {
         String host = url.getHost();
         if (!lruCache.exist(host)) {
             lruCache.add(host);
-            return Jsoup.connect(url.toString()).get();
+            return Jsoup.connect(url.toString()).validateTLSCertificates(false).get();
         }
         return null;
     }
@@ -56,14 +57,16 @@ public class Fetcher implements Runnable {
                 producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
                         null, url));
             } else {
-                System.out.println("helloooo");
                 queue.add(body);
             }
         } catch (UnsupportedMimeTypeException ignored) {
+            System.err.println(" unsupported exception: " + url);
 
-        } catch (IOException i) {
-            //TODO log
-            i.printStackTrace();
+        } catch (MalformedURLException e)
+        {
+            System.err.println( " type 2 : " + url);
+        } catch (IOException e)
+        {
         }
     }
 
@@ -71,10 +74,9 @@ public class Fetcher implements Runnable {
     public void run() {
         boolean running = true;
         while (running) {
-            System.out.println(queue.size());
             ConsumerRecords<Long, String> consumerRecords;
             synchronized (consumer) {
-                consumerRecords = consumer.poll(5000);
+                consumerRecords = consumer.poll(500);
                 consumer.commitAsync();
             }
             consumerRecords.forEach(record -> linkProcess(record.value()));

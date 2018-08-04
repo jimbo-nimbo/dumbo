@@ -9,7 +9,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class Crawler
 {
-    private static final int FETCHER_NUMBER = 100;
+    private static final int FETCHER_NUMBER = 300;
     private static final int PARSER_NUMBER = 100;
     private static final int MAX_DOCUMENT = 10000;
 
@@ -44,12 +44,18 @@ public class Crawler
         for (int i = 0; i < PARSER_NUMBER; i++) {
             new Thread(parsers[i]).start();
         }
-        try
+
+        while(true)
         {
-            Thread.sleep(1000000);
-        } catch (InterruptedException e)
-        {
-            e.printStackTrace();
+            synchronized (PageExtractor.tmp)
+            {
+                if (System.currentTimeMillis() - PageExtractor.tmp > 1000)
+                {
+                    PageExtractor.tmp = System.currentTimeMillis();
+                    System.out.println(PageExtractor.t);
+                    PageExtractor.t = 0;
+                }
+            }
         }
     }
 

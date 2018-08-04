@@ -19,6 +19,9 @@ public class PageExtractor implements Runnable {
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
 
+    public  static Long tmp = 0l;
+    public  static long t = 0;
+
     public PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
         this.producer = producer;
         this.queue = queue;
@@ -48,30 +51,31 @@ public class PageExtractor implements Runnable {
             try {
                 links.add(new Link(new URL(href), text));
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                System.err.println("bad url" + href);
             }
         }
         return links;
     }
 
     void sendLinksToKafka(List<Link> links) {
+        t++;
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(TOPIC, null, link.getHref().toString());
-            producer.send(record, ((metadata, exception) -> {
-                System.out.println(metadata.toString());
-            }));
+
+            producer.send(record
+            );
         }
     }
 
     @Override
     public void run() {
         while (true) {
+
             Document doc = null;
             try
             {
                 doc = queue.take();
-                System.out.println("tooookeeeddddd");
             } catch (InterruptedException e)
             {
                 e.printStackTrace();

@@ -16,6 +16,5 @@ public class CrawlerTest
     @Test
     public void test()
     {
-        System.out.println("hello");
     }
 }
