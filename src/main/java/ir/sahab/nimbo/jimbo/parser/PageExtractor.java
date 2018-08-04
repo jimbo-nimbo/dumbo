@@ -11,7 +11,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractor implements Runnable {
@@ -19,6 +18,9 @@ public class PageExtractor implements Runnable {
 
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
+
+    public  static Long tmp = 0l;
+    public  static long t = 0;
 
     public PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
         this.producer = producer;
@@ -49,31 +51,35 @@ public class PageExtractor implements Runnable {
             try {
                 links.add(new Link(new URL(href), text));
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                System.err.println("bad url" + href);
             }
         }
         return links;
     }
 
     void sendLinksToKafka(List<Link> links) {
+        t++;
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(TOPIC, null, link.getHref().toString());
-            producer.send(record);
+
+            producer.send(record
+            );
         }
     }
 
     @Override
     public void run() {
         while (true) {
-            if (queue.isEmpty()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
+            Document doc = null;
+            try
+            {
+                doc = queue.take();
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
             }
-            Document doc = queue.poll();
             sendLinksToKafka(extractLinks(doc));
         }
 

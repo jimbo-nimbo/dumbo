@@ -20,8 +20,8 @@ import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher implements Runnable {
@@ -45,7 +45,7 @@ public class Fetcher implements Runnable {
         String host = url.getHost();
         if (!lruCache.exist(host)) {
             lruCache.add(host);
-            return Jsoup.connect(url.toString()).get();
+            return Jsoup.connect(url.toString()).validateTLSCertificates(false).get();
         }
         return null;
     }
@@ -54,18 +54,19 @@ public class Fetcher implements Runnable {
         try {
             Document body = getUrlBody(new URL(url));
             if(body == null){
-                System.out.println("tekrarie");
-//                producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
-//                        null, url));
+                producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
+                        null, url));
             } else {
-                System.out.println("helloooooooo");
                 queue.add(body);
             }
         } catch (UnsupportedMimeTypeException ignored) {
+            System.err.println(" unsupported exception: " + url);
 
-        } catch (IOException i) {
-            //TODO log
-            i.printStackTrace();
+        } catch (MalformedURLException e)
+        {
+            System.err.println( " type 2 : " + url);
+        } catch (IOException e)
+        {
         }
     }
 
@@ -75,7 +76,7 @@ public class Fetcher implements Runnable {
         while (running) {
             ConsumerRecords<Long, String> consumerRecords;
             synchronized (consumer) {
-                consumerRecords = consumer.poll(5000);
+                consumerRecords = consumer.poll(500);
                 consumer.commitAsync();
             }
             consumerRecords.forEach(record -> linkProcess(record.value()));
