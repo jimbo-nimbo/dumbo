@@ -2,7 +2,7 @@ package ir.sahab.nimbo.jimbo.parser;
 
 import java.util.Objects;
 
-public class Metadata {
+class Metadata {
     private String name;
     private String property;
     private String content;

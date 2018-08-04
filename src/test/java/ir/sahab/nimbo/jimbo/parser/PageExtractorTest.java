@@ -39,8 +39,10 @@ public class PageExtractorTest {
     @Test
     public void extractLinksTest() throws MalformedURLException {
         List<Link> links = pageExtractor.extractLinks(doc);
-        Assert.assertTrue(links.contains(new Link(new URL("http://google.com"), "Google is the best")));
-        Assert.assertTrue(links.contains(new Link(new URL("http://yahoo.com"), "Yahoo is the worst")));
+        Assert.assertTrue(links.contains(new Link(new URL("http://google.com"),
+                "Google is the best")));
+        Assert.assertTrue(links.contains(new Link(new URL("http://yahoo.com"),
+                "Yahoo is the worst")));
         Assert.assertTrue(links.contains(new Link(new URL("http://facebook.com"),
                 "Facebook is somewhere in the middle")));
     }
