@@ -4,6 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.TableNotFoundException;
 import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
@@ -12,18 +13,10 @@ public class Hbase {
 
     private static final String PROP_DIR = "hbase-site.xml";
     private static final String TABLE_NAME = "linkTable";
-
-    private TableName tableName;
-    private String family1 = "Family1";
-    private String family2 = "Family2";
-    private String row1 = "Row1";
-    private String row2 = "Row2";
-    private String val1 = "nimnimnimn1";
-    private String val2 = "nimnimnimn2";
-    private String val3 = "nimnimn3333";
-    private String col1 = "col1";
-    private String col2 = "col2";
-    private String col3 = "col33";
+    static Connection connection = null;
+    TableName tableName;
+    static final String family1 = "Family1";
+    static final String family2 = "Family2";
 
     public Hbase() {
         tableName = TableName.valueOf(TABLE_NAME);
@@ -39,8 +32,11 @@ public class Hbase {
                 //
             }
         }
-        try (Connection connection = ConnectionFactory.createConnection(config)) {
-            if (connection.getTable(tableName) == null) {
+        try{
+            connection = ConnectionFactory.createConnection(config);
+            try {
+                connection.getTable(tableName);
+            } catch (TableNotFoundException e){
                 Admin admin = connection.getAdmin();
                 TableDescriptorBuilder tableDescriptorBuilder =
                         TableDescriptorBuilder.newBuilder(tableName);
@@ -53,12 +49,13 @@ public class Hbase {
                 tableDescriptorBuilder.setColumnFamily(columnFamilyDescriptorBuilder.build());
                 tableDescriptorBuilder.setColumnFamily(columnFamilyDescriptorBuilder2.build());
                 admin.createTable(tableDescriptorBuilder.build());
+                connection.close();
             }
-            Put p = new Put(row1.getBytes());
-            p.addColumn(family1.getBytes(), col1.getBytes(), val3.getBytes());
-            Table table = connection.getTable(TableName.valueOf("testTable"));
-            System.err.println(table.getDescriptor().getValues().entrySet());
-            table.put(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            connection = ConnectionFactory.createConnection(config);
         } catch (IOException e) {
             e.printStackTrace();
         }
