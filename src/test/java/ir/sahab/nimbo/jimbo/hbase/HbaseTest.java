@@ -27,6 +27,10 @@ public class HbaseTest {
   private String col2 = "col2";
   private String col3 = "col33";
 
+  @Test
+  public void prepare(){
+      hbase = new Hbase();
+  }
   @Before
   public void setUp() {
     hbase = new Hbase();

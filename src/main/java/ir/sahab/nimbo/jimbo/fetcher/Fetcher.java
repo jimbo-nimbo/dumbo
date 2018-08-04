@@ -1,5 +1,15 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
+import com.google.common.base.Optional;
+import com.optimaize.langdetect.LanguageDetector;
+import com.optimaize.langdetect.LanguageDetectorBuilder;
+import com.optimaize.langdetect.i18n.LdLocale;
+import com.optimaize.langdetect.ngram.NgramExtractors;
+import com.optimaize.langdetect.profiles.LanguageProfile;
+import com.optimaize.langdetect.profiles.LanguageProfileReader;
+import com.optimaize.langdetect.text.CommonTextObjectFactories;
+import com.optimaize.langdetect.text.TextObject;
+import com.optimaize.langdetect.text.TextObjectFactory;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaTopics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -11,6 +21,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher implements Runnable {
@@ -39,9 +50,6 @@ public class Fetcher implements Runnable {
         return null;
     }
 
-    boolean isEnglish(Document article){
-        return true;
-    }
     private void linkProcess(String url){
         try {
             Document body = getUrlBody(new URL(url));
