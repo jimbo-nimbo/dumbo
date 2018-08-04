@@ -37,8 +37,7 @@ public class PageExtractor implements Runnable {
         this.doc = doc;
     }
 
-    public void run() {
-        // Metadata
+    List<Metadata> extractMetadata() {
         Elements metaTags = doc.getElementsByTag("meta");
         List<Metadata> metadatas = new ArrayList<>();
         for (Element metaTag : metaTags) {
@@ -47,16 +46,13 @@ public class PageExtractor implements Runnable {
             String content = metaTag.attr("content");
             metadatas.add(new Metadata(name, property, content));
         }
+        return metadatas;
+    }
 
-        // Title
-        String docTitle = doc.title();
-
-        // Text
-        String docText = doc.text();
-
-        // Links
+    List<Link> extractLinks() {
         Elements aTags = doc.getElementsByTag("a");
         List<Link> links = new ArrayList<>();
+
         for (Element aTag : aTags) {
             String href = aTag.absUrl("href");
             String text = aTag.text();
@@ -68,12 +64,20 @@ public class PageExtractor implements Runnable {
                 e.printStackTrace();
             }
         }
+        return links;
+    }
 
-        // Send links to Kafka
+    void sendLinksToKafka(List<Link> links) {
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(KAFKA_TOPIC, null, link.getHref().toString());
             PRODUCER.send(record);
         }
+    }
+
+    @Override
+    public void run() {
+        sendLinksToKafka(extractLinks());
+
     }
 }
