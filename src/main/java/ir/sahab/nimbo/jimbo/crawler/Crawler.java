@@ -1,5 +1,8 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
+import ir.sahab.nimbo.jimbo.fetcher.FetcherFactory;
+import ir.sahab.nimbo.jimbo.parser.PageExtractor;
+import ir.sahab.nimbo.jimbo.parser.PageExtractorFactory;
 import org.jsoup.nodes.Document;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -12,30 +15,41 @@ public class Crawler
 
     private ArrayBlockingQueue<Document> queue;
 
+    private FetcherFactory fetcherFactory;
+    private PageExtractorFactory pageExtractorFactory;
+
     private Runnable[] fetchers;
     private Runnable[] parsers;
 
-    Crawler()
-    {
-        queue = new ArrayBlockingQueue<Document>(MAX_DOCUMENT);
+    Crawler() {
+
+        queue = new ArrayBlockingQueue<>(MAX_DOCUMENT);
+        fetcherFactory = new FetcherFactory(queue);
+        pageExtractorFactory = new PageExtractorFactory(queue);
+
         fetchers = new Runnable[FETCHER_NUMBER];
         for (int i = 0; i < FETCHER_NUMBER; i++) {
-//            fetchers[i] = new FetcherThread(queue);
+            fetchers[i] = fetcherFactory.newFetcher();
         }
 
         parsers = new Runnable[PARSER_NUMBER];
         for (int i = 0; i < PARSER_NUMBER; i++) {
-//            parsers[i] = new PageExtractor(queue);
+            parsers[i] = pageExtractorFactory.getPageExtractor();
         }
 
-        for (int i = 0; i < FETCHER_NUMBER; i++)
-        {
-            fetchers[i].run();
+        for (int i = 0; i < FETCHER_NUMBER; i++) {
+            new Thread(fetchers[i]).start();
         }
 
-        for (int i = 0; i < PARSER_NUMBER; i++)
+        for (int i = 0; i < PARSER_NUMBER; i++) {
+            new Thread(parsers[i]).start();
+        }
+        try
         {
-            parsers[i].run();
+            Thread.sleep(1000000);
+        } catch (InterruptedException e)
+        {
+            e.printStackTrace();
         }
     }
 

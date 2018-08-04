@@ -21,7 +21,6 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher implements Runnable {
@@ -54,11 +53,10 @@ public class Fetcher implements Runnable {
         try {
             Document body = getUrlBody(new URL(url));
             if(body == null){
-                System.out.println("tekrarie");
-//                producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
-//                        null, url));
+                producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
+                        null, url));
             } else {
-                System.out.println("helloooooooo");
+                System.out.println("helloooo");
                 queue.add(body);
             }
         } catch (UnsupportedMimeTypeException ignored) {
@@ -73,6 +71,7 @@ public class Fetcher implements Runnable {
     public void run() {
         boolean running = true;
         while (running) {
+            System.out.println(queue.size());
             ConsumerRecords<Long, String> consumerRecords;
             synchronized (consumer) {
                 consumerRecords = consumer.poll(5000);

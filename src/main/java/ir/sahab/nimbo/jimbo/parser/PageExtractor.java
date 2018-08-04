@@ -58,7 +58,9 @@ public class PageExtractor implements Runnable {
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(TOPIC, null, link.getHref().toString());
-            producer.send(record);
+            producer.send(record, ((metadata, exception) -> {
+                System.out.println(metadata.toString());
+            }));
         }
     }
 
@@ -69,12 +71,11 @@ public class PageExtractor implements Runnable {
             try
             {
                 doc = queue.take();
+                System.out.println("tooookeeeddddd");
             } catch (InterruptedException e)
             {
                 e.printStackTrace();
             }
-            System.out.println("hallleoohg;lkajdg;");
-            System.out.println(doc == null);
             sendLinksToKafka(extractLinks(doc));
         }
 
