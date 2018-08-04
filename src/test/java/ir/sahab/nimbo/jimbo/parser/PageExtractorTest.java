@@ -16,6 +16,7 @@ public class PageExtractorTest {
 
     private final PageExtractor pageExtractor;
     private Document doc;
+    private ArrayBlockingQueue<Document> queue;
 
     public PageExtractorTest() {
         String resourceName = "extractor-test.html";
@@ -26,7 +27,8 @@ public class PageExtractorTest {
             doc = new Document("");
             e.printStackTrace();
         }
-        pageExtractor = new PageExtractorFactory(new ArrayBlockingQueue<>(100)).getPageExtractor();
+        queue = new ArrayBlockingQueue<>(100);
+        pageExtractor = new PageExtractorFactory(queue).getPageExtractor();
     }
 
     @Test
@@ -47,7 +49,10 @@ public class PageExtractorTest {
                 "Facebook is somewhere in the middle")));
     }
 
-    // TODO: test kafka
-
+    @Test
+    public void terminalTest() {
+        queue.add(doc);
+        pageExtractor.run();
+    }
 
 }

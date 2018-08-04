@@ -11,7 +11,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractor implements Runnable {
@@ -66,14 +65,16 @@ public class PageExtractor implements Runnable {
     @Override
     public void run() {
         while (true) {
-            if (queue.isEmpty()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            Document doc = null;
+            try
+            {
+                doc = queue.take();
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
             }
-            Document doc = queue.poll();
+            System.out.println("hallleoohg;lkajdg;");
+            System.out.println(doc == null);
             sendLinksToKafka(extractLinks(doc));
         }
 
