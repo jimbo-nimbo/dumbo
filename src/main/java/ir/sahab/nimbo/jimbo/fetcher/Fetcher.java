@@ -54,9 +54,11 @@ public class Fetcher implements Runnable {
         try {
             Document body = getUrlBody(new URL(url));
             if(body == null){
-                producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
-                        null, url));
+                System.out.println("tekrarie");
+//                producer.send(new ProducerRecord<Long, String >(KafkaTopics.URL_FRONTIER.toString(),
+//                        null, url));
             } else {
+                System.out.println("helloooooooo");
                 queue.add(body);
             }
         } catch (UnsupportedMimeTypeException ignored) {

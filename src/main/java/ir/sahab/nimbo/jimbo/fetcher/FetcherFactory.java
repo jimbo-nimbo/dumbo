@@ -21,7 +21,7 @@ public class FetcherFactory {
 
     private final ArrayBlockingQueue queue;
 
-    public FetcherFactory(ArrayBlockingQueue queue) {
+    FetcherFactory(ArrayBlockingQueue queue) {
         this.queue = queue;
         CONSUMER.subscribe(Collections.singletonList(TOPIC));
     }
