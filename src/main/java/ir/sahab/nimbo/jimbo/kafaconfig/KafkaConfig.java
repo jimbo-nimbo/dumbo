@@ -13,7 +13,7 @@ public class KafkaConfig {
         String resourceName = "kafka.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Properties props = new Properties();
-        try (InputStream resourceStream = loader.getResourceAsStream(resourceName);){
+        try (InputStream resourceStream = loader.getResourceAsStream(resourceName)){
             props.load(resourceStream);
         } catch (IOException e) {
             e.printStackTrace();

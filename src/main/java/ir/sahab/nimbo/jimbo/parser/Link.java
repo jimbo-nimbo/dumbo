@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.parser;
 
 import java.net.URL;
+import java.util.Objects;
 
 public class Link {
     private URL href;
@@ -17,5 +18,20 @@ public class Link {
 
     public String getText() {
         return text;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Link link = (Link) o;
+        return Objects.equals(href, link.href) &&
+                Objects.equals(text, link.text);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(href, text);
     }
 }
