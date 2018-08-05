@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo;
+package ir.sahab.nimbo.jimbo.main;
 
 
 import org.slf4j.LoggerFactory;

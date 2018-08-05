@@ -1,5 +1,6 @@
-package ir.sahab.nimbo.jimbo;
+package ir.sahab.nimbo.jimbo.main;
 
+import ir.sahab.nimbo.jimbo.main.Seeder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +24,4 @@ public class SeederTest {
     public void getInstance() {
     }
 
-    @Test
-    public void getNextSite() {
-        assertEquals(seeder.getNextSite(), "google.com");
-    }
 }

@@ -42,13 +42,13 @@ public class Fetcher implements Runnable {
     private void linkProcess(String url) {
         try {
             Document body = getUrlBody(new URL(url));
-            if (!Validate.isValid(body))
-                return;
+
             if (body == null) {
                 producer.send(new ProducerRecord<>(KafkaTopics.URL_FRONTIER.toString(),
                         null, url));
             } else {
-                System.out.println("hello");
+                if (!Validate.isValid(body))
+                    return;
                 queue.put(body);
             }
         } catch (UnsupportedMimeTypeException e) {

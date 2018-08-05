@@ -10,7 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class Crawler {
 
     private static final int FETCHER_NUMBER = 300;
-    private static final int PARSER_NUMBER = 100;
+    private static final int PARSER_NUMBER = 70;
     private static final int MAX_DOCUMENT = 10000;
 
     private final ArrayBlockingQueue<Document> queue;
@@ -52,8 +52,10 @@ public class Crawler {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println(PageExtractor.pageCounter + " queue size : " + queue.size());
-            PageExtractor.pageCounter = 0;
+            synchronized (PageExtractor.pageCounter) {
+                System.out.println(PageExtractor.pageCounter + " queue size : " + queue.size());
+                PageExtractor.pageCounter = 0l;
+            }
         }
     }
 

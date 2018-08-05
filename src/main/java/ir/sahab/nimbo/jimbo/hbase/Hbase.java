@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import ir.sahab.nimbo.jimbo.Logger;
+import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;

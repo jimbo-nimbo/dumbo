@@ -18,7 +18,7 @@ public class PageExtractor implements Runnable {
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
 
-    public static long pageCounter = 0;
+    public static Long pageCounter = 0l;
 
     PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
         this.producer = producer;
@@ -52,7 +52,6 @@ public class PageExtractor implements Runnable {
                 System.err.println("bad url" + href);
             }
         }
-        System.out.println(links.size());
         return links;
     }
 
@@ -62,8 +61,7 @@ public class PageExtractor implements Runnable {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(TOPIC, null, link.getHref().toString());
 
-            producer.send(record
-            );
+            producer.send(record);
         }
     }
 
