@@ -9,17 +9,25 @@ import com.optimaize.langdetect.profiles.LanguageProfileReader;
 import com.optimaize.langdetect.text.CommonTextObjectFactories;
 import com.optimaize.langdetect.text.TextObject;
 import com.optimaize.langdetect.text.TextObjectFactory;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Validate {
 
-    public Validate() {
-
+    static List<String> banWords = null;
+    private static String PROP_DIR = "banWords";
+    public static boolean isValid(Document document){
+        if(banWords == null) {
+            initBans();
+        }
+        return isEnglish(document.text()) && isNotBan(document);
     }
 
-    boolean isEnglish(String article) {
+    static boolean isEnglish(String article){
         List<LanguageProfile> languageProfiles = null;
         try {
             languageProfiles = new LanguageProfileReader().readAllBuiltIn();
@@ -29,7 +37,6 @@ public class Validate {
         LanguageDetector languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard())
                 .withProfiles(languageProfiles)
                 .build();
-
         TextObjectFactory textObjectFactory = CommonTextObjectFactories.forDetectingOnLargeText();
         TextObject textObject = textObjectFactory.forText(article);
         try {
@@ -42,5 +49,21 @@ public class Validate {
         return false;
     }
 
+    static boolean isNotBan(Document document) {
+        for(String word : banWords) {
+            if(document.title().contains(word) || document.head().text().contains(word)){
+                return false;
+            }
+        }
+        return true;
+
+    }
+    private static void initBans(){
+        banWords = new ArrayList<>();
+        Scanner inp = new Scanner(ClassLoader.getSystemResourceAsStream(PROP_DIR));
+        while (inp.hasNext()){
+            banWords.add(inp.next());
+        }
+    }
 
 }
