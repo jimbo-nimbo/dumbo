@@ -4,24 +4,27 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class SeederTest {
 
-  private Seeder seeder;
-  @Before
-  public void setUp() throws Exception {
-    seeder = Seeder.getInstance();
-  }
+    private Seeder seeder;
 
-  @After
-  public void tearDown() throws Exception {}
+    @Before
+    public void setUp() throws Exception {
+        seeder = Seeder.getInstance();
+    }
 
-  @Test
-  public void getInstance() {}
+    @After
+    public void tearDown() throws Exception {
+    }
 
-  @Test
-  public void getNextSite() {
-    assertEquals(seeder.getNextSite(), "google.com");
-  }
+    @Test
+    public void getInstance() {
+    }
+
+    @Test
+    public void getNextSite() {
+        assertEquals(seeder.getNextSite(), "google.com");
+    }
 }

@@ -12,25 +12,21 @@ import java.util.concurrent.TimeUnit;
  * cache the domains
  * //TODO: handle exception
  */
-class LruCache
-{
-    private int maxCacheSize;
-    private int duration;
+class LruCache {
     private static final String PROP_NAME = "lru.properties";
     private static LruCache lruCache = null;
+    private int maxCacheSize;
+    private int duration;
     private Cache<String, Integer> cache;
 
 
-    private LruCache()
-    {
+    private LruCache() {
         Properties properties = new Properties();
-        try
-        {
+        try {
             properties.load(getClass().getClassLoader().getResourceAsStream(PROP_NAME));
             maxCacheSize = Integer.parseInt(properties.getProperty("max_cache"));
             duration = Integer.parseInt(properties.getProperty("duration"));
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -40,9 +36,8 @@ class LruCache
                 .build();
     }
 
-    synchronized static LruCache getInstance()
-    {
-        if (lruCache == null){
+    synchronized static LruCache getInstance() {
+        if (lruCache == null) {
             lruCache = new LruCache();
         }
         return lruCache;
@@ -54,40 +49,35 @@ class LruCache
      * cache has a capacity and timeout for each domain
      * if it goes more than capacity, it remove element in a strange way to optimum itself
      *
-     * @param url
-     *      domain of site
-     * @throws CloneNotSupportedException
-     *      if domain is in cache throw exception, else add it
+     * @param url domain of site
+     * @throws CloneNotSupportedException if domain is in cache throw exception, else add it
      */
-    synchronized boolean add(String url)
-    {
+    synchronized boolean add(String url) {
 
-        if (exist(url)){
+        if (exist(url)) {
             return false;
         }
         cache.put(url, 1);
         return true;
     }
 
-    boolean exist(String url){
+    boolean exist(String url) {
         return cache.getIfPresent(url) != null;
 
     }
-    int getMaxCacheSize()
-    {
+
+    int getMaxCacheSize() {
         return maxCacheSize;
     }
 
-    int getDuration()
-    {
+    int getDuration() {
         return duration;
     }
 
     /**
      * clear all sites in cache
      */
-    void clear()
-    {
+    void clear() {
         cache.invalidateAll();
     }
 }

@@ -12,12 +12,12 @@ import java.util.Objects;
 
 public class Hbase {
 
+    static final String family1 = "Family1";
     private static final String PROP_DIR = "hbase-site.xml";
     private static final String TABLE_NAME = "linkTable";
+    private static final String family2 = "Family2";
     static Connection connection = null;
     TableName tableName;
-    static final String family1 = "Family1";
-    private static final String family2 = "Family2";
 
     public Hbase() {
         tableName = TableName.valueOf(TABLE_NAME);
@@ -33,11 +33,11 @@ public class Hbase {
                 //
             }
         }
-        try{
+        try {
             connection = ConnectionFactory.createConnection(config);
             try {
                 connection.getTable(tableName);
-            } catch (TableNotFoundException e){
+            } catch (TableNotFoundException e) {
                 Admin admin = connection.getAdmin();
                 TableDescriptorBuilder tableDescriptorBuilder =
                         TableDescriptorBuilder.newBuilder(tableName);

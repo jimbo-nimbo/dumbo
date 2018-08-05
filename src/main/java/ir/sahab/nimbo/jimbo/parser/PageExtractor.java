@@ -15,12 +15,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractor implements Runnable {
     private static final String TOPIC = KafkaTopics.URL_FRONTIER.toString();
-
+    public static Long tmp = 0l;
+    public static long t = 0;
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
-
-    public  static Long tmp = 0l;
-    public  static long t = 0;
 
     public PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
         this.producer = producer;
@@ -73,11 +71,9 @@ public class PageExtractor implements Runnable {
         while (true) {
 
             Document doc = null;
-            try
-            {
+            try {
                 doc = queue.take();
-            } catch (InterruptedException e)
-            {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             sendLinksToKafka(extractLinks(doc));

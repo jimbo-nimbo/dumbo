@@ -21,7 +21,7 @@ public class PageExtractorTest {
     public PageExtractorTest() {
         String resourceName = "extractor-test.html";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        try (InputStream resourceStream = loader.getResourceAsStream(resourceName)){
+        try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
             doc = Jsoup.parse(resourceStream, "UTF-8", "");
         } catch (IOException e) {
             doc = new Document("");

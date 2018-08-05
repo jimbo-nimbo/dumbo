@@ -15,11 +15,11 @@ import java.util.List;
 
 public class Validate {
 
-    public Validate(){
+    public Validate() {
 
     }
 
-    boolean isEnglish(String article){
+    boolean isEnglish(String article) {
         List<LanguageProfile> languageProfiles = null;
         try {
             languageProfiles = new LanguageProfileReader().readAllBuiltIn();
@@ -34,9 +34,9 @@ public class Validate {
         TextObject textObject = textObjectFactory.forText(article);
         try {
             LdLocale lang = languageDetector.detect(textObject).get();
-            if(lang.toString().equals("en"))
+            if (lang.toString().equals("en"))
                 return true;
-        } catch (IllegalStateException e){
+        } catch (IllegalStateException e) {
             return false;
         }
         return false;
