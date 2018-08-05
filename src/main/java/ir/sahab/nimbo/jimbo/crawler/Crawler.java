@@ -8,23 +8,21 @@ import org.jsoup.nodes.Document;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Crawler {
+
     private static final int FETCHER_NUMBER = 300;
     private static final int PARSER_NUMBER = 100;
     private static final int MAX_DOCUMENT = 10000;
 
-    private ArrayBlockingQueue<Document> queue;
+    private final ArrayBlockingQueue<Document> queue;
 
-    private FetcherFactory fetcherFactory;
-    private PageExtractorFactory pageExtractorFactory;
+    private final Runnable[] fetchers;
+    private final Runnable[] parsers;
 
-    private Runnable[] fetchers;
-    private Runnable[] parsers;
-
-    Crawler() {
+    public Crawler() {
 
         queue = new ArrayBlockingQueue<>(MAX_DOCUMENT);
-        fetcherFactory = new FetcherFactory(queue);
-        pageExtractorFactory = new PageExtractorFactory(queue);
+        final FetcherFactory fetcherFactory = new FetcherFactory(queue);
+        final PageExtractorFactory pageExtractorFactory = new PageExtractorFactory(queue);
 
         fetchers = new Runnable[FETCHER_NUMBER];
         for (int i = 0; i < FETCHER_NUMBER; i++) {
@@ -36,6 +34,10 @@ public class Crawler {
             parsers[i] = pageExtractorFactory.getPageExtractor();
         }
 
+    }
+
+    public void run()
+    {
         for (int i = 0; i < FETCHER_NUMBER; i++) {
             new Thread(fetchers[i]).start();
         }
@@ -45,13 +47,13 @@ public class Crawler {
         }
 
         while (true) {
-            synchronized (PageExtractor.tmp) {
-                if (System.currentTimeMillis() - PageExtractor.tmp > 1000) {
-                    PageExtractor.tmp = System.currentTimeMillis();
-                    System.out.println(PageExtractor.t);
-                    PageExtractor.t = 0;
-                }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            System.out.println(PageExtractor.pageCounter + " queue size : " + queue.size());
+            PageExtractor.pageCounter = 0;
         }
     }
 

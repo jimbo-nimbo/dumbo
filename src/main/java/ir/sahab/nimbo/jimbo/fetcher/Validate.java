@@ -19,7 +19,7 @@ import java.util.Scanner;
 public class Validate {
 
     static List<String> banWords = null;
-    private static String PROP_DIR = "banWords";
+
     public static boolean isValid(Document document){
         if(banWords == null) {
             initBans();
@@ -60,6 +60,7 @@ public class Validate {
     }
     private static void initBans(){
         banWords = new ArrayList<>();
+        String PROP_DIR = "banWords";
         Scanner inp = new Scanner(ClassLoader.getSystemResourceAsStream(PROP_DIR));
         while (inp.hasNext()){
             banWords.add(inp.next());

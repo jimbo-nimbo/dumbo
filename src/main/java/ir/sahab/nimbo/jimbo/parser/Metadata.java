@@ -7,7 +7,7 @@ class Metadata {
     private String property;
     private String content;
 
-    public Metadata(String name, String property, String content) {
+    Metadata(String name, String property, String content) {
         this.name = name;
         this.property = property;
         this.content = content;

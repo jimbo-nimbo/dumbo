@@ -17,7 +17,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class Fetcher implements Runnable {
     private final Consumer<Long, String> consumer;
     private final Producer<Long, String> producer;
-    private ArrayBlockingQueue queue;
+    private final ArrayBlockingQueue queue;
 
     Fetcher(ArrayBlockingQueue queue, Consumer<Long, String> consumer, Producer<Long, String> producer) {
         this.queue = queue;
@@ -29,7 +29,7 @@ public class Fetcher implements Runnable {
      * @return The HTML as a document
      * @throws IOException when URL does not link to a valid page
      */
-    Document getUrlBody(URL url) throws IOException {
+    private Document getUrlBody(URL url) throws IOException {
         LruCache lruCache = LruCache.getInstance();
         String host = url.getHost();
         if (!lruCache.exist(host)) {
@@ -42,18 +42,25 @@ public class Fetcher implements Runnable {
     private void linkProcess(String url) {
         try {
             Document body = getUrlBody(new URL(url));
+            if (!Validate.isValid(body))
+                return;
             if (body == null) {
-                producer.send(new ProducerRecord<Long, String>(KafkaTopics.URL_FRONTIER.toString(),
+                producer.send(new ProducerRecord<>(KafkaTopics.URL_FRONTIER.toString(),
                         null, url));
             } else {
-                queue.add(body);
+                queue.put(body);
             }
-        } catch (UnsupportedMimeTypeException ignored) {
-            System.err.println(" unsupported exception: " + url);
-
+        } catch (UnsupportedMimeTypeException e) {
+//            Logger.getInstance().logToFile(e.getMessage());
+            System.err.println("Unsupported mime : " + url);
         } catch (MalformedURLException e) {
-            System.err.println(" type 2 : " + url);
+//            Logger.getInstance().logToFile(e.getMessage());
+            System.err.println("malformed url :  " + url);
         } catch (IOException e) {
+//            Logger.getInstance().logToFile(e.getMessage());
+            System.err.println("io exception : " + url);
+        } catch (InterruptedException e) {
+            System.err.println("INTERRUPTED EXCEPTION!!!");
         }
     }
 
@@ -61,7 +68,7 @@ public class Fetcher implements Runnable {
     public void run() {
         boolean running = true;
         while (running) {
-            ConsumerRecords<Long, String> consumerRecords;
+            final ConsumerRecords<Long, String> consumerRecords;
             synchronized (consumer) {
                 consumerRecords = consumer.poll(500);
                 consumer.commitAsync();

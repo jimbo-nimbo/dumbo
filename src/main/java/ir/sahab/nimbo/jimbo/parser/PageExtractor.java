@@ -15,12 +15,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractor implements Runnable {
     private static final String TOPIC = KafkaTopics.URL_FRONTIER.toString();
-    public static Long tmp = 0l;
-    public static long t = 0;
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
 
-    public PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
+    public static long pageCounter = 0;
+
+    PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
         this.producer = producer;
         this.queue = queue;
     }
@@ -38,8 +38,8 @@ public class PageExtractor implements Runnable {
     }
 
     List<Link> extractLinks(Document doc) {
-        Elements aTags = doc.getElementsByTag("a");
-        List<Link> links = new ArrayList<>();
+        final Elements aTags = doc.getElementsByTag("a");
+        final List<Link> links = new ArrayList<>();
 
         for (Element aTag : aTags) {
             String href = aTag.absUrl("href");
@@ -55,8 +55,8 @@ public class PageExtractor implements Runnable {
         return links;
     }
 
-    void sendLinksToKafka(List<Link> links) {
-        t++;
+    private void sendLinksToKafka(List<Link> links) {
+        pageCounter++;
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(TOPIC, null, link.getHref().toString());
@@ -68,15 +68,14 @@ public class PageExtractor implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-
-            Document doc = null;
+        boolean running = true;
+        while (running) {
             try {
-                doc = queue.take();
+                final Document doc = queue.take();
+                sendLinksToKafka(extractLinks(doc));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            sendLinksToKafka(extractLinks(doc));
         }
 
     }

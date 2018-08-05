@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo;
+package ir.sahab.nimbo.jimbo.crawler;
 
 
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
