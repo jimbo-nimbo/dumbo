@@ -48,6 +48,7 @@ public class Fetcher implements Runnable {
                 producer.send(new ProducerRecord<>(KafkaTopics.URL_FRONTIER.toString(),
                         null, url));
             } else {
+                System.out.println("hello");
                 queue.put(body);
             }
         } catch (UnsupportedMimeTypeException e) {

@@ -52,6 +52,7 @@ public class PageExtractor implements Runnable {
                 System.err.println("bad url" + href);
             }
         }
+        System.out.println(links.size());
         return links;
     }
 
