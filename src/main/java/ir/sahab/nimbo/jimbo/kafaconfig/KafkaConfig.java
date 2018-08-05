@@ -8,7 +8,7 @@ class KafkaConfig {
     static final String BOOTSTRAP_SERVERS;
     static final String PRODUCER_CLIENT_ID;
     static final String CONSUMER_GROUP_ID;
-    static final int MAX_POLL_RECORDS = 20;
+    static final int MAX_POLL_RECORDS;
 
     static {
         String resourceName = "kafka.properties";
@@ -22,5 +22,6 @@ class KafkaConfig {
         BOOTSTRAP_SERVERS = props.getProperty("bootstrap_servers");
         PRODUCER_CLIENT_ID = props.getProperty("producer_client_id");
         CONSUMER_GROUP_ID = props.getProperty("consumer_group_id");
+        MAX_POLL_RECORDS = Integer.valueOf(props.getProperty("max_poll_records"));
     }
 }

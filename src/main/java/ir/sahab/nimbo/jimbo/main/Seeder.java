@@ -30,7 +30,7 @@ class Seeder {
                 KafkaPropertyFactory.getProducerProperties());
         while (inp.hasNext()) {
             String url = "https://www." + inp.next();
-            ProducerRecord<Long, String> record = new ProducerRecord<>(KafkaTopics.URL_FRONTIER.toString(), null,
+            ProducerRecord<Long, String> record = new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null,
                     url);
             producer.send(record);
         }

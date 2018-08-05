@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.parser;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaTopics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.nodes.Document;
@@ -14,13 +13,14 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractor implements Runnable {
-    private static final String TOPIC = KafkaTopics.URL_FRONTIER.toString();
+    private final String topic;
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
 
     public static Long pageCounter = 0l;
 
-    PageExtractor(Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
+    PageExtractor(String topic, Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
+        this.topic = topic;
         this.producer = producer;
         this.queue = queue;
     }
@@ -59,7 +59,7 @@ public class PageExtractor implements Runnable {
         pageCounter++;
         for (Link link : links) {
             ProducerRecord<Long, String> record =
-                    new ProducerRecord<>(TOPIC, null, link.getHref().toString());
+                    new ProducerRecord<>(topic, null, link.getHref().toString());
 
             producer.send(record);
         }
