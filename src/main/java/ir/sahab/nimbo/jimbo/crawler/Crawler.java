@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
 import ir.sahab.nimbo.jimbo.fetcher.FetcherFactory;
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.PageExtractor;
 import ir.sahab.nimbo.jimbo.parser.PageExtractorFactory;
 import org.jsoup.nodes.Document;
@@ -9,9 +10,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class Crawler {
 
-    private static final int FETCHER_NUMBER = 300;
-    private static final int PARSER_NUMBER = 70;
-    private static final int MAX_DOCUMENT = 10000;
+    private static final int FETCHER_NUMBER = Config.FETCHER_THREAD_NUM;
+    private static final int PARSER_NUMBER = Config.PARSER_THREAD_NUM;
+    private static final int MAX_DOCUMENT = Config.BLOCKING_QUEUE_SIZE;
 
     private final ArrayBlockingQueue<Document> queue;
 

@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaTopics;
+import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -18,11 +18,13 @@ public class Fetcher implements Runnable {
     private final Consumer<Long, String> consumer;
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue queue;
+    private final String topic;
 
-    Fetcher(ArrayBlockingQueue queue, Consumer<Long, String> consumer, Producer<Long, String> producer) {
+    Fetcher(ArrayBlockingQueue queue, Consumer<Long, String> consumer, Producer<Long, String> producer, String topic) {
         this.queue = queue;
         this.consumer = consumer;
         this.producer = producer;
+        this.topic = topic;
     }
 
     /**
@@ -44,8 +46,7 @@ public class Fetcher implements Runnable {
             Document body = getUrlBody(new URL(url));
 
             if (body == null) {
-                producer.send(new ProducerRecord<>(KafkaTopics.URL_FRONTIER.toString(),
-                        null, url));
+                producer.send(new ProducerRecord<>(topic, null, url));
             } else {
                 if (!Validate.isValid(body))
                     return;
