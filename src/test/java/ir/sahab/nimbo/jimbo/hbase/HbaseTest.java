@@ -45,7 +45,12 @@ public class HbaseTest {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-
+        String r, cf, q, v;
+        r = "row1";
+        cf = "Anchor";
+        q = "1";
+        v = "click";
+        hbase.add(r, cf, q, v);
 
 
     }
