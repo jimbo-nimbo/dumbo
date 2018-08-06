@@ -48,21 +48,21 @@ public class Fetcher implements Runnable {
             if (body == null) {
                 producer.send(new ProducerRecord<>(topic, null, url));
             } else {
-                if (!Validate.isValid(body))
-                    return;
+//                if (!Validate.isValid(body))
+//                    return;
                 queue.put(body);
             }
         } catch (UnsupportedMimeTypeException e) {
 //            Logger.getInstance().logToFile(e.getMessage());
-            System.err.println("Unsupported mime : " + url);
+//            System.err.println("Unsupported mime : " + url);
         } catch (MalformedURLException e) {
 //            Logger.getInstance().logToFile(e.getMessage());
-            System.err.println("malformed url :  " + url);
+//            System.err.println("malformed url :  " + url);
         } catch (IOException e) {
 //            Logger.getInstance().logToFile(e.getMessage());
-            System.err.println("io exception : " + url);
+//            System.err.println("io exception : " + url);
         } catch (InterruptedException e) {
-            System.err.println("INTERRUPTED EXCEPTION!!!");
+//            System.err.println("INTERRUPTED EXCEPTION!!!");
         }
     }
 

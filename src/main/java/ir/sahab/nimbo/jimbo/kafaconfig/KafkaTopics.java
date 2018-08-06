@@ -1,7 +1,7 @@
 package ir.sahab.nimbo.jimbo.kafaconfig;
 
 public enum KafkaTopics {
-    URL_FRONTIER("testTopic");
+    URL_FRONTIER("test1");
 
     private String topicName;
 

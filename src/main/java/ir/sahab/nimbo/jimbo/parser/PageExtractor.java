@@ -65,13 +65,19 @@ public class PageExtractor implements Runnable {
         }
     }
 
+    private void sendLinksToHbase(List<Link> links)
+    {
+
+    }
+
     @Override
     public void run() {
         boolean running = true;
         while (running) {
             try {
                 final Document doc = queue.take();
-                sendLinksToKafka(extractLinks(doc));
+                List<Link> links = extractLinks(doc);
+                sendLinksToKafka(links);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

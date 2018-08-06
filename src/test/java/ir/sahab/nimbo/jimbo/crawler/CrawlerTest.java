@@ -1,15 +1,20 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class CrawlerTest {
     private Crawler crawler;
 
-    public CrawlerTest() {
+    @BeforeClass
+    public void createInstance()
+    {
         crawler = new Crawler();
     }
 
     @Test
-    public void test() {
+    public void checkConstructor()
+    {
+
     }
 }

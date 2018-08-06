@@ -34,9 +34,12 @@ public class Crawler {
         for (int i = 0; i < PARSER_NUMBER; i++) {
             parsers[i] = pageExtractorFactory.getPageExtractor();
         }
-
     }
 
+    /**
+     * start threads
+     * and log data every 1 second
+     */
     public void run()
     {
         for (int i = 0; i < FETCHER_NUMBER; i++) {
@@ -55,7 +58,7 @@ public class Crawler {
             }
             synchronized (PageExtractor.pageCounter) {
                 System.out.println(PageExtractor.pageCounter + " queue size : " + queue.size());
-                PageExtractor.pageCounter = 0l;
+                PageExtractor.pageCounter = 0L;
             }
         }
     }

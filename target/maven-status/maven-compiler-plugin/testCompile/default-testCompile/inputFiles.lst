@@ -1,0 +1,11 @@
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/crawler/KafkaProducerExample.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/elasticSearch/ElasticSearchTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/fetcher/FetcherTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/fetcher/LruCacheTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/hbase/HbaseTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/crawler/KafkaConsumerExample.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/fetcher/FetcherFactoryTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/main/SeederTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/fetcher/ValidateTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/crawler/CrawlerTest.java
+/home/sarb/Projects/samples/dumbo/src/test/java/ir/sahab/nimbo/jimbo/parser/PageExtractorTest.java

@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
+import ir.sahab.nimbo.jimbo.main.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -16,32 +17,38 @@ import java.util.Properties;
 public class ElasticSearch {
     private TransportClient client;
 
-    public ElasticSearch() throws IOException {
-        Properties properties = getProperties();
-        client = createClient(properties);
+    public ElasticSearch() throws ElasticCannotLoadException {
+        try {
+            Properties properties = getProperties();
+            client = createClient(properties);
+        } catch (IOException e) {
+            Logger.getInstance().logToFile( "Error in Elasticsearch constructor "
+                    + e.getMessage());
+            throw new ElasticCannotLoadException();
+        }
     }
 
     /**
-     * get properties file of elasticsearch
+     * create it as an separate function for testing
      *
-     * @return property file of elasticsearch (stored in resources)
-     * @throws IOException if cannot load the elasticsearch.properties
-     * @author Alireza
+     * package private for testing
      */
-    private static Properties getProperties() throws IOException {
+    Properties getProperties() throws IOException {
         String resourceName = "elasticsearch.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        Properties props = new Properties();
         InputStream resourceStream = loader.getResourceAsStream(resourceName);
+
+        Properties props = new Properties();
         props.load(resourceStream);
+
         return props;
     }
 
     /**
-     * build client
+     * get hosts from getHosts() because there may be multiple hosts
+     * and it's configurable in elasticsearch.properties file in resources
      *
-     * @param properties properties object
-     * @throws UnknownHostException //TODO: handle exception
+     * package private for testing
      */
     TransportClient createClient(Properties properties) throws UnknownHostException {
         Settings settings = getSettings(properties);
@@ -58,27 +65,31 @@ public class ElasticSearch {
     /**
      * extract settings from properties object
      * read name from properties file
-     * set client.transport.sniff true for sending requests to master node
      *
-     * @param properties properties object
-     * @return settings for client
+     * set client.transport.sniff true for sending requests to master node //TODO: check this configuration
+     * @see <a href="https://www.elastic.co/guide/en/
+     *      elasticsearch/client/java-api/current/transport-client.html#transport-client">
+     *      elasticsearch transport client</a>
+     *
+     * package private for testing
      */
-    private Settings getSettings(Properties properties) {
+    Settings getSettings(Properties properties) {
         String clusterName = properties.getProperty("cluster.name");
         return Settings.builder()
                 .put("cluster.name", clusterName)
-                .put("client.transport.sniff", true)
+//                .put("client.transport.sniff", true)
                 .build();
     }
 
     /**
-     * get hosts from .properties file
-     * hosts are separated with #
+     * there can be multiple hosts and we don't know the number until runtime
+     * so read them from elasticsearch.properties file
+     *
+     * hosts are separated with # in properties file
      * example:
      * host1:port#host2:port
      *
-     * @param properties properties object
-     * @return list of hosts
+     * package private for testing
      */
     List<Host> getHosts(Properties properties) {
         List<Host> hosts = new ArrayList<>();
@@ -92,10 +103,8 @@ public class ElasticSearch {
     }
 
     /**
-     * close client connection
-     *
-     * @throws Throwable default finalize signature
-     * @author Alireza
+     * close client connection at the end of program
+     * because we have only this connection so far
      */
     @Override
     protected void finalize() throws Throwable {
