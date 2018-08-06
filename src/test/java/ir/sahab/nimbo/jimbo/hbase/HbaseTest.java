@@ -16,7 +16,6 @@ public class HbaseTest {
 
     @Test
     public void prepare() {
-        hbase = new Hbase();
     }
 
     @Before
@@ -45,12 +44,12 @@ public class HbaseTest {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-        String r, cf, q, v;
-        r = "row1";
-        cf = "Anchor";
-        q = "1";
-        v = "click";
-        hbase.add(r, cf, q, v);
+
+        String source, dest, anch;
+        source = "google.com";
+        dest = "wiki.com";
+        anch = "click me";
+        hbase.addLinkCF(source, dest, anch);
 
 
     }

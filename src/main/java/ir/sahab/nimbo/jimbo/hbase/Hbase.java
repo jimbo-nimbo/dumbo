@@ -1,11 +1,11 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import com.google.protobuf.ServiceException;
 import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.io.compress.Compression;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,21 +16,22 @@ public class Hbase {
 
     private static final String SITE_DIR = "hbase-site.xml";
     private static final String CORE_DIR = "core-site.xml";
-    private static final String TABLE_NAME = "linkTable";
-    private static final String cFAnchor = "Anchor";
-    private static final String cFMeta = "Meta";
-    private static final String cFTitle = "Title";
-    private static final String cFText = "text";
-    static Connection connection = null;
+    private static final String TABLE_NAME = "siteTable";
+    private static final String cFLink = "LinkAnchor";
+    private static final String cFFlag = "Flag";
+    private Connection connection = null;
+    private Configuration config = null;
+    private Admin admin = null;
+    private Table table = null;
     TableName tableName;
 
     public Hbase() {
         tableName = TableName.valueOf(TABLE_NAME);
-        Configuration config = HBaseConfiguration.create();
+        config = HBaseConfiguration.create();
         String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(SITE_DIR)).getPath();
         config.addResource(new Path(path));
-        path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(CORE_DIR)).getPath();
-        config.addResource(new Path(path));
+        //path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(CORE_DIR)).getPath();
+        //config.addResource(new Path(path));
         boolean conn = true;
         while (conn) {
             try {
@@ -40,33 +41,40 @@ public class Hbase {
                 e.printStackTrace();
             }
         }
-        try (Admin admin = connection.getAdmin()){
-            if(admin.tableExists(tableName)){
+        try{
+            admin = connection.getAdmin();
+            if(!admin.tableExists(tableName)){
                 initialize(admin);
             }
+            table = connection.getTable(tableName);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
     }
 
-    public void add(String row, String cF, String quantifier, String value){
-        Put p = new Put(row.getBytes());
-        p.addColumn(cF.getBytes(), quantifier.getBytes(), value.getBytes());
-        try (Table table = Hbase.connection.getTable(tableName)){
+    public void addLinkCF(String sourceUrl, String destUrl, String anchor){
+
+        String revUrl = sourceUrl;
+        String hashDest = destUrl;
+        String val = destUrl + ":" + anchor;
+        Put p = new Put(revUrl.getBytes());
+        p.addColumn(cFLink.getBytes(), hashDest.getBytes(), val.getBytes());
+        try {
             table.put(p);
         } catch (IOException e) {
-            Logger.getInstance().logToFile("cant put to data base");
+            e.printStackTrace();
         }
     }
 
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);
-            desc.addFamily(new HColumnDescriptor(cFAnchor));
-            desc.addFamily(new HColumnDescriptor(cFTitle));
-            desc.addFamily(new HColumnDescriptor(cFMeta));
-            desc.addFamily(new HColumnDescriptor(cFText));
+            desc.addFamily(new HColumnDescriptor(cFLink));
+            desc.addFamily(new HColumnDescriptor(cFFlag));
             admin.createTable(desc);
+
 //            TableDescriptorBuilder tableDescriptorBuilder =
 //                    TableDescriptorBuilder.newBuilder(tableName);
 //            List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
