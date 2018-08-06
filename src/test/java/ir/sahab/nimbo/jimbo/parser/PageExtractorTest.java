@@ -17,7 +17,6 @@ public class PageExtractorTest {
 
     private PageExtractor pageExtractor;
     private Document doc;
-    private ArrayBlockingQueue<Document> queue;
 
     @Before
     public void init() {
@@ -29,7 +28,7 @@ public class PageExtractorTest {
             doc = new Document("");
             e.printStackTrace();
         }
-        queue = new ArrayBlockingQueue<>(100);
+        ArrayBlockingQueue<Document> queue = new ArrayBlockingQueue<>(100);
         pageExtractor = new PageExtractorFactory(queue).getPageExtractor();
     }
 
