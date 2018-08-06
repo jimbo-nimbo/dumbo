@@ -1,7 +1,0 @@
-ir/sahab/nimbo/jimbo/KafkaPropertyFactory.class
-ir/sahab/nimbo/jimbo/Seeder.class
-ir/sahab/nimbo/jimbo/KafkaProducerExample.class
-ir/sahab/nimbo/jimbo/fetcher/FetcherThread.class
-ir/sahab/nimbo/jimbo/Main.class
-ir/sahab/nimbo/jimbo/fetcher/LruCache.class
-ir/sahab/nimbo/jimbo/KafkaConsumerExample.class

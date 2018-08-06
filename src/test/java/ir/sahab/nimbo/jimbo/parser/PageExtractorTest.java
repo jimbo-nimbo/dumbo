@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.parser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,11 +15,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class PageExtractorTest {
 
-    private final PageExtractor pageExtractor;
+    private PageExtractor pageExtractor;
     private Document doc;
     private ArrayBlockingQueue<Document> queue;
 
-    public PageExtractorTest() {
+    @Before
+    public void init() {
         String resourceName = "extractor-test.html";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
@@ -47,12 +49,6 @@ public class PageExtractorTest {
                 "Yahoo is the worst")));
         Assert.assertTrue(links.contains(new Link(new URL("http://facebook.com"),
                 "Facebook is somewhere in the middle")));
-    }
-
-    @Test
-    public void terminalTest() {
-        queue.add(doc);
-        pageExtractor.run();
     }
 
 }
