@@ -5,7 +5,7 @@
     </property>
     <property>
         <name>hbase.zookeeper.property.clientPort</name>
-        <value>2185</value>
+        <value>2186</value>
     </property>
 
 </configuration>

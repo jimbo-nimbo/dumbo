@@ -2,36 +2,65 @@ package ir.sahab.nimbo.jimbo.fetcher;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Date;
 
 import static ir.sahab.nimbo.jimbo.fetcher.Validate.isEnglish;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ValidateTest {
 
+    private static Document banSite;
+    private static Document goodSite;
+    private static String banSiteText;
+    private static String goodSiteText;
+    @Before
+    public void prep() throws IOException {
+        banSite = Jsoup.connect("http://www.porn.com").get();
+        goodSite = Jsoup.connect("http://hbase.apache.org").get();
+        banSiteText = banSite.text();
+        goodSiteText = goodSite.text();
+        Validate.init();
+    }
+
     @Test
     public void isEnglishTest() {
-        try {
-            String temp = Jsoup.connect("https://stackoverflow.com/").get().text();
-            Date f = new Date(System.currentTimeMillis());
-            assertTrue(isEnglish(temp));
-            Date s = new Date(System.currentTimeMillis());
-            assertFalse(isEnglish("renمنشسیتبمنaksdjfl jslkfajslk jt نتشسبمنت شسنمت  شتمنسی"));
-            System.err.println("time of isenglish time : " + String.valueOf(s.getTime() - f.getTime()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
+        assertTrue(isEnglish(goodSiteText));
+        Date f = new Date(System.currentTimeMillis());
+        isEnglish(goodSiteText);
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of isEnglish time : " + String.valueOf(s.getTime() - f.getTime()));
+        assertFalse(isEnglish("renمنشسیتبمنaksdjfl jslkfajslk jt نتشسبمنت شسنمت  شتمنسی"));
     }
+
     @Test
-    public void banInitialListTest(){
-        Validate.isValid(new Document("https://stackoverflow.com/"));
-        assertEquals(Validate.banWords.size(), 3);
+    public void banInitialListTest() {
+        Validate.isValid(goodSite);
+        assertEquals(Validate.banWords.size(), 10);
+    }
+
+    @Test
+    public void isValidTest(){
+        Date f = new Date(System.currentTimeMillis());
+        assertFalse(Validate.isValid(banSite));
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
+    }
+
+    @Test
+    public void notBanTest(){
+        assertTrue(Validate.isNotBan(goodSite));
+    }
+
+    @Test
+    public void banTest() {
+        Date f = new Date(System.currentTimeMillis());
+        assertFalse(Validate.isNotBan(banSite));
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of banTest time : " + String.valueOf(s.getTime() - f.getTime()));
     }
 }
