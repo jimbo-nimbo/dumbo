@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -8,7 +7,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.Jsoup;
 import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
