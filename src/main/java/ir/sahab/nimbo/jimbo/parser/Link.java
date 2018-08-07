@@ -7,7 +7,7 @@ public class Link {
     private URL href;
     private String text;
 
-    Link(URL href, String text) {
+    public Link(URL href, String text) {
         this.href = href;
         this.text = text;
     }

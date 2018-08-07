@@ -39,14 +39,14 @@ public class ValidateTest {
 
     @Test
     public void banInitialListTest() {
-        Validate.isValid(goodSite);
+        Validate.isValidBody(goodSite);
         assertEquals(Validate.banWords.size(), 10);
     }
 
     @Test
     public void isValidTest(){
         Date f = new Date(System.currentTimeMillis());
-        assertFalse(Validate.isValid(banSite));
+        assertFalse(Validate.isValidBody(banSite));
         Date s = new Date(System.currentTimeMillis());
         System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
     }

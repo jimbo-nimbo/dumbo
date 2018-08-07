@@ -1,53 +1,66 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
+import com.google.common.primitives.Bytes;
+import ir.sahab.nimbo.jimbo.parser.Link;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import java.io.IOException;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
 
 public class HbaseTest {
 
-    private Hbase hbase;
-
-    @Test
-    public void prepare() {
-    }
-
     @Before
-    public void setUp() {
-        hbase = Hbase.getInstance();
+    public void setUp() throws Exception {
+
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
     }
 
+    @Test
+    public void getInstance() {
+    }
 
     @Test
-    public void simpleTest() {
+    public void getAndPutDataTest() throws MalformedURLException {
+        ArrayList<Link> links = new ArrayList<>();
+        String url = "http://www.test.com";
+        links.add(new Link(new URL(url), "test"));
+        Hbase.getInstance().putData(url, links);
+        byte[] res = Hbase.getInstance().getData(url, "0");
+        assertEquals("test:" + url, new String(res));
 
-//        Get get = new Get(row1.getBytes());
-//        Put p = new Put(row1.getBytes());
-//        p.addColumn(family1.getBytes(), col1.getBytes(), val3.getBytes());
-//        get.addFamily(family1.getBytes());
-//        Table table = null;
-//        try {
-//            table = Hbase.connection.getTable(hbase.tableName);
-//            table.put(p);
-//            Result result = table.get(get);
-//            System.err.println(result.getCursor().getRow().toString());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        String source, dest, anch;
-        source = "google.com1";
-        dest = "wiki.com2";
-        anch = "click me2";
-        //hbase.putIntoLinkCF(source, dest, anch, 1);
+    }
+
+    @Test
+    public void putAndGetMarkTest() throws MalformedURLException {
+        ArrayList<Link> links = new ArrayList<>();
+        String url = "http://www.test.com";
+        Hbase.getInstance().putMark(url, "test");
+        byte[] res = Hbase.getInstance().getMark(url, "qualif");
+        assertEquals("test", new String(res));
+    }
+
+    @Test
+    public void existData() {
+    }
+
+    @Test
+    public void existMark() {
+    }
+    @Test
+    public void revUrlTest() throws MalformedURLException {
+        //assertEquals("https://com.google", Hbase.getInstance().reverseUrl(new URL("https://google.com")));
+        assertEquals("https://com.google.www", Hbase.getInstance().reverseUrl(new URL("https://www.google.com")));
+        assertEquals("https://com.google.dev.www", Hbase.getInstance().reverseUrl(new URL("https://www.dev.google.com")));
+        //assertEquals("https://com.google/test/test", Hbase.getInstance().reverseUrl(new URL("https://google.com/test/test")));
+        assertEquals("https://com.google.www/test/test", Hbase.getInstance().reverseUrl(new URL("https://www.google.com/test/test")));
+        assertEquals("https://com.google.dev.www/test/test", Hbase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
     }
 }

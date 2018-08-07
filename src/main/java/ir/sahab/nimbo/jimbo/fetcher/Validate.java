@@ -16,6 +16,7 @@ import com.optimaize.langdetect.text.TextObject;
 import com.optimaize.langdetect.text.TextObjectFactory;
 import org.jsoup.nodes.Document;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -28,11 +29,18 @@ public class Validate {
     private static List<LanguageProfile> languageProfiles = null;
     private static final double acceptProbability = 0.5;
 
-    public static boolean isValid(Document document){
+    public static boolean isValidBody(Document document){
         if(banWords == null) {
             init();
         }
         return isEnglish(document.text()) && isNotBan(document);
+    }
+
+    public static boolean isValidUrl(URL url){
+        if(banWords == null){
+            init();
+        }
+        return isBadUrl(url);
     }
 
     static boolean isEnglishWithApi(String article){
@@ -62,6 +70,14 @@ public class Validate {
                 return detectedLanguage.getLocale().toString().equals("en");
             }
             tmp -= detectedLanguage.getProbability();
+        }
+        return false;
+    }
+
+    static boolean isBadUrl(URL url){
+        for(String word : banWords) {
+            if (url.getQuery().contains(word) || url.getHost().contains(word))
+                return true;
         }
         return false;
     }

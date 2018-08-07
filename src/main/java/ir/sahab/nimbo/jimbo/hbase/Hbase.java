@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.Link;
 import org.apache.hadoop.conf.Configuration;
@@ -11,17 +12,18 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
+
+import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class Hbase {
 
-    private static final String SITE_DIR = "hbase-site.xml";
     private static final String CORE_DIR = "core-site.xml";
-    private static final String TABLE_NAME = "siteTable";
-    private static final String CF_DATA = "Data";
-    private static final String CF_MARK = "Mark";
-
+    //TODO
     private static Hbase hbase = null;
     TableName tableName;
     private Connection connection = null;
@@ -30,9 +32,9 @@ public class Hbase {
     private Table table = null;
 
     private Hbase() {
-        tableName = TableName.valueOf(TABLE_NAME);
+        tableName = TableName.valueOf(HBASE_TABLE_NAME);
         config = HBaseConfiguration.create();
-        String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(SITE_DIR)).getPath();
+        String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_SITE_DIR)).getPath();
         config.addResource(new Path(path));
         //path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(CORE_DIR)).getPath();
         //config.addResource(new Path(path));
@@ -74,7 +76,7 @@ public class Hbase {
         Link link;
         for(int i = 0; i < links.size(); i++){
             link = links.get(i);
-            p.addColumn(CF_DATA.getBytes(), String.valueOf(i).getBytes(), (link.getText() + ":" + link.getHref()).getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), String.valueOf(i).getBytes(), (link.getText() + ":" + link.getHref()).getBytes());
         }
         try {
             table.put(p);
@@ -85,7 +87,8 @@ public class Hbase {
 
     public void putMark(String sourceUrl, String value) {
         Put p = new Put(sourceUrl.getBytes());
-        p.addColumn(CF_MARK.getBytes(), "qualif".getBytes(), value.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
+        //TODO
         try {
             table.put(p);
         } catch (IOException e) {
@@ -93,29 +96,80 @@ public class Hbase {
         }
     }
 
-    public void getData(String sourceUrl){
+    public byte[] getData(String sourceUrl, String qualifier){
+        Get get = new Get(sourceUrl.getBytes());
+        Result result = null;
+        try {
+            return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
     }
 
-    public void getMark(String sourceUrl){
+    public byte[] getMark(String sourceUrl, String qualifier){
+        Get get = new Get(sourceUrl.getBytes());
+        Result result = null;
+        try {
+            return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
     }
+
 
     public boolean existData(String sourceUrl){
-        return false;
+        Get get = new Get(sourceUrl.getBytes());
+        Result result = null;
+        try {
+            result = table.get(get);
+            if(result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes()).isEmpty())
+                return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
+
     public boolean existMark(String sourceUrl){
-        return false;
+        Get get = new Get(sourceUrl.getBytes());
+        Result result = null;
+        try {
+            result = table.get(get);
+            if(result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes()).isEmpty())
+                return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
+
+
+    String reverseUrl(URL url){
+        return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
+    }
+
+    String reverseDomain(String domain){
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] res = domain.split("\\.");
+        stringBuilder.append(res[res.length - 1]);
+        for(int i = 1; i < res.length; i++){
+            stringBuilder.append("." + res[res.length - 1 - i]);
+        }
+        return stringBuilder.toString();
+    }
+
 
 
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);
-            desc.addFamily(new HColumnDescriptor(CF_DATA));
-            desc.addFamily(new HColumnDescriptor(CF_MARK));
+            desc.addFamily(new HColumnDescriptor(HBASE_DATA_CF_NAME));
+            desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
             admin.createTable(desc);
-
 //            TableDescriptorBuilder tableDescriptorBuilder =
 //                    TableDescriptorBuilder.newBuilder(tableName);
 //            List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
@@ -130,5 +184,7 @@ public class Hbase {
         } catch (IOException e) {
             Logger.getInstance().logToFile(e.getMessage());
         }
+
+
     }
 }

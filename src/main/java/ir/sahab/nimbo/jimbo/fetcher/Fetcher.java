@@ -55,7 +55,7 @@ public class Fetcher implements Runnable {
             if (body == null) {
                 producer.send(new ProducerRecord<>(topic, null, url));
             } else {
-                if (!Validate.isValid(body))
+                if (!Validate.isValidBody(body))
                     return;
                 //
                 queue.put(body);
