@@ -29,25 +29,35 @@ public class Fetcher implements Runnable {
      * @return The HTML as a document
      * @throws IOException when URL does not link to a valid page
      */
-    private Document getUrlBody(URL url) throws IOException {
+
+    boolean lruHandle(URL url){
         LruCache lruCache = LruCache.getInstance();
         String host = url.getHost();
         if (!lruCache.exist(host)) {
             lruCache.add(host);
-            return Jsoup.connect(url.toString()).validateTLSCertificates(false).get();
+            return true;
         }
-        return null;
+        return false;
     }
 
-    private void linkProcess(String url) {
+    Document getUrlBody(URL url) throws IOException {
+        return Jsoup.connect(url.toString()).validateTLSCertificates(false).get();
+    }
+
+    void linkProcess(String url) {
         try {
-            Document body = getUrlBody(new URL(url));
+            URL siteUrl = new URL(url);
+            Document body = null;
+            if(lruHandle(siteUrl)) {
+                body = getUrlBody(siteUrl);
+            }
 
             if (body == null) {
                 producer.send(new ProducerRecord<>(topic, null, url));
             } else {
-//                if (!Validate.isValid(body))
-//                    return;
+                if (!Validate.isValid(body))
+                    return;
+                //
                 queue.put(body);
             }
         } catch (UnsupportedMimeTypeException e) {

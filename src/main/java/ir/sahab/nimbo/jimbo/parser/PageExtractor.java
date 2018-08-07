@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.parser;
 
+import ir.sahab.nimbo.jimbo.hbase.Hbase;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.nodes.Document;
@@ -63,11 +64,6 @@ public class PageExtractor implements Runnable {
 
             producer.send(record);
         }
-    }
-
-    private void sendLinksToHbase(List<Link> links)
-    {
-
     }
 
     @Override

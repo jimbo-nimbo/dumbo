@@ -20,7 +20,7 @@ public class HbaseTest {
 
     @Before
     public void setUp() {
-        hbase = new Hbase();
+        hbase = Hbase.getInstance();
     }
 
     @After
@@ -44,13 +44,10 @@ public class HbaseTest {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-
         String source, dest, anch;
-        source = "google.com";
-        dest = "wiki.com";
-        anch = "click me";
-        hbase.addLinkCF(source, dest, anch);
-
-
+        source = "google.com1";
+        dest = "wiki.com2";
+        anch = "click me2";
+        //hbase.putIntoLinkCF(source, dest, anch, 1);
     }
 }

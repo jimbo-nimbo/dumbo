@@ -1,14 +1,16 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.main.Logger;
+import ir.sahab.nimbo.jimbo.parser.Link;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.io.compress.Compression;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,15 +19,16 @@ public class Hbase {
     private static final String SITE_DIR = "hbase-site.xml";
     private static final String CORE_DIR = "core-site.xml";
     private static final String TABLE_NAME = "siteTable";
-    private static final String cFLink = "LinkAnchor";
-    private static final String cFFlag = "Flag";
+    private static final String CF_LINK = "LinkAnchor";
+    private static final String CF_FLAG = "Flag";
+    private static Hbase hbase = null;
+    TableName tableName;
     private Connection connection = null;
     private Configuration config = null;
     private Admin admin = null;
     private Table table = null;
-    TableName tableName;
 
-    public Hbase() {
+    private Hbase() {
         tableName = TableName.valueOf(TABLE_NAME);
         config = HBaseConfiguration.create();
         String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(SITE_DIR)).getPath();
@@ -41,38 +44,67 @@ public class Hbase {
                 e.printStackTrace();
             }
         }
-        try{
+        try {
             admin = connection.getAdmin();
-            if(!admin.tableExists(tableName)){
+            if (!admin.tableExists(tableName)) {
                 initialize(admin);
             }
             table = connection.getTable(tableName);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
-    public void addLinkCF(String sourceUrl, String destUrl, String anchor){
-
-        String revUrl = sourceUrl;
-        String hashDest = destUrl;
-        String val = destUrl + ":" + anchor;
-        Put p = new Put(revUrl.getBytes());
-        p.addColumn(cFLink.getBytes(), hashDest.getBytes(), val.getBytes());
-        try {
-            table.put(p);
-        } catch (IOException e) {
-            e.printStackTrace();
+    synchronized public static Hbase getInstance() {
+        if (hbase == null) {
+            hbase = new Hbase();
         }
+        return hbase;
     }
+
+    /**
+     * @param sourceUrl : should be in reverse pattern
+     * @param
+     * @param
+     */
+
+    public void putIntoLinkCF(String sourceUrl, List<Link> links) {
+//        String strNum = String.valueOf(num);
+//        String val = destUrl + ":" + anchor;
+//        Put p = new Put(sourceUrl.getBytes());
+//        p.addColumn(CF_LINK.getBytes(), strNum.getBytes(), val.getBytes());
+//        try {
+//            table.put(p);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    public void putIntoFlagCF() {
+
+    }
+
+    public void getFromLinkCF(String url){
+
+    }
+
+    public void getFromFlagCF(String url){
+
+    }
+
+    public boolean existInLinkCF(String url){
+        return false;
+    }
+    public boolean existInFlagCF(String url){
+        return false;
+    }
+
 
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);
-            desc.addFamily(new HColumnDescriptor(cFLink));
-            desc.addFamily(new HColumnDescriptor(cFFlag));
+            desc.addFamily(new HColumnDescriptor(CF_LINK));
+            desc.addFamily(new HColumnDescriptor(CF_FLAG));
             admin.createTable(desc);
 
 //            TableDescriptorBuilder tableDescriptorBuilder =

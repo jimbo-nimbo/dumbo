@@ -3,7 +3,7 @@ package ir.sahab.nimbo.jimbo.parser;
 import java.net.URL;
 import java.util.Objects;
 
-class Link {
+public class Link {
     private URL href;
     private String text;
 
