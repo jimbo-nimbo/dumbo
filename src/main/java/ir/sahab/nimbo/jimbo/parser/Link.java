@@ -12,7 +12,7 @@ public class Link {
         this.text = text;
     }
 
-    URL getHref() {
+    public URL getHref() {
         return href;
     }
 

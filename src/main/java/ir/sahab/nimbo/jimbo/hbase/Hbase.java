@@ -19,8 +19,9 @@ public class Hbase {
     private static final String SITE_DIR = "hbase-site.xml";
     private static final String CORE_DIR = "core-site.xml";
     private static final String TABLE_NAME = "siteTable";
-    private static final String CF_LINK = "LinkAnchor";
-    private static final String CF_FLAG = "Flag";
+    private static final String CF_DATA = "Data";
+    private static final String CF_MARK = "Mark";
+
     private static Hbase hbase = null;
     TableName tableName;
     private Connection connection = null;
@@ -68,34 +69,42 @@ public class Hbase {
      * @param
      */
 
-    public void putIntoLinkCF(String sourceUrl, List<Link> links) {
-//        String strNum = String.valueOf(num);
-//        String val = destUrl + ":" + anchor;
-//        Put p = new Put(sourceUrl.getBytes());
-//        p.addColumn(CF_LINK.getBytes(), strNum.getBytes(), val.getBytes());
-//        try {
-//            table.put(p);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+    public void putData(String sourceUrl, List<Link> links) {
+        Put p = new Put(sourceUrl.getBytes());
+        Link link;
+        for(int i = 0; i < links.size(); i++){
+            link = links.get(i);
+            p.addColumn(CF_DATA.getBytes(), String.valueOf(i).getBytes(), (link.getText() + ":" + link.getHref()).getBytes());
+        }
+        try {
+            table.put(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void putIntoFlagCF() {
+    public void putMark(String sourceUrl, String value) {
+        Put p = new Put(sourceUrl.getBytes());
+        p.addColumn(CF_MARK.getBytes(), "qualif".getBytes(), value.getBytes());
+        try {
+            table.put(p);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getData(String sourceUrl){
 
     }
 
-    public void getFromLinkCF(String url){
+    public void getMark(String sourceUrl){
 
     }
 
-    public void getFromFlagCF(String url){
-
-    }
-
-    public boolean existInLinkCF(String url){
+    public boolean existData(String sourceUrl){
         return false;
     }
-    public boolean existInFlagCF(String url){
+    public boolean existMark(String sourceUrl){
         return false;
     }
 
@@ -103,8 +112,8 @@ public class Hbase {
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);
-            desc.addFamily(new HColumnDescriptor(CF_LINK));
-            desc.addFamily(new HColumnDescriptor(CF_FLAG));
+            desc.addFamily(new HColumnDescriptor(CF_DATA));
+            desc.addFamily(new HColumnDescriptor(CF_MARK));
             admin.createTable(desc);
 
 //            TableDescriptorBuilder tableDescriptorBuilder =
