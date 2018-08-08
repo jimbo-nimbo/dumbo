@@ -76,12 +76,15 @@ public class Hbase {
     public void putData(String sourceUrl, List<Link> links) {
         Put p = new Put(sourceUrl.getBytes());
         Link link;
-        for(int i = 0; i < links.size(); i++){
+        for (int i = 0; i < links.size(); i++){
             link = links.get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), String.valueOf(i).getBytes(), (link.getText() + ":" + link.getHref()).getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i)+"link").getBytes(), link.getHref().toString().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i)+"anchor").getBytes(), link.getText().getBytes());
         }
         try {
-            table.put(p);
+            if (links.size() > 0) {
+                table.put(p);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

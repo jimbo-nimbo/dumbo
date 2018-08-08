@@ -41,10 +41,13 @@ public class HbaseTest {
     public void getAndPutDataTest() throws MalformedURLException {
         ArrayList<Link> links = new ArrayList<>();
         String url = "http://www.test.com";
-        links.add(new Link(new URL(url), "test"));
+        String anchor = "test";
+        links.add(new Link(new URL(url), anchor));
         Hbase.getInstance().putData(url, links);
-        byte[] res = Hbase.getInstance().getData(url, "0");
-        assertEquals("test:" + url, new String(res));
+        byte[] res = Hbase.getInstance().getData(url, "0link");
+        byte[] res2 = Hbase.getInstance().getData(url, "0anchor");
+        assertEquals(url, new String(res));
+        assertEquals(anchor, new String(res2));
 
     }
 
