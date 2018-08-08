@@ -1,8 +1,8 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.Link;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -14,30 +14,32 @@ import org.apache.hadoop.hbase.client.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class Hbase {
 
-    private static final String CORE_DIR = "core-site.xml";
-    //TODO
-    private static Hbase hbase = null;
+    private static Hbase hbase = new Hbase();
     TableName tableName;
     private Connection connection = null;
     private Configuration config = null;
     private Admin admin = null;
     private Table table = null;
+    private ExecutorService executorService;
+
 
     private Hbase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
         config = HBaseConfiguration.create();
         String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_SITE_DIR)).getPath();
         config.addResource(new Path(path));
-        //path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(CORE_DIR)).getPath();
-        //config.addResource(new Path(path));
+        path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_CORE_DIR)).getPath();
+        config.addResource(new Path(path));
         boolean conn = true;
         while (conn) {
             try {
@@ -56,12 +58,11 @@ public class Hbase {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        executorService = new ThreadPoolExecutor(HBASE_MIN_THREAD, HBASE_MAX_THREAD, 0L, TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<Runnable>(HBASE_EXECUROR_BLOCK_Q_SIZE));
     }
 
-    synchronized public static Hbase getInstance() {
-        if (hbase == null) {
-            hbase = new Hbase();
-        }
+    public static Hbase getInstance() {
         return hbase;
     }
 
@@ -155,13 +156,20 @@ public class Hbase {
     String reverseDomain(String domain){
         StringBuilder stringBuilder = new StringBuilder();
         String[] res = domain.split("\\.");
-        stringBuilder.append(res[res.length - 1]);
-        for(int i = 1; i < res.length; i++){
-            stringBuilder.append("." + res[res.length - 1 - i]);
+        try {
+            stringBuilder.append(res[res.length - 1]);
+            for (int i = 1; i < res.length; i++) {
+                stringBuilder.append("." + res[res.length - 1 - i]);
+            }
+        } catch(IndexOutOfBoundsException e1){
+            Logger.getInstance().logToFile(e1.getMessage());
         }
         return stringBuilder.toString();
     }
 
+    private static String getHash(String inp){
+        return DigestUtils.md5Hex(inp);
+    }
 
 
     private void initialize(Admin admin) {
@@ -169,6 +177,7 @@ public class Hbase {
             HTableDescriptor desc = new HTableDescriptor(tableName);
             desc.addFamily(new HColumnDescriptor(HBASE_DATA_CF_NAME));
             desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
+            //TODO reagiob bandy
             admin.createTable(desc);
 //            TableDescriptorBuilder tableDescriptorBuilder =
 //                    TableDescriptorBuilder.newBuilder(tableName);

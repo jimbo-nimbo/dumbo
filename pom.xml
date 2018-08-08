@@ -115,6 +115,11 @@
             <artifactId>detectlanguage</artifactId>
             <version>1.1.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.bahir</groupId>
+            <artifactId>spark-streaming-twitter_2.11</artifactId>
+            <version>2.2.1</version>
+        </dependency>
     </dependencies>
 
 
