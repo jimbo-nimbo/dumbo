@@ -1,7 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import com.detectlanguage.DetectLanguage;
-import com.detectlanguage.Result;
 import com.detectlanguage.errors.APIError;
 import com.google.common.base.Optional;
 import com.optimaize.langdetect.DetectedLanguage;
@@ -15,6 +14,7 @@ import com.optimaize.langdetect.text.CommonTextObjectFactories;
 import com.optimaize.langdetect.text.TextObject;
 import com.optimaize.langdetect.text.TextObjectFactory;
 import org.jsoup.nodes.Document;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,15 +33,16 @@ public class Validate {
         init();
 
     }
-    public static boolean isValidBody(Document document){
+
+    public static boolean isValidBody(Document document) {
         return isEnglish(document.text()) && isNotBan(document);
     }
 
-    public static boolean isValidUrl(URL url){
+    public static boolean isValidUrl(URL url) {
         return isBadUrl(url);
     }
 
-    static boolean isEnglishWithApi(String article){
+    static boolean isEnglishWithApi(String article) {
         try {
             String language = DetectLanguage.simpleDetect(article);
             //List<Result> results = DetectLanguage.detect(article);
@@ -54,7 +55,7 @@ public class Validate {
 
     }
 
-    static boolean isEnglish(String article){
+    static boolean isEnglish(String article) {
         TextObject textObject = textObjectFactory.forText(article);
         Optional<LdLocale> lang = languageDetector.detect(textObject);
 
@@ -72,8 +73,8 @@ public class Validate {
         return false;
     }
 
-    static boolean isBadUrl(URL url){
-        for(String word : banWords) {
+    static boolean isBadUrl(URL url) {
+        for (String word : banWords) {
             if ((url.getQuery() != null && url.getQuery().contains(word)) || (url.getHost() != null && url.getHost().contains(word)))
                 return true;
         }
@@ -81,8 +82,8 @@ public class Validate {
     }
 
     static boolean isNotBan(Document document) {
-        for(String word : banWords) {
-            if ((document.title() != null && document.title().contains(word)) || (document.head() != null && document.head().text().contains(word))){
+        for (String word : banWords) {
+            if ((document.title() != null && document.title().contains(word)) || (document.head() != null && document.head().text().contains(word))) {
                 return false;
             }
         }
@@ -90,7 +91,7 @@ public class Validate {
 
     }
 
-    private static void initLanguageDetect(){
+    private static void initLanguageDetect() {
         //        DetectLanguage.apiKey = "2806a039edb701c9b56b642b9a63a0ac";
 
         languageProfiles = null;
@@ -106,15 +107,16 @@ public class Validate {
 
     }
 
-    private static void initBanWords(){
+    private static void initBanWords() {
         banWords = new ArrayList<>();
         String PROP_DIR = "banWords";
         Scanner inp = new Scanner(ClassLoader.getSystemResourceAsStream(PROP_DIR));
-        while (inp.hasNext()){
+        while (inp.hasNext()) {
             banWords.add(inp.next());
         }
     }
-    static void init(){
+
+    static void init() {
         initLanguageDetect();
         initBanWords();
     }
