@@ -74,7 +74,7 @@ public class Validate {
 
     static boolean isBadUrl(URL url){
         for(String word : banWords) {
-            if (url.getQuery().contains(word) || url.getHost().contains(word))
+            if ((url.getQuery() != null && url.getQuery().contains(word)) || (url.getHost() != null && url.getHost().contains(word)))
                 return true;
         }
         return false;
