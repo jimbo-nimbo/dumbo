@@ -45,7 +45,7 @@ class LruCache {
 
 
     /**
-     * add a site domain to cache, if it exist, it throws exception, else it add it
+     * add a site domain to cache, if it existInLru, it throws exception, else it add it
      * cache has a capacity and timeout for each domain
      * if it goes more than capacity, it remove element in a strange way to optimum itself
      *

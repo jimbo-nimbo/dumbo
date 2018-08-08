@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
+import ir.sahab.nimbo.jimbo.hbase.Hbase;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -25,41 +26,35 @@ public class Fetcher implements Runnable {
         this.topic = topic;
     }
 
-    /**
-     * @return The HTML as a document
-     * @throws IOException when URL does not link to a valid page
-     */
-
-    boolean lruHandle(URL url){
+    boolean lruLookup(URL url) {
         LruCache lruCache = LruCache.getInstance();
         String host = url.getHost();
         if (!lruCache.exist(host)) {
             lruCache.add(host);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
-    Document getUrlBody(URL url) throws IOException {
+    Document fetchUrl(URL url) throws IOException {
         return Jsoup.connect(url.toString()).validateTLSCertificates(false).get();
     }
 
-    void linkProcess(String url) {
+    void consumeLink(String url) {
         try {
             URL siteUrl = new URL(url);
             Document body = null;
-            if(lruHandle(siteUrl)) {
-                body = getUrlBody(siteUrl);
+            if (!lruLookup(siteUrl)) {
+                if (Hbase.getInstance().existMark(url)) {
+                    Hbase.getInstance().putMark(url, "Marked!");
+                    body = fetchUrl(siteUrl);
+                    if (body == null || !Validate.isValidBody(body))
+                        return;
+                    queue.put(body);
+                }
             }
-
-            if (body == null) {
+            else
                 producer.send(new ProducerRecord<>(topic, null, url));
-            } else {
-                if (!Validate.isValidBody(body))
-                    return;
-                //
-                queue.put(body);
-            }
         } catch (UnsupportedMimeTypeException e) {
 //            Logger.getInstance().logToFile(e.getMessage());
 //            System.err.println("Unsupported mime : " + url);
@@ -83,7 +78,7 @@ public class Fetcher implements Runnable {
                 consumerRecords = consumer.poll(500);
                 consumer.commitAsync();
             }
-            consumerRecords.forEach(record -> linkProcess(record.value()));
+            consumerRecords.forEach(record -> consumeLink(record.value()));
         }
     }
 
