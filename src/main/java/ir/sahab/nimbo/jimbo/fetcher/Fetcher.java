@@ -42,7 +42,6 @@ public class Fetcher implements Runnable {
     }
 
     void consumeLink(String url) {
-        System.out.println("Consuming link: " + url);
         try {
             URL siteUrl = new URL(url);
             Document body = null;
@@ -54,7 +53,6 @@ public class Fetcher implements Runnable {
                         return;
                     }
                     queue.put(body);
-                    System.out.println("Something pushed");
                 }
             }
             else
