@@ -29,17 +29,15 @@ public class Validate {
     private static List<LanguageProfile> languageProfiles = null;
     private static final double acceptProbability = 0.5;
 
+    static {
+        init();
+
+    }
     public static boolean isValidBody(Document document){
-        if(banWords == null) {
-            init();
-        }
         return isEnglish(document.text()) && isNotBan(document);
     }
 
     public static boolean isValidUrl(URL url){
-        if(banWords == null){
-            init();
-        }
         return isBadUrl(url);
     }
 

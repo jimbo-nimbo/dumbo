@@ -14,6 +14,7 @@ import org.apache.hadoop.hbase.client.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -127,12 +128,16 @@ public class Hbase {
         Result result = null;
         try {
             result = table.get(get);
-            if(result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes()).isEmpty())
-                return false;
+            if (result != null) {
+                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes());
+                if(navigableMap != null && !navigableMap.isEmpty()) {
+                    return true;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return true;
+        return false;
     }
 
     public boolean existMark(String sourceUrl){
@@ -140,12 +145,16 @@ public class Hbase {
         Result result = null;
         try {
             result = table.get(get);
-            if(result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes()).isEmpty())
-                return false;
+            if (result != null) {
+                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes());
+                if(navigableMap != null && !navigableMap.isEmpty()) {
+                    return true;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return true;
+        return false;
     }
 
 

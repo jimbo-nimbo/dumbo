@@ -1,9 +1,9 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import com.google.common.primitives.Bytes;
 import ir.sahab.nimbo.jimbo.parser.Link;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
@@ -14,6 +14,16 @@ import static org.junit.Assert.*;
 
 public class HbaseTest {
 
+
+    static final String STACKOVERFLOW = "https://stackoverflow.com";
+    static final String JAVA_CODE = "https://examples.javacodegeeks.com";
+    static URL STACKOVERFLOWURL;
+    static URL JAVA_CODE_URL;
+    @BeforeClass
+    public static void setUpALL() throws MalformedURLException {
+        STACKOVERFLOWURL = new URL(STACKOVERFLOW);
+        JAVA_CODE_URL = new URL(JAVA_CODE);
+    }
     @Before
     public void setUp() throws Exception {
 
@@ -49,10 +59,19 @@ public class HbaseTest {
 
     @Test
     public void existData() {
+        ArrayList<Link> links = new ArrayList<>();
+        Link link = new Link(STACKOVERFLOWURL, "anchor");
+        links.add(link);
+        Hbase.getInstance().putData(STACKOVERFLOW, links);
+        assertTrue(Hbase.getInstance().existData(STACKOVERFLOW));
+        assertFalse(Hbase.getInstance().existData(JAVA_CODE));
     }
 
     @Test
     public void existMark() {
+        Hbase.getInstance().putMark(STACKOVERFLOW, "value");
+        assertTrue(Hbase.getInstance().existMark(STACKOVERFLOW));
+        assertFalse(Hbase.getInstance().existMark(JAVA_CODE));
     }
     @Test
     public void revUrlTest() throws MalformedURLException {
