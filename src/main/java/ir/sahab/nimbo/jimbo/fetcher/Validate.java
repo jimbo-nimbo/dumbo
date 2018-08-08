@@ -82,7 +82,7 @@ public class Validate {
 
     static boolean isNotBan(Document document) {
         for(String word : banWords) {
-            if(document.title().contains(word) || document.head().text().contains(word)){
+            if ((document.title() != null && document.title().contains(word)) || (document.head() != null && document.head().text().contains(word))){
                 return false;
             }
         }
