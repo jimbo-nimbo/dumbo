@@ -1,10 +1,8 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
-import ir.sahab.nimbo.jimbo.main.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.IOException;
@@ -15,18 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class ElasticSearch {
-    private TransportClient client;
+class ElasticClientFactory {
 
-    public ElasticSearch() throws ElasticCannotLoadException {
-        try {
-            Properties properties = getProperties();
-            client = createClient(properties);
-        } catch (IOException e) {
-            Logger.getInstance().logToFile( "Error in Elasticsearch constructor "
-                    + e.getMessage());
-            throw new ElasticCannotLoadException();
-        }
+    ElasticClientFactory(){
     }
 
     /**
@@ -46,21 +35,24 @@ public class ElasticSearch {
     }
 
     /**
-     * get hosts from getHosts() because there may be multiple hosts
-     * and it's configurable in elasticsearch.properties file in resources
+     * there can be multiple hosts and we don't know the number until runtime
+     * so read them from elasticsearch.properties file
+     *
+     * hosts are separated with # in properties file
+     * example:
+     * host1:port#host2:port
      *
      * package private for testing
      */
-    TransportClient createClient(Properties properties) throws UnknownHostException {
-        Settings settings = getSettings(properties);
-        TransportClient client = new PreBuiltTransportClient(settings);
-
-        List<Host> hosts = getHosts(properties);
-        for (Host host : hosts) {
-            client.addTransportAddress(
-                    new TransportAddress(InetAddress.getByName(host.getHostName()), host.getPort()));
+    List<Host> getHosts(Properties properties) {
+        List<Host> hosts = new ArrayList<>();
+        String hostsString = properties.getProperty("hosts");
+        for (String hostString : hostsString.split("#")) {
+            Host host = new Host(hostString.split(":")[0],
+                    Integer.parseInt(hostString.split(":")[1]));
+            hosts.add(host);
         }
-        return client;
+        return hosts;
     }
 
     /**
@@ -83,40 +75,32 @@ public class ElasticSearch {
     }
 
     /**
-     * there can be multiple hosts and we don't know the number until runtime
-     * so read them from elasticsearch.properties file
-     *
-     * hosts are separated with # in properties file
-     * example:
-     * host1:port#host2:port
+     * get hosts from getHosts() because there may be multiple hosts
+     * and it's configurable in elasticsearch.properties file in resources
      *
      * package private for testing
      */
-    List<Host> getHosts(Properties properties) {
-        List<Host> hosts = new ArrayList<>();
-        String hostsString = properties.getProperty("hosts");
-        for (String hostString : hostsString.split("#")) {
-            Host host = new Host(hostString.split(":")[0],
-                    Integer.parseInt(hostsString.split(":")[1]));
-            hosts.add(host);
+    TransportClient createClient(Properties properties) throws UnknownHostException {
+        Settings settings = getSettings(properties);
+        TransportClient client = new PreBuiltTransportClient(settings);
+
+        List<Host> hosts = getHosts(properties);
+        for (Host host : hosts) {
+            client.addTransportAddress(
+                    new TransportAddress(InetAddress.getByName(host.getHostName()), host.getPort()));
         }
-        return hosts;
+        return client;
     }
 
-    /**
-     * close client connection at the end of program
-     * because we have only this connection so far
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        client.close();
+    public TransportClient createClient() throws IOException {
+        return createClient(getProperties());
     }
+
 
     /**
      * class for encapsulate hosts
      */
-    private class Host {
+    class Host {
         private String hostName;
         private int port;
 

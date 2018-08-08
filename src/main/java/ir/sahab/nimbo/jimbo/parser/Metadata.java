@@ -2,12 +2,12 @@ package ir.sahab.nimbo.jimbo.parser;
 
 import java.util.Objects;
 
-class Metadata {
+public class Metadata {
     private String name;
     private String property;
     private String content;
 
-    Metadata(String name, String property, String content) {
+    public Metadata(String name, String property, String content) {
         this.name = name;
         this.property = property;
         this.content = content;

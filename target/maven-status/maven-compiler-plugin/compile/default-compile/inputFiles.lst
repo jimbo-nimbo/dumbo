@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\home\nimac\IdeaProjects\dumbo\src\main\java\ir\sahab\nimbo\jimbo\fetcher\FetcherFactory.java
 C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\home\nimac\IdeaProjects\dumbo\src\main\java\ir\sahab\nimbo\jimbo\fetcher\Validate.java
 C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\home\nimac\IdeaProjects\dumbo\src\main\java\ir\sahab\nimbo\jimbo\kafaconfig\KafkaConfig.java
@@ -17,3 +18,23 @@ C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rh
 C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\home\nimac\IdeaProjects\dumbo\src\main\java\ir\sahab\nimbo\jimbo\parser\PageExtractor.java
 C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\home\nimac\IdeaProjects\dumbo\src\main\java\ir\sahab\nimbo\jimbo\main\Main.java
 C:\Users\nimac\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\home\nimac\IdeaProjects\dumbo\src\main\java\ir\sahab\nimbo\jimbo\fetcher\LruCache.java
+=======
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/hbase/Hbase.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/parser/PageExtractor.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/kafaconfig/KafkaConfig.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/fetcher/LruCache.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/main/Seeder.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/elasticSearch/ElasticSearch.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/parser/Metadata.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/parser/PageExtractorFactory.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/parser/Link.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/crawler/Crawler.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/main/Config.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/kafaconfig/KafkaPropertyFactory.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/fetcher/Validate.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/kafaconfig/KafkaTopics.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/fetcher/Fetcher.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/fetcher/FetcherFactory.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/main/Logger.java
+/home/sarb/Projects/samples/dumbo/src/main/java/ir/sahab/nimbo/jimbo/main/Main.java
+>>>>>>> Stashed changes

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 ir\sahab\nimbo\jimbo\fetcher\FetcherFactory.class
 ir\sahab\nimbo\jimbo\fetcher\LruCache.class
 ir\sahab\nimbo\jimbo\elasticSearch\ElasticCannotLoadException.class
@@ -18,3 +19,23 @@ ir\sahab\nimbo\jimbo\crawler\Crawler.class
 ir\sahab\nimbo\jimbo\main\Logger.class
 ir\sahab\nimbo\jimbo\parser\PageExtractorFactory.class
 ir\sahab\nimbo\jimbo\kafaconfig\KafkaTopics.class
+=======
+ir/sahab/nimbo/jimbo/parser/Link.class
+ir/sahab/nimbo/jimbo/kafaconfig/KafkaPropertyFactory.class
+ir/sahab/nimbo/jimbo/hbase/Hbase.class
+ir/sahab/nimbo/jimbo/fetcher/Fetcher.class
+ir/sahab/nimbo/jimbo/kafaconfig/KafkaTopics.class
+ir/sahab/nimbo/jimbo/fetcher/LruCache.class
+ir/sahab/nimbo/jimbo/parser/Metadata.class
+ir/sahab/nimbo/jimbo/crawler/Crawler.class
+ir/sahab/nimbo/jimbo/parser/PageExtractorFactory.class
+ir/sahab/nimbo/jimbo/main/Logger.class
+ir/sahab/nimbo/jimbo/fetcher/Validate.class
+ir/sahab/nimbo/jimbo/kafaconfig/KafkaConfig.class
+ir/sahab/nimbo/jimbo/fetcher/FetcherFactory.class
+ir/sahab/nimbo/jimbo/parser/PageExtractor.class
+ir/sahab/nimbo/jimbo/elasticSearch/ElasticSearch.class
+ir/sahab/nimbo/jimbo/elasticSearch/ElasticSearch$Host.class
+ir/sahab/nimbo/jimbo/main/Seeder.class
+ir/sahab/nimbo/jimbo/main/Main.class
+>>>>>>> Stashed changes
