@@ -12,13 +12,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PageExtractor implements Runnable {
     private final String topic;
     private final Producer<Long, String> producer;
     private final ArrayBlockingQueue<Document> queue;
 
-    public static Long pageCounter = 0l;
+    public static AtomicLong pageCounter = new AtomicLong(0l);
 
     PageExtractor(String topic, Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
         this.topic = topic;
@@ -50,6 +51,7 @@ public class PageExtractor implements Runnable {
             try {
                 links.add(new Link(new URL(href), text));
             } catch (MalformedURLException e) {
+                // TODO: log!
                 System.err.println("bad url" + href);
             }
         }
@@ -57,7 +59,6 @@ public class PageExtractor implements Runnable {
     }
 
     private void sendLinksToKafka(List<Link> links) {
-        pageCounter++;
         for (Link link : links) {
             ProducerRecord<Long, String> record =
                     new ProducerRecord<>(topic, null, link.getHref().toString());
@@ -75,6 +76,7 @@ public class PageExtractor implements Runnable {
                 List<Link> links = extractLinks(doc);
                 Hbase.getInstance().putData(doc.location(), links);
                 sendLinksToKafka(links);
+                pageCounter.incrementAndGet();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

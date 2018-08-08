@@ -23,6 +23,7 @@ public class HbaseTest {
     public static void setUpALL() throws MalformedURLException {
         STACKOVERFLOWURL = new URL(STACKOVERFLOW);
         JAVA_CODE_URL = new URL(JAVA_CODE);
+        Hbase.getInstance();
     }
     @Before
     public void setUp() throws Exception {
@@ -53,7 +54,6 @@ public class HbaseTest {
 
     @Test
     public void putAndGetMarkTest() throws MalformedURLException {
-        ArrayList<Link> links = new ArrayList<>();
         String url = "http://www.test.com";
         Hbase.getInstance().putMark(url, "test");
         byte[] res = Hbase.getInstance().getMark(url, "qualif");
