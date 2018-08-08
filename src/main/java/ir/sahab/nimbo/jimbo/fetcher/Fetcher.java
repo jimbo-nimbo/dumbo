@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import ir.sahab.nimbo.jimbo.hbase.Hbase;
+import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -41,16 +42,19 @@ public class Fetcher implements Runnable {
     }
 
     void consumeLink(String url) {
+        System.out.println("Consuming link: " + url);
         try {
             URL siteUrl = new URL(url);
             Document body = null;
             if (!lruLookup(siteUrl)) {
-                if (Hbase.getInstance().existMark(url)) {
+                if (!Hbase.getInstance().existMark(url)) {
                     Hbase.getInstance().putMark(url, "Marked!");
                     body = fetchUrl(siteUrl);
-                    if (body == null || !Validate.isValidBody(body))
+                    if (body == null || !Validate.isValidBody(body)) {
                         return;
+                    }
                     queue.put(body);
+                    System.out.println("Something pushed");
                 }
             }
             else

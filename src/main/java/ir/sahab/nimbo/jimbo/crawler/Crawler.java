@@ -56,10 +56,10 @@ public class Crawler {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            synchronized (PageExtractor.pageCounter) {
-                System.out.println(PageExtractor.pageCounter + " queue size : " + queue.size());
-                PageExtractor.pageCounter = 0L;
-            }
+
+            System.out.println(PageExtractor.pageCounter.get() + " queue size : " + queue.size());
+            PageExtractor.pageCounter.set(0);
+
         }
     }
 
