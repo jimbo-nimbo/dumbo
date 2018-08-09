@@ -16,7 +16,7 @@ import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class ElasticsearchThreadFactory {
+public class ElasticsearchThreadFactory {
 
     private Settings settings;
     private List<Host> hosts;
@@ -27,7 +27,7 @@ class ElasticsearchThreadFactory {
     static int bulkSize;
     static String indexName;
 
-    ElasticsearchThreadFactory(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue)
+    public ElasticsearchThreadFactory(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue)
             throws ElasticCannotLoadException {
         try {
             setProperties();
