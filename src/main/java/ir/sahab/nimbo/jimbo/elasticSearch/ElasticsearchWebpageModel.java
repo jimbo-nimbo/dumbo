@@ -6,15 +6,21 @@ import java.util.List;
 
 public class ElasticsearchWebpageModel {
 
-    private String article;
-    private String title;
+    private final String article;
+    private final String title;
+    private final String url;
 
-    private List<Metadata> metadataList;
+    private final List<Metadata> metadataList;
 
-    public ElasticsearchWebpageModel(String article, String title, List<Metadata> metadataList){
+    public ElasticsearchWebpageModel(String url, String article, String title, List<Metadata> metadataList){
         this.article = article;
         this.title = title;
         this.metadataList = metadataList;
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public String getArticle() {

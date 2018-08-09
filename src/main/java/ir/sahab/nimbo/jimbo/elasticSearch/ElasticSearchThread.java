@@ -1,36 +1,57 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
+import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.Metadata;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
 
 public class ElasticSearchThread implements Runnable{
+
     private TransportClient client;
 
-    private static AtomicLong id = new AtomicLong(0L);
+    private final String indexName;
+    private final int bulkSize;
 
-    public ElasticSearchThread(TransportClient client) {
+    private XContentBuilder builder;
+
+    ElasticSearchThread(TransportClient client) throws IOException {
         this.client = client;
+
+        indexName = ElasticsearchThreadFactory.indexName;
+        bulkSize = ElasticsearchThreadFactory.bulkSize;
+
     }
 
-    XContentBuilder createBuilder(ElasticsearchWebpageModel model) throws IOException {
-        XContentBuilder builder = XContentFactory.jsonBuilder().startObject()
-                .field("article", model.getArticle())
+    /**
+     * use only one builder for minimize memory use
+     */
+    void buildBuilder(ElasticsearchWebpageModel model) throws IOException {
+
+        builder = XContentFactory.jsonBuilder();
+        builder.startObject()
+                .field("content", model.getArticle())
                 .field("title", model.getTitle());
+
         List<Metadata> metadataList = model.getMetadataList();
         for (int i = 0; i < metadataList.size(); i++) {
-            Metadata metadata = metadataList.get(i);
-            builder.field("meta" + i, metadata.getContent());
+            builder.field("meta" + i, metadataList.get(i).getContent());
         }
-        return builder.endObject();
+
+        builder.endObject();
+    }
+
+    /**
+     * this function is for ease of change id of items in elasticsearch
+     */
+    private String getId(ElasticsearchWebpageModel elasticsearchWebpageModel)
+    {
+        return Integer.toString(elasticsearchWebpageModel.getUrl().hashCode());
     }
 
     /**
@@ -40,18 +61,17 @@ public class ElasticSearchThread implements Runnable{
      *      return true if submit is successful
      */
     boolean submitBulk(List<ElasticsearchWebpageModel> models) throws IOException {
+
         BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
+
         for (ElasticsearchWebpageModel model: models){
-            XContentBuilder builder = createBuilder(model);
-            //todo remove sarb
+            buildBuilder(model);
             bulkRequestBuilder.add(
-                    client.prepareIndex("sarb", "_doc", Long.toString(id.incrementAndGet()))
-                    .setSource(builder)
+                    client.prepareIndex(indexName, "_doc", getId(model)).setSource(builder)
             );
         }
 
-        BulkResponse bulkItemResponses = bulkRequestBuilder.get();
-        return bulkItemResponses.hasFailures();
+        return !bulkRequestBuilder.get().hasFailures();
     }
 
     /**
@@ -66,6 +86,29 @@ public class ElasticSearchThread implements Runnable{
 
     @Override
     public void run() {
-
+        List<ElasticsearchWebpageModel> list = new ArrayList<>();
+        int t = 0;
+        while(true) {
+            if (t < ElasticsearchThreadFactory.bulkSize) {
+                try {
+                    list.add(ElasticsearchThreadFactory.elasticQueue.take());
+                    t++;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                t = 0;
+                try {
+                    if (submitBulk(list)) {
+                        Logger.getInstance().infoLog("Submitted "
+                                + ElasticsearchThreadFactory.bulkSize + "of records" + "to elasticsearch!");
+                    } else {
+                        Logger.getInstance().warnLog("Cannot submit records to elasticsearch!");
+                    }
+                } catch (IOException e) {
+                    Logger.getInstance().warnLog("Cannot submit records to elasticsearch!(due exception)");
+                }
+            }
+        }
     }
 }

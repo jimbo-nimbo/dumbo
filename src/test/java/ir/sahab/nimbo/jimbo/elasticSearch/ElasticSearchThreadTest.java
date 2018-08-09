@@ -7,8 +7,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ElasticSearchThreadTest {
 
@@ -17,10 +17,11 @@ public class ElasticSearchThreadTest {
     }
 
     @Test
-    public void submitBulk() throws IOException {
-        ElasticClientFactory elasticClientFactory = new ElasticClientFactory();
-        TransportClient client = elasticClientFactory.createClient();
-        ElasticSearchThread elasticSearchThread = new ElasticSearchThread(client);
+    public void submitBulk() throws IOException, ElasticCannotLoadException {
+        ElasticsearchThreadFactory elasticsearchThreadFactory =
+                new ElasticsearchThreadFactory(new ArrayBlockingQueue<>(10000));
+
+        ElasticSearchThread elasticSearchThread = elasticsearchThreadFactory.createNewThread();
 
         List<Metadata> metadataList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -30,7 +31,7 @@ public class ElasticSearchThreadTest {
 
         List<ElasticsearchWebpageModel> elasticsearchWebpageModels = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
-            elasticsearchWebpageModels.add(new ElasticsearchWebpageModel("this is article",
+            elasticsearchWebpageModels.add(new ElasticsearchWebpageModel("this si url", "this is article",
                     "this is title", metadataList));
         }
 

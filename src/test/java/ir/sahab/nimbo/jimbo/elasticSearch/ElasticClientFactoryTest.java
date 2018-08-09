@@ -1,45 +1,58 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
+import ir.sahab.nimbo.jimbo.parser.Metadata;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.*;
 
 public class ElasticClientFactoryTest {
 
     @Test
-    public void getProperties() throws IOException {
-        ElasticClientFactory elasticClientFactory = new ElasticClientFactory();
-        Properties properties = elasticClientFactory.getProperties();
+    public void completeTest() throws ElasticCannotLoadException, IOException, InterruptedException {
+        ArrayBlockingQueue<ElasticsearchWebpageModel> queue = new ArrayBlockingQueue<>(10000);
+        ElasticsearchThreadFactory elasticsearchThreadFactory = new ElasticsearchThreadFactory(queue);
 
-        assertEquals("sarb", properties.getProperty("cluster.name"));
-        assertEquals("sarb", properties.getProperty("index.name"));
-        assertEquals("localhost:9200", properties.getProperty("hosts"));
+        ElasticSearchThread newThread = elasticsearchThreadFactory.createNewThread();
 
-    }
-
-    @Test
-    public void getHosts() throws IOException {
-        ElasticClientFactory elasticClientFactory = new ElasticClientFactory();
-        List<ElasticClientFactory.Host> hosts = elasticClientFactory.getHosts(elasticClientFactory.getProperties());
-
-        for (ElasticClientFactory.Host host: hosts){
-            assertEquals("localhost", host.getHostName());
-            assertEquals(9200, host.getPort());
+        List<Metadata> list = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            list.add(new Metadata("name!", "property!", "content " + i + "!"));
         }
 
-    }
+        List<ElasticsearchWebpageModel> models = new ArrayList<>();
+        for (int i = 0; i < 2000; i++) {
 
-    @Test
-    public void getSettings() {
-    }
+            Document document =
+                    Jsoup.connect("https://en.wikipedia.org/wiki/" + i).validateTLSCertificates(false).get();
+            models.add(new ElasticsearchWebpageModel(document.location(),
+                    document.text(), document.title(), list));
+            System.out.println("document number " + i);
+        }
 
-    @Test
-    public void createClient() throws IOException {
-        ElasticClientFactory elasticClientFactory = new ElasticClientFactory();
-        elasticClientFactory.createClient(elasticClientFactory.getProperties());
+        System.out.println("action phase!! >:]");
+        Thread.sleep(5000L);
+
+        new Thread(newThread).start();
+
+        for (ElasticsearchWebpageModel model: models){
+            queue.put(model);
+        }
+
+
+        for (int i = 0; i < 20000; i++) {
+            System.out.println("doc number : " + i + " , queue size : " + queue.size());
+            queue.put(new ElasticsearchWebpageModel("This is test" + i + "!!!!",
+                    "This is article!!!!", "This is title!!!!", list));
+            Thread.sleep(5L);
+        }
     }
 }

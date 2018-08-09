@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
+import ir.sahab.nimbo.jimbo.main.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -12,18 +13,45 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-class ElasticClientFactory {
+class ElasticsearchThreadFactory {
 
-    ElasticClientFactory(){
+    private Settings settings;
+    private List<Host> hosts;
+    private Properties properties;
+
+    static ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
+
+    static int bulkSize;
+    static String indexName;
+
+    ElasticsearchThreadFactory(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue)
+            throws ElasticCannotLoadException {
+        try {
+            setProperties();
+            setSettings();
+            setHosts();
+        } catch (IOException e) {
+            Logger.getInstance().debugLog(e.getMessage());
+            throw new ElasticCannotLoadException();
+        }
+
+        ElasticsearchThreadFactory.elasticQueue = elasticQueue;
+
+        bulkSize = Integer.parseInt(properties.getProperty("bulk_size"));
+        indexName = properties.getProperty("index.name");
+    }
+
+    public ElasticSearchThread createNewThread() throws IOException {
+        return new ElasticSearchThread(createClient());
     }
 
     /**
      * create it as an separate function for testing
-     *
-     * package private for testing
      */
-    Properties getProperties() throws IOException {
+    private void setProperties() throws IOException {
         String resourceName = "elasticsearch.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         InputStream resourceStream = loader.getResourceAsStream(resourceName);
@@ -31,7 +59,7 @@ class ElasticClientFactory {
         Properties props = new Properties();
         props.load(resourceStream);
 
-        return props;
+        properties = props;
     }
 
     /**
@@ -44,7 +72,7 @@ class ElasticClientFactory {
      *
      * package private for testing
      */
-    List<Host> getHosts(Properties properties) {
+    void setHosts() {
         List<Host> hosts = new ArrayList<>();
         String hostsString = properties.getProperty("hosts");
         for (String hostString : hostsString.split("#")) {
@@ -52,7 +80,7 @@ class ElasticClientFactory {
                     Integer.parseInt(hostString.split(":")[1]));
             hosts.add(host);
         }
-        return hosts;
+        this.hosts = hosts;
     }
 
     /**
@@ -63,39 +91,30 @@ class ElasticClientFactory {
      * @see <a href="https://www.elastic.co/guide/en/
      *      elasticsearch/client/java-api/current/transport-client.html#transport-client">
      *      elasticsearch transport client</a>
-     *
-     * package private for testing
      */
-    Settings getSettings(Properties properties) {
+    private void setSettings() {
         String clusterName = properties.getProperty("cluster.name");
-        return Settings.builder()
+        settings = Settings.builder()
                 .put("cluster.name", clusterName)
 //                .put("client.transport.sniff", true)
                 .build();
     }
 
     /**
-     * get hosts from getHosts() because there may be multiple hosts
+     * get hosts from setHosts() because there may be multiple hosts
      * and it's configurable in elasticsearch.properties file in resources
      *
      * package private for testing
      */
-    TransportClient createClient(Properties properties) throws UnknownHostException {
-        Settings settings = getSettings(properties);
+    private TransportClient createClient() throws UnknownHostException {
         TransportClient client = new PreBuiltTransportClient(settings);
 
-        List<Host> hosts = getHosts(properties);
         for (Host host : hosts) {
             client.addTransportAddress(
                     new TransportAddress(InetAddress.getByName(host.getHostName()), host.getPort()));
         }
         return client;
     }
-
-    public TransportClient createClient() throws IOException {
-        return createClient(getProperties());
-    }
-
 
     /**
      * class for encapsulate hosts
