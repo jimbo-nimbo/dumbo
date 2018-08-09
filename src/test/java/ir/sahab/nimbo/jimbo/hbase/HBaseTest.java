@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
-public class HbaseTest {
+public class HBaseTest {
 
 
     static final String STACKOVERFLOW = "https://stackoverflow.com";
@@ -23,7 +23,7 @@ public class HbaseTest {
     public static void setUpALL() throws MalformedURLException {
         STACKOVERFLOWURL = new URL(STACKOVERFLOW);
         JAVA_CODE_URL = new URL(JAVA_CODE);
-        Hbase.getInstance();
+        HBase.getInstance();
     }
     @Before
     public void setUp() throws Exception {
@@ -44,9 +44,9 @@ public class HbaseTest {
         String url = "http://www.test.com";
         String anchor = "test";
         links.add(new Link(new URL(url), anchor));
-        Hbase.getInstance().putData(url, links);
-        byte[] res = Hbase.getInstance().getData(url, "0link");
-        byte[] res2 = Hbase.getInstance().getData(url, "0anchor");
+        HBase.getInstance().putData(url, links);
+        byte[] res = HBase.getInstance().getData(url, "0link");
+        byte[] res2 = HBase.getInstance().getData(url, "0anchor");
         assertEquals(url, new String(res));
         assertEquals(anchor, new String(res2));
 
@@ -55,8 +55,8 @@ public class HbaseTest {
     @Test
     public void putAndGetMarkTest() throws MalformedURLException {
         String url = "http://www.test.com";
-        Hbase.getInstance().putMark(url, "test");
-        byte[] res = Hbase.getInstance().getMark(url, "qualif");
+        HBase.getInstance().putMark(url, "test");
+        byte[] res = HBase.getInstance().getMark(url, "qualif");
         assertEquals("test", new String(res));
     }
 
@@ -65,24 +65,24 @@ public class HbaseTest {
         ArrayList<Link> links = new ArrayList<>();
         Link link = new Link(STACKOVERFLOWURL, "anchor");
         links.add(link);
-        Hbase.getInstance().putData(STACKOVERFLOW, links);
-        assertTrue(Hbase.getInstance().existData(STACKOVERFLOW));
-        assertFalse(Hbase.getInstance().existData(JAVA_CODE));
+        HBase.getInstance().putData(STACKOVERFLOW, links);
+        assertTrue(HBase.getInstance().existData(STACKOVERFLOW));
+        assertFalse(HBase.getInstance().existData(JAVA_CODE));
     }
 
     @Test
     public void existMark() {
-        Hbase.getInstance().putMark(STACKOVERFLOW, "value");
-        assertTrue(Hbase.getInstance().existMark(STACKOVERFLOW));
-        assertFalse(Hbase.getInstance().existMark(JAVA_CODE));
+        HBase.getInstance().putMark(STACKOVERFLOW, "value");
+        assertTrue(HBase.getInstance().existMark(STACKOVERFLOW));
+        assertFalse(HBase.getInstance().existMark(JAVA_CODE));
     }
     @Test
     public void revUrlTest() throws MalformedURLException {
-        //assertEquals("https://com.google", Hbase.getInstance().reverseUrl(new URL("https://google.com")));
-        assertEquals("https://com.google.www", Hbase.getInstance().reverseUrl(new URL("https://www.google.com")));
-        assertEquals("https://com.google.dev.www", Hbase.getInstance().reverseUrl(new URL("https://www.dev.google.com")));
-        //assertEquals("https://com.google/test/test", Hbase.getInstance().reverseUrl(new URL("https://google.com/test/test")));
-        assertEquals("https://com.google.www/test/test", Hbase.getInstance().reverseUrl(new URL("https://www.google.com/test/test")));
-        assertEquals("https://com.google.dev.www/test/test", Hbase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
+        //assertEquals("https://com.google", HBase.getInstance().reverseUrl(new URL("https://google.com")));
+        assertEquals("https://com.google.www", HBase.getInstance().reverseUrl(new URL("https://www.google.com")));
+        assertEquals("https://com.google.dev.www", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com")));
+        //assertEquals("https://com.google/test/test", HBase.getInstance().reverseUrl(new URL("https://google.com/test/test")));
+        assertEquals("https://com.google.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.google.com/test/test")));
+        assertEquals("https://com.google.dev.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
     }
 }

@@ -23,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
-public class Hbase {
+public class HBase {
 
-    private static Hbase hbase = new Hbase();
+    private static HBase hbase = new HBase();
     TableName tableName;
     private Connection connection = null;
     private Configuration config = null;
@@ -34,7 +34,7 @@ public class Hbase {
     private ExecutorService executorService;
 
 
-    private Hbase() {
+    private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
         config = HBaseConfiguration.create();
         String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_SITE_DIR)).getPath();
@@ -63,7 +63,7 @@ public class Hbase {
                 new ArrayBlockingQueue<Runnable>(HBASE_EXECUROR_BLOCK_Q_SIZE));
     }
 
-    public static Hbase getInstance() {
+    public static HBase getInstance() {
         return hbase;
     }
 

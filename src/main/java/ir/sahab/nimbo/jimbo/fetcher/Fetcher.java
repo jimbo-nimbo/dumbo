@@ -1,9 +1,10 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import ir.sahab.nimbo.jimbo.hbase.Hbase;
-import ir.sahab.nimbo.jimbo.main.Logger;
+import ir.sahab.nimbo.jimbo.hbase.HBase;
+import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.Jsoup;
@@ -16,14 +17,14 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher implements Runnable {
     private final Consumer<Long, String> consumer;
-    private final Producer<Long, String> producer;
+    private final static Producer<Long, String> PRODUCER = new KafkaProducer<>(
+            KafkaPropertyFactory.getProducerProperties());
     private final ArrayBlockingQueue queue;
     private final String topic;
 
-    Fetcher(ArrayBlockingQueue queue, Consumer<Long, String> consumer, Producer<Long, String> producer, String topic) {
+    public Fetcher(ArrayBlockingQueue queue, Consumer<Long, String> consumer, String topic) {
         this.queue = queue;
         this.consumer = consumer;
-        this.producer = producer;
         this.topic = topic;
     }
 
@@ -47,8 +48,8 @@ public class Fetcher implements Runnable {
             URL siteUrl = new URL(url);
             Document body = null;
             if (!lruLookup(siteUrl)) {
-                if (!Hbase.getInstance().existMark(url)) {
-                    Hbase.getInstance().putMark(url, "Marked!");
+                if (!HBase.getInstance().existMark(url)) {
+                    HBase.getInstance().putMark(url, "Marked!");
                     body = fetchUrl(siteUrl);
                     if (body == null || !Validate.isValidBody(body)) {
                         return;
@@ -58,7 +59,7 @@ public class Fetcher implements Runnable {
                 }
             }
             else
-                producer.send(new ProducerRecord<>(topic, null, url));
+                PRODUCER.send(new ProducerRecord<>(topic, null, url));
         } catch (UnsupportedMimeTypeException e) {
 //            Logger.getInstance().logToFile(e.getMessage());
 //            System.err.println("Unsupported mime : " + url);

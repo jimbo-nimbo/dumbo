@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.parser;
 
-import ir.sahab.nimbo.jimbo.hbase.Hbase;
+import ir.sahab.nimbo.jimbo.hbase.HBase;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.nodes.Document;
@@ -74,7 +74,7 @@ public class PageExtractor implements Runnable {
             try {
                 final Document doc = queue.take();
                 List<Link> links = extractLinks(doc);
-                Hbase.getInstance().putData(doc.location(), links);
+                HBase.getInstance().putData(doc.location(), links);
                 sendLinksToKafka(links);
                 pageCounter.incrementAndGet();
             } catch (InterruptedException e) {
