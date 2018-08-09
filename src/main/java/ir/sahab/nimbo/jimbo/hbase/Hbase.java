@@ -76,10 +76,10 @@ public class Hbase {
     public void putData(String sourceUrl, List<Link> links) {
         Put p = new Put(sourceUrl.getBytes());
         Link link;
-        for (int i = 0; i < links.size(); i++){
+        for (int i = 0; i < links.size(); i++) {
             link = links.get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i)+"link").getBytes(), link.getHref().toString().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i)+"anchor").getBytes(), link.getText().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
         try {
             if (links.size() > 0) {
@@ -101,7 +101,7 @@ public class Hbase {
         }
     }
 
-    public byte[] getData(String sourceUrl, String qualifier){
+    public byte[] getData(String sourceUrl, String qualifier) {
         Get get = new Get(sourceUrl.getBytes());
         Result result = null;
         try {
@@ -113,7 +113,7 @@ public class Hbase {
 
     }
 
-    public byte[] getMark(String sourceUrl, String qualifier){
+    public byte[] getMark(String sourceUrl, String qualifier) {
         Get get = new Get(sourceUrl.getBytes());
         Result result = null;
         try {
@@ -126,14 +126,14 @@ public class Hbase {
     }
 
 
-    public boolean existData(String sourceUrl){
+    public boolean existData(String sourceUrl) {
         Get get = new Get(sourceUrl.getBytes());
         Result result = null;
         try {
             result = table.get(get);
             if (result != null) {
                 NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes());
-                if(navigableMap != null && !navigableMap.isEmpty()) {
+                if (navigableMap != null && !navigableMap.isEmpty()) {
                     return true;
                 }
             }
@@ -143,14 +143,14 @@ public class Hbase {
         return false;
     }
 
-    public boolean existMark(String sourceUrl){
+    public boolean existMark(String sourceUrl) {
         Get get = new Get(sourceUrl.getBytes());
         Result result = null;
         try {
             result = table.get(get);
             if (result != null) {
                 NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes());
-                if(navigableMap != null && !navigableMap.isEmpty()) {
+                if (navigableMap != null && !navigableMap.isEmpty()) {
                     return true;
                 }
             }
@@ -161,11 +161,11 @@ public class Hbase {
     }
 
 
-    String reverseUrl(URL url){
+    String reverseUrl(URL url) {
         return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
     }
 
-    String reverseDomain(String domain){
+    String reverseDomain(String domain) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] res = domain.split("\\.");
         try {
@@ -173,13 +173,13 @@ public class Hbase {
             for (int i = 1; i < res.length; i++) {
                 stringBuilder.append("." + res[res.length - 1 - i]);
             }
-        } catch(IndexOutOfBoundsException e1){
-            Logger.getInstance().logToFile(e1.getMessage());
+        } catch (IndexOutOfBoundsException e1) {
+            Logger.getInstance().debugLog(e1.getMessage());
         }
         return stringBuilder.toString();
     }
 
-    private static String getHash(String inp){
+    private static String getHash(String inp) {
         return DigestUtils.md5Hex(inp);
     }
 
@@ -203,7 +203,7 @@ public class Hbase {
 //            tableDescriptorBuilder.setColumnFamilies(columnFamilyDescriptors);
 //            admin.createTable(tableDescriptorBuilder.build());
         } catch (IOException e) {
-            Logger.getInstance().logToFile(e.getMessage());
+            Logger.getInstance().debugLog(e.getMessage());
         }
 
 

@@ -17,6 +17,7 @@ public class ValidateTest {
     private static Document goodSite;
     private static String banSiteText;
     private static String goodSiteText;
+
     @Before
     public void prep() throws IOException {
         banSite = Jsoup.connect("http://www.porn.com").get();
@@ -44,7 +45,7 @@ public class ValidateTest {
     }
 
     @Test
-    public void isValidTest(){
+    public void isValidTest() {
         Date f = new Date(System.currentTimeMillis());
         assertFalse(Validate.isValidBody(banSite));
         Date s = new Date(System.currentTimeMillis());
@@ -52,7 +53,7 @@ public class ValidateTest {
     }
 
     @Test
-    public void notBanTest(){
+    public void notBanTest() {
         assertTrue(Validate.isNotBan(goodSite));
     }
 

@@ -27,14 +27,12 @@ public class Fetcher implements Runnable {
         this.topic = topic;
     }
 
-    boolean lruLookup(URL url) {
-        LruCache lruCache = LruCache.getInstance();
-        String host = url.getHost();
-        if (!lruCache.exist(host)) {
-            lruCache.add(host);
-            return false;
-        }
-        return true;
+    boolean lruExist(URL url) {
+        return LruCache.getInstance().exist(url.getHost());
+    }
+
+    void lruAdd(URL url) {
+        LruCache.getInstance().add(url.getHost());
     }
 
     Document fetchUrl(URL url) throws IOException {
@@ -42,19 +40,18 @@ public class Fetcher implements Runnable {
     }
 
     void consumeLink(String url) {
-        System.out.println("Consuming link: " + url);
         try {
             URL siteUrl = new URL(url);
             Document body = null;
-            if (!lruLookup(siteUrl)) {
+            if (!lruExist(siteUrl)) {
                 if (!Hbase.getInstance().existMark(url)) {
                     Hbase.getInstance().putMark(url, "Marked!");
+                    lruAdd(siteUrl);
                     body = fetchUrl(siteUrl);
                     if (body == null || !Validate.isValidBody(body)) {
                         return;
                     }
                     queue.put(body);
-                    System.out.println("Something pushed");
                 }
             }
             else
