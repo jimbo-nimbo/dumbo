@@ -9,6 +9,7 @@ public class Config {
     public static final int FETCHER_THREAD_NUM;
     public static final int PARSER_THREAD_NUM;
     public static final int BLOCKING_QUEUE_SIZE;
+    public static final int CONSUMER_NUMBER;
     public static final String HBASE_TABLE_NAME;
     public static final String HBASE_DATA_CF_NAME;
     public static final String HBASE_MARK_CF_NAME;
@@ -32,6 +33,7 @@ public class Config {
         FETCHER_THREAD_NUM = Integer.valueOf(props.getProperty("fetcher_thread_num"));
         PARSER_THREAD_NUM = Integer.valueOf(props.getProperty("parser_thread_num"));
         BLOCKING_QUEUE_SIZE = Integer.valueOf(props.getProperty("blocking_queue_size"));
+        CONSUMER_NUMBER = Integer.valueOf(props.getProperty("consumer_number"));
         HBASE_TABLE_NAME = props.getProperty("hbase_table_name");
         HBASE_MARK_CF_NAME = props.getProperty("hbase_mark_cf_name");
         HBASE_DATA_CF_NAME = props.getProperty("hbase_data_cf_name");
