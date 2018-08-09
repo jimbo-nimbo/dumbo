@@ -23,7 +23,7 @@ public class ElasticSearch {
             Properties properties = getProperties();
             client = createClient(properties);
         } catch (IOException e) {
-            Logger.getInstance().logToFile( "Error in Elasticsearch constructor "
+            Logger.getInstance().debugLog( "Error in Elasticsearch constructor "
                     + e.getMessage());
             throw new ElasticCannotLoadException();
         }
