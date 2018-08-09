@@ -27,16 +27,15 @@ public class PageExtractor implements Runnable {
         this.queue = queue;
     }
 
-    List<Metadata> extractMetadata(Document doc) {
+    String extractDescriptionMeta(Document doc) {
         Elements metaTags = doc.getElementsByTag("meta");
-        List<Metadata> metadatas = new ArrayList<>();
         for (Element metaTag : metaTags) {
             String name = metaTag.attr("name");
-            String property = metaTag.attr("property");
             String content = metaTag.attr("content");
-            metadatas.add(new Metadata(name, property, content));
+            if (name.equals("description"))
+                return content;
         }
-        return metadatas;
+        return null;
     }
 
     List<Link> extractLinks(Document doc) {
