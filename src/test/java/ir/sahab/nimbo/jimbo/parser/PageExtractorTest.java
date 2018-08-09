@@ -33,10 +33,9 @@ public class PageExtractorTest {
     }
 
     @Test
-    public void extractMetadataTest() {
-        List<Metadata> metadatas = pageExtractor.extractMetadata(doc);
-        Assert.assertTrue(metadatas.contains(new Metadata("robots", "", "all")));
-        Assert.assertTrue(metadatas.contains(new Metadata("googlebot", "", "index")));
+    public void extractDescriptionMetaTest() {
+        String metadata = pageExtractor.extractDescriptionMeta(doc);
+        Assert.assertEquals("hello to you too", metadata);
     }
 
     @Test
