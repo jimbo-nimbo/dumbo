@@ -43,7 +43,7 @@ public class Fetcher implements Runnable {
     void consumeLink(String url) {
         try {
             URL siteUrl = new URL(url);
-            Document body = null;
+            Document body;
             if (!lruExist(siteUrl)) {
                 if (!HBase.getInstance().existMark(url)) {
                     HBase.getInstance().putMark(url, "Marked!");
