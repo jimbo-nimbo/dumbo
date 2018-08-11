@@ -50,7 +50,7 @@ public class Crawler {
         create_Consumers();
         elasticsearchWebpageModels = new ArrayBlockingQueue<>(ELASTIC_QUEUE_MAX_SIZE);
 
-        final PageExtractorFactory pageExtractorFactory = new PageExtractorFactory(queue);
+        final PageExtractorFactory pageExtractorFactory = new PageExtractorFactory(queue, elasticsearchWebpageModels);
 
         fetchers = new Runnable[FETCHER_NUMBER];
         for (int i = 0; i < FETCHER_NUMBER; i++) {
@@ -68,7 +68,7 @@ public class Crawler {
     }
 
     void create_Parsers() {
-        final PageExtractorFactory pageExtractorFactory = new PageExtractorFactory(queue);
+        final PageExtractorFactory pageExtractorFactory = new PageExtractorFactory(queue, elasticsearchWebpageModels);
         for (int i = 0; i < PARSER_NUMBER; i++) {
             parsers[i] = pageExtractorFactory.getPageExtractor();
         }
