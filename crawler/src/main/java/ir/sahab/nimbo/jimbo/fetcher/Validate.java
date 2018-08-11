@@ -1,7 +1,5 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import com.detectlanguage.DetectLanguage;
-import com.detectlanguage.errors.APIError;
 import com.google.common.base.Optional;
 import com.optimaize.langdetect.DetectedLanguage;
 import com.optimaize.langdetect.LanguageDetector;
@@ -42,18 +40,18 @@ public class Validate {
         return isBadUrl(url);
     }
 
-    static boolean isEnglishWithApi(String article) {
-        try {
-            String language = DetectLanguage.simpleDetect(article);
-            //List<Result> results = DetectLanguage.detect(article);
-            //System.err.println(results.get(0).language);
-            return language.equals("en");
-        } catch (APIError apiError) {
-            apiError.printStackTrace();
-            return false;
-        }
-
-    }
+//    static boolean isEnglishWithApi(String article) {
+//        try {
+//            String language = DetectLanguage.simpleDetect(article);
+//            //List<Result> results = DetectLanguage.detect(article);
+//            //System.err.println(results.get(0).language);
+//            return language.equals("en");
+//        } catch (APIError apiError) {
+//            apiError.printStackTrace();
+//            return false;
+//        }
+//
+//    }
 
     static boolean isEnglish(String article) {
         TextObject textObject = textObjectFactory.forText(article);
