@@ -31,10 +31,9 @@ public class HBase {
     private Connection connection = null;
     private Configuration config = null;
     private Admin admin = null;
-    private Table table = null;
+    Table table = null;
     private ExecutorService executorService;
-    private ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
-    private ArrayBlockingQueue<Put> bulkMark = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
+    ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
 
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
@@ -83,7 +82,11 @@ public class HBase {
             p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
             p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
-        bulkData.add(p);
+        try {
+            bulkData.put(p);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void putData(String sourceUrl, List<Link> links) {
@@ -107,7 +110,11 @@ public class HBase {
         Put p = new Put(sourceUrl.getBytes());
         p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
         //TODO
-        bulkData.add(p);
+        try {
+            bulkData.put(p);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void putMark(String sourceUrl, String value) {
