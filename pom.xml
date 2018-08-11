@@ -122,38 +122,38 @@
             <artifactId>detectlanguage</artifactId>
             <version>1.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.bahir</groupId>
-            <artifactId>spark-streaming-twitter_2.11</artifactId>
-            <version>2.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>2.10.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.11</artifactId>
-            <version>2.3.1</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.bahir</groupId>-->
+            <!--<artifactId>spark-streaming-twitter_2.11</artifactId>-->
+            <!--<version>2.2.1</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.scala-lang</groupId>-->
+            <!--<artifactId>scala-library</artifactId>-->
+            <!--<version>2.10.2</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.spark</groupId>-->
+            <!--<artifactId>spark-core_2.11</artifactId>-->
+            <!--<version>2.3.1</version>-->
+        <!--</dependency>-->
 
         <!--<dependency>-->
-        <!--<groupId>org.apache.spark</groupId>-->
-        <!--<artifactId>spark-streaming-twitter_2.10</artifactId>-->
-        <!--<version>1.1.0</version>-->
+            <!--<groupId>org.apache.spark</groupId>-->
+            <!--<artifactId>spark-streaming_2.11</artifactId>-->
+            <!--<version>2.3.1</version>-->
         <!--</dependency>-->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-examples_2.10</artifactId>
-            <version>1.1.1</version>
-        </dependency>
+
+        <!--&lt;!&ndash;<dependency>&ndash;&gt;-->
+        <!--&lt;!&ndash;<groupId>org.apache.spark</groupId>&ndash;&gt;-->
+        <!--&lt;!&ndash;<artifactId>spark-streaming-twitter_2.10</artifactId>&ndash;&gt;-->
+        <!--&lt;!&ndash;<version>1.1.0</version>&ndash;&gt;-->
+        <!--&lt;!&ndash;</dependency>&ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.spark</groupId>-->
+            <!--<artifactId>spark-examples_2.10</artifactId>-->
+            <!--<version>1.1.1</version>-->
+        <!--</dependency>-->
     </dependencies>
 
 
