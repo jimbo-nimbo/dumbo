@@ -1,7 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
 import ir.sahab.nimbo.jimbo.main.Logger;
-import ir.sahab.nimbo.jimbo.parser.Metadata;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -36,12 +35,8 @@ public class ElasticSearchThread implements Runnable{
         builder = XContentFactory.jsonBuilder();
         builder.startObject()
                 .field("content", model.getArticle())
-                .field("title", model.getTitle());
-
-        List<Metadata> metadataList = model.getMetadataList();
-        for (int i = 0; i < metadataList.size(); i++) {
-            builder.field("meta" + i, metadataList.get(i).getContent());
-        }
+                .field("title", model.getTitle())
+                .field("description", model.getDescription());
 
         builder.endObject();
     }
@@ -105,6 +100,7 @@ public class ElasticSearchThread implements Runnable{
                     } else {
                         Logger.getInstance().warnLog("Cannot submit records to elasticsearch!");
                     }
+                    list.clear();
                 } catch (IOException e) {
                     Logger.getInstance().warnLog("Cannot submit records to elasticsearch!(due exception)");
                 }

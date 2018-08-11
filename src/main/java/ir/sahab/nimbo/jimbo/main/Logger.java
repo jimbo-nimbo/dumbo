@@ -1,14 +1,7 @@
 package ir.sahab.nimbo.jimbo.main;
 
 
-import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import static ir.sahab.nimbo.jimbo.main.Config.LOG_PROP_DIR;
 
 public class Logger {
     private static org.slf4j.Logger logWriterRoot = LoggerFactory.getLogger(Logger.class);
