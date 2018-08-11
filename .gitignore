@@ -10,6 +10,9 @@
 target/
 target/*
 
+src/main/resources/twitterApi.properties
+twitterApi.properties
+
 # BlueJ files
 *.ctxt
 

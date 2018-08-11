@@ -22,6 +22,11 @@ public class Config {
     public static final int HBASE_BULK_CAPACITY;
     public static final int HBASE_BULK_THREAD_SIZE;
     public static final String LOG_PROP_DIR;
+    public static final String TWITTER_CONSUMER_KEY;
+    public static final String TWITTER_CONSUMER_SECRET;
+    public static final String TWITTER_ACCESS_TOKEN;
+    public static final String TWITTER_ACCESS_TOKEN_SECRET;
+
 
 
     static {
@@ -50,5 +55,9 @@ public class Config {
         HBASE_BULK_LIMIT = Integer.valueOf(props.getProperty("hbase_bulk_limit"));
         HBASE_BULK_CAPACITY = Integer.valueOf(props.getProperty("hbase_bulk_capacit"));
         HBASE_BULK_THREAD_SIZE = Integer.valueOf(props.getProperty("hbase_balk_thread_size"));
+        TWITTER_ACCESS_TOKEN = props.getProperty("access_token");
+        TWITTER_CONSUMER_KEY = props.getProperty("consumer_key");
+        TWITTER_ACCESS_TOKEN_SECRET = props.getProperty("access_token_secret");
+        TWITTER_CONSUMER_SECRET = props.getProperty("consumer_secret");
     }
 }
