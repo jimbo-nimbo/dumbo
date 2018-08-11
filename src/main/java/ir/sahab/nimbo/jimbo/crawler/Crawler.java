@@ -13,6 +13,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Crawler {
@@ -62,9 +63,11 @@ public class Crawler {
     }
 
     void create_Consumers() {
-        for(int i = 0; i < CONSUMER_NUMBER; i++)
+        for(int i = 0; i < CONSUMER_NUMBER; i++) {
             consumers[i] = new KafkaConsumer<>(
                     KafkaPropertyFactory.getConsumerProperties());
+            consumers[i].subscribe(Collections.singletonList(TOPIC));
+        }
     }
 
     void create_Parsers() {
