@@ -29,7 +29,6 @@ public class KafkaConsumerExample {
             consumer.commitAsync();
         }
         consumer.close();
-        System.out.println("DONE");
     }
 
     public static void main(String... args) throws Exception {
