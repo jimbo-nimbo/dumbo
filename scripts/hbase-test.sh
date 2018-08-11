@@ -1,7 +1,7 @@
 #!/bin/bash
 if [[ ! -z $(sudo jps | grep HMaster) ]]
 then
-        echo "halle"
+        echo "It seems the HBase is running"
 else
-        echo "hmaster run nist"
+        echo "Something is definitely wrong with HBase"
 fi
