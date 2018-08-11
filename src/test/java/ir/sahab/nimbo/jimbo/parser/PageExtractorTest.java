@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.parser;
 
+import ir.sahab.nimbo.jimbo.elasticSearch.ElasticsearchWebpageModel;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;
@@ -29,7 +30,7 @@ public class PageExtractorTest {
             e.printStackTrace();
         }
         ArrayBlockingQueue<Document> queue = new ArrayBlockingQueue<>(100);
-        pageExtractor = new PageExtractorFactory(queue).getPageExtractor();
+        pageExtractor = new PageExtractorFactory(queue, new ArrayBlockingQueue<>(1000)).getPageExtractor();
     }
 
     @Test
