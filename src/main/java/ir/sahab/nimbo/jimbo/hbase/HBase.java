@@ -13,6 +13,7 @@ import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -32,7 +33,8 @@ public class HBase {
     private Admin admin = null;
     private Table table = null;
     private ExecutorService executorService;
-
+    private ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
+    private ArrayBlockingQueue<Put> bulkMark = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
 
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
@@ -73,6 +75,17 @@ public class HBase {
      * @param
      */
 
+    public void putBulkData(String sourceUrl, List<Link> links) {
+        Put p = new Put(sourceUrl.getBytes());
+        Link link;
+        for (int i = 0; i < links.size(); i++) {
+            link = links.get(i);
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
+        }
+        bulkData.add(p);
+    }
+
     public void putData(String sourceUrl, List<Link> links) {
         Put p = new Put(sourceUrl.getBytes());
         Link link;
@@ -88,6 +101,13 @@ public class HBase {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void putBulkMark(String sourceUrl, String value) {
+        Put p = new Put(sourceUrl.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
+        //TODO
+        bulkData.add(p);
     }
 
     public void putMark(String sourceUrl, String value) {

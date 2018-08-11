@@ -18,7 +18,11 @@ public class Config {
     public static final int HBASE_MIN_THREAD;
     public static final int HBASE_MAX_THREAD;
     public static final int HBASE_EXECUROR_BLOCK_Q_SIZE;
+    public static final int HBASE_BULK_LIMIT;
+    public static final int HBASE_BULK_CAPACITY;
+    public static final int HBASE_BULK_THREAD_SIZE;
     public static final String LOG_PROP_DIR;
+
 
     static {
         String resourceName = "conf.properties";
@@ -43,5 +47,8 @@ public class Config {
         HBASE_MAX_THREAD = Integer.valueOf(props.getProperty("hbase_max_thread"));
         HBASE_EXECUROR_BLOCK_Q_SIZE = Integer.valueOf(props.getProperty("executor_service_block_q_size"));
         LOG_PROP_DIR = props.getProperty("log_prop_dir");
+        HBASE_BULK_LIMIT = Integer.valueOf(props.getProperty("hbase_bulk_limit"));
+        HBASE_BULK_CAPACITY = Integer.valueOf(props.getProperty("hbase_bulk_capacit"));
+        HBASE_BULK_THREAD_SIZE = Integer.valueOf(props.getProperty("hbase_balk_thread_size"));
     }
 }
