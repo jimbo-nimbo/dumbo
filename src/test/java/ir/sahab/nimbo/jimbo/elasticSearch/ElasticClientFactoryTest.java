@@ -1,18 +1,11 @@
 package ir.sahab.nimbo.jimbo.elasticSearch;
 
-import io.netty.handler.codec.http.HttpMethod;
-import org.apache.hadoop.hbase.shaded.org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.hadoop.hbase.shaded.org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
@@ -20,20 +13,15 @@ import org.jsoup.nodes.Document;
 import org.junit.Test;
 
 import javax.net.ssl.SSLContext;
-import java.io.Closeable;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static org.junit.Assert.*;
 
 public class ElasticClientFactoryTest {
 
@@ -90,19 +78,20 @@ public class ElasticClientFactoryTest {
         List<Future<HttpResponse>> futures = new ArrayList<>();
         CloseableHttpAsyncClient client = testGoosale();
 
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 500; i++) {
             futures.add(goosale(client, "https://en.wikipedia.org/wiki/" + i));
         }
 
 
-        /*
+
         for (int i = 0; i < futures.size(); i++) {
             Future<HttpResponse> responseFuture = futures.get(i);
 
             Document document = Jsoup.parse(EntityUtils.toString(responseFuture.get().getEntity()));
 
             models.add(new ElasticsearchWebpageModel(document.location(),
-                    document.text(), document.title(), list));
+                    document.text(), document.title(), "description"));
+
             System.out.println("document number " + i);
         }
 
@@ -116,7 +105,7 @@ public class ElasticClientFactoryTest {
             System.out.println("putting doc number " + i + ", queue size : " + queue.size());
             queue.put(model);
             Thread.sleep(10L);
-        }*/
+        }
 
     }
 }

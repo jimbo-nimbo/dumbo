@@ -4,14 +4,12 @@ import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.function.Consumer;
 
 public class FetcherTest {
     private static Fetcher fetcher;
