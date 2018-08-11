@@ -46,7 +46,9 @@ public class ElasticSearchThread implements Runnable{
      */
     private String getId(ElasticsearchWebpageModel elasticsearchWebpageModel)
     {
-        return Integer.toString(elasticsearchWebpageModel.getUrl().hashCode());
+        Integer i = elasticsearchWebpageModel.getUrl().hashCode();
+        System.out.println(i);
+        return i.toString();
     }
 
     /**
@@ -66,6 +68,7 @@ public class ElasticSearchThread implements Runnable{
             );
         }
 
+        System.out.println("Submitted!!!!");
         return !bulkRequestBuilder.get().hasFailures();
     }
 

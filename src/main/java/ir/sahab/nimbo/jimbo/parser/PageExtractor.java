@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.parser;
 
+import ir.sahab.nimbo.jimbo.elasticSearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,14 +18,18 @@ import java.util.concurrent.atomic.AtomicLong;
 public class PageExtractor implements Runnable {
     private final String topic;
     private final Producer<Long, String> producer;
+
     private final ArrayBlockingQueue<Document> queue;
+    private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
     public static AtomicLong pageCounter = new AtomicLong(0l);
 
-    PageExtractor(String topic, Producer<Long, String> producer, ArrayBlockingQueue<Document> queue) {
+    PageExtractor(String topic, Producer<Long, String> producer,
+                  ArrayBlockingQueue<Document> queue, ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue) {
         this.topic = topic;
         this.producer = producer;
         this.queue = queue;
+        this.elasticQueue = elasticQueue;
     }
 
     String extractDescriptionMeta(Document doc) {
@@ -66,6 +71,12 @@ public class PageExtractor implements Runnable {
         }
     }
 
+    private void sendLinksToElastic(Document document)
+    {
+        elasticQueue.add(new ElasticsearchWebpageModel(document.location(), document.text(),
+                document.title(), extractDescriptionMeta(document)));
+    }
+
     @Override
     public void run() {
         boolean running = true;
@@ -75,6 +86,7 @@ public class PageExtractor implements Runnable {
                 List<Link> links = extractLinks(doc);
                 HBase.getInstance().putData(doc.location(), links);
                 sendLinksToKafka(links);
+                sendLinksToElastic(doc);
                 pageCounter.incrementAndGet();
             } catch (InterruptedException e) {
                 e.printStackTrace();

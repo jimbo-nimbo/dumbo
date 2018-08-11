@@ -46,7 +46,7 @@ public class ElasticClientFactoryTest {
         Future<HttpResponse> future = client.execute(request, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(HttpResponse httpResponse) {
-                System.out.println(uri + "done");
+//                System.out.println(uri + "done");
             }
 
             @Override
@@ -75,21 +75,20 @@ public class ElasticClientFactoryTest {
 
 
         List<ElasticsearchWebpageModel> models = new ArrayList<>();
+
         List<Future<HttpResponse>> futures = new ArrayList<>();
         CloseableHttpAsyncClient client = testGoosale();
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 101; i++) {
             futures.add(goosale(client, "https://en.wikipedia.org/wiki/" + i));
         }
-
-
 
         for (int i = 0; i < futures.size(); i++) {
             Future<HttpResponse> responseFuture = futures.get(i);
 
             Document document = Jsoup.parse(EntityUtils.toString(responseFuture.get().getEntity()));
 
-            models.add(new ElasticsearchWebpageModel(document.location(),
+            models.add(new ElasticsearchWebpageModel("https://en.wikipedia.org/wiki/" + i,
                     document.text(), document.title(), "description"));
 
             System.out.println("document number " + i);
@@ -106,6 +105,8 @@ public class ElasticClientFactoryTest {
             queue.put(model);
             Thread.sleep(10L);
         }
+
+        Thread.sleep(10000L);
 
     }
 }

@@ -26,6 +26,8 @@ public class ElasticsearchThreadFactory {
     static int bulkSize;
     static String indexName;
 
+    private final List<ElasticSearchThread> elasticSearchThreads = new ArrayList<>();
+
     public ElasticsearchThreadFactory(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue)
             throws ElasticCannotLoadException {
         try {
@@ -44,7 +46,13 @@ public class ElasticsearchThreadFactory {
     }
 
     public ElasticSearchThread createNewThread() throws IOException {
-        return new ElasticSearchThread(createClient());
+        ElasticSearchThread elasticSearchThread = new ElasticSearchThread(createClient());
+        elasticSearchThreads.add(elasticSearchThread);
+        return elasticSearchThread;
+    }
+
+    public void commitAll()
+    {
     }
 
     /**
