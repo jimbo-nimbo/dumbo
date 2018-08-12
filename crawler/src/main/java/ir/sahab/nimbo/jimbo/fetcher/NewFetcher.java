@@ -9,10 +9,14 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NewFetcher implements Runnable{
 
@@ -21,7 +25,6 @@ public class NewFetcher implements Runnable{
 
     private final FetcherSetting fetcherSetting;
 
-    private final ExecutorService executorService;
     private CloseableHttpAsyncClient[] clients;
 
     private final Worker[] workers;
@@ -32,11 +35,9 @@ public class NewFetcher implements Runnable{
         this.rawPagesQueue = rawPagesQueue;
         this.fetcherSetting = fetcherSetting;
 
-        executorService = Executors.newFixedThreadPool(fetcherSetting.getFetcherThreadCount());
-
         workers =  new Worker[fetcherSetting.getFetcherThreadCount()];
 
-        clients = new CloseableHttpAsyncClient[fetcherSetting.getFetcherThreadCount()/10 + 1];
+        clients = new CloseableHttpAsyncClient[fetcherSetting.getFetcherThreadCount()];
 
         try {
             for (int i = 0; i < clients.length; i++) {
@@ -59,31 +60,8 @@ public class NewFetcher implements Runnable{
         return client;
     }
 
-    Future<HttpResponse> fetch(String link) {
-
-        final HttpGet request = new HttpGet(link);
-
-//        Future<HttpResponse> html = executorService.submit(() -> {
-//            final String s = EntityUtils.toString(clients[0].execute(request, null).get().getEntity());
-//            rawPagesQueue.put(s);
-////            return s;
-//            return clients[0].execute(request, null).get();
-//        });
-        return clients[0].execute(request, null);
-    }
-
     @Override
     public void run() {
-
-//        while(true) {
-//            try {
-//                String link = shuffledLinksQueue.take();
-//                fetch(link);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
         runWorkers();
     }
 
@@ -97,8 +75,7 @@ public class NewFetcher implements Runnable{
 
     private void runWorkers() {
         for (int i = 0; i < workers.length; i++) {
-            System.out.println("Thread " + i + "started!");
-            workers[i] = new Worker(this);
+            workers[i] = new Worker(this, i);
             new Thread(workers[i]).start();
         }
     }
@@ -124,18 +101,24 @@ public class NewFetcher implements Runnable{
 
 class Worker implements Runnable
 {
+    private static final int LINKS_PER_CYCLE = 100;
+
     private boolean running = true;
+
+    private static AtomicLong id = new AtomicLong(0);
 
     private final CloseableHttpAsyncClient client;
     private final ArrayBlockingQueue<String> shuffledLinksQueue;
     private final ArrayBlockingQueue<String> rawWebPagesQueue;
     private final NewFetcher newFetcher;
+    private final int workerId;
 
-    Worker(NewFetcher newFetcher) {
-        this.client = newFetcher.getClient(0);
+    Worker(NewFetcher newFetcher, int workerId) {
+        this.client = newFetcher.getClient(workerId);
         this.shuffledLinksQueue = newFetcher.getShuffledLinksQueue();
         this.rawWebPagesQueue = newFetcher.getRawPagesQueue();
         this.newFetcher = newFetcher;
+        this.workerId = workerId;
     }
 
     void stop() {
@@ -145,23 +128,36 @@ class Worker implements Runnable
     @Override
     public void run() {
 
+        System.out.println("thread " + workerId + " started!");
+        List<Future<HttpResponse>> futures = new ArrayList<>();
         while(running)
         {
+            while (futures.size() < LINKS_PER_CYCLE) {
+                try {
+                    final String link = shuffledLinksQueue.poll(5, TimeUnit.SECONDS);
+                    if (link == null) {
+                        break;
+                    }
+                    final HttpGet request = new HttpGet(link);
+                    futures.add(client.execute(request, null));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
             try {
-                final String link = shuffledLinksQueue.take();
-                final HttpGet request = new HttpGet(link);
 
-                final long time = System.currentTimeMillis();
+                for (Future<HttpResponse> future : futures) {
+                    HttpResponse response = future.get();
+                    final String text = EntityUtils.toString(response.getEntity());
+                    rawWebPagesQueue.put(text);
+                }
 
-                client.execute(request, null).get();
-//                final String s = EntityUtils.toString(newFetcher.getClient().execute(request, null).get().getEntity());
-//                newFetcher.getRawPagesQueue().put(s);
-                System.out.println("---->" + link + " , " + (System.currentTimeMillis() - time));
-                rawWebPagesQueue.put("hello");
-
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException | IOException e) {
                 e.printStackTrace();
             }
+
+            futures.clear();
         }
     }
 }

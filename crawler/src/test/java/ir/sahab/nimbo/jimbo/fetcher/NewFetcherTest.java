@@ -22,8 +22,10 @@ public class NewFetcherTest {
     private final ArrayBlockingQueue<String> shuffledLinksQueue = new ArrayBlockingQueue<>(queueSize);
     private final ArrayBlockingQueue<String> webPagesQueue = new ArrayBlockingQueue<>(queueSize);
 
-    private final int threadCount = 1;
+    private final int threadCount = 20;
     private final FetcherSetting fetcherSetting = new FetcherSetting(threadCount);
+
+
 
     @Test
     public void testFetch() throws InterruptedException, ExecutionException {
@@ -32,7 +34,8 @@ public class NewFetcherTest {
         List<Future<HttpResponse>> futures = new ArrayList<>();
 
         for (int i = 0; i < 200; i++) {
-            futures.add(newFetcher.fetch("https://en.wikipedia.org/wiki/" + i));
+            HttpGet get = new HttpGet("https://en.wikipedia.org/wiki/" + i);
+            newFetcher.getClient(0).execute(get, null);
         }
 
         for (int i = 0; i < futures.size(); i++) {
@@ -56,7 +59,8 @@ public class NewFetcherTest {
         }
 
         for (int i = 0; i < 200; i++) {
-            futures.add(newFetcher.fetch("https://en.wikipedia.org/wiki/" + i));
+            HttpGet get = new HttpGet("https://en.wikipedia.org/wiki/" + i);
+            newFetcher.getClient(0).execute(get, null);
         }
 
         for (int i = 0; i < futures.size(); i++) {
@@ -73,7 +77,7 @@ public class NewFetcherTest {
     @Test
     public void testFetchMultiClient() throws InterruptedException, ExecutionException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
 
-        final int clientsCount = threadCount/10 + 1 ;
+        final int clientsCount = threadCount;
         final List<Future<HttpResponse>> futures = new ArrayList<>();
         final NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 
@@ -118,7 +122,8 @@ public class NewFetcherTest {
 
         List<Future<HttpResponse>> futures = new ArrayList<>();
         for (int i = 0; i < 200; i++) {
-            futures.add(newFetcher.fetch("https://en.wikipedia.org/wiki/" + i));
+            HttpGet get = new HttpGet("https://en.wikipedia.org/wiki/" + i);
+            newFetcher.getClient(0).execute(get, null);
         }
 
         Runnable runnable = () -> {
@@ -142,7 +147,8 @@ public class NewFetcherTest {
     public void testWorkers() throws InterruptedException {
         NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 
-        for (int i = 0; i < 200; i++) {
+        int numberOfRecords = 1005;
+        for (int i = 0; i < numberOfRecords; i++) {
             shuffledLinksQueue.put("https://en.wikipedia.org/wiki/" + i);
         }
 
@@ -150,7 +156,7 @@ public class NewFetcherTest {
 
         while(true) {
             System.out.println(webPagesQueue.size());
-            if (webPagesQueue.size() == 200) {
+            if (webPagesQueue.size() == numberOfRecords) {
                 newFetcher.stop();
                 break;
             }
