@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
+import ir.sahab.nimbo.jimbo.hbase.HBase;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -10,13 +11,14 @@ import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class NewFetcher implements Runnable{
 
@@ -24,6 +26,8 @@ public class NewFetcher implements Runnable{
     private final ArrayBlockingQueue<String> rawPagesQueue;
 
     private final FetcherSetting fetcherSetting;
+
+    private static final LruCache lruCache = LruCache.getInstance();
 
     private CloseableHttpAsyncClient[] clients;
 
@@ -58,6 +62,23 @@ public class NewFetcher implements Runnable{
         client.start();
 
         return client;
+    }
+
+    public static boolean checkLink(String link) throws MalformedURLException {
+        String host = new URL(link).getHost();
+        if (lruCache.exist(host)) {
+            //todo: produce to kafka
+            return false;
+        }
+
+        lruCache.add(host);
+        if (HBase.getInstance().existMark(link)){
+            lruCache.remove(host);
+            return false;
+        }
+
+        HBase.getInstance().putMark(link, "1");
+        return true;
     }
 
     @Override
@@ -105,8 +126,6 @@ class Worker implements Runnable
 
     private boolean running = true;
 
-    private static AtomicLong id = new AtomicLong(0);
-
     private final CloseableHttpAsyncClient client;
     private final ArrayBlockingQueue<String> shuffledLinksQueue;
     private final ArrayBlockingQueue<String> rawWebPagesQueue;
@@ -138,9 +157,13 @@ class Worker implements Runnable
                     if (link == null) {
                         break;
                     }
+                    if (NewFetcher.checkLink(link)){
+                        continue;
+                    }
+
                     final HttpGet request = new HttpGet(link);
                     futures.add(client.execute(request, null));
-                } catch (InterruptedException e) {
+                } catch (InterruptedException | MalformedURLException e) {
                     e.printStackTrace();
                 }
             }
@@ -148,7 +171,7 @@ class Worker implements Runnable
             try {
 
                 for (Future<HttpResponse> future : futures) {
-                    HttpResponse response = future.get();
+                    final HttpResponse response = future.get();
                     final String text = EntityUtils.toString(response.getEntity());
                     rawWebPagesQueue.put(text);
                 }

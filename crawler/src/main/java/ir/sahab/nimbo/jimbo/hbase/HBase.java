@@ -29,11 +29,11 @@ public class HBase {
     private static HBase hbase = new HBase();
     TableName tableName;
     private Connection connection = null;
-    private Configuration config = null;
+    private Configuration config;
     private Admin admin = null;
     Table table = null;
     private ExecutorService executorService;
-    ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
+    ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
 
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
@@ -94,8 +94,10 @@ public class HBase {
         Link link;
         for (int i = 0; i < links.size(); i++) {
             link = links.get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+                    (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+                    (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
         try {
             if (links.size() > 0) {
@@ -108,7 +110,7 @@ public class HBase {
 
     public void putBulkMark(String sourceUrl, String value) {
         Put p = new Put(sourceUrl.getBytes());
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "mark".getBytes(), value.getBytes());
         //TODO
         try {
             bulkData.put(p);

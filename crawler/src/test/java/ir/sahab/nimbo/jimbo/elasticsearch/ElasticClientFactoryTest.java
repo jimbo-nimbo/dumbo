@@ -83,7 +83,7 @@ public class ElasticClientFactoryTest {
         List<Future<HttpResponse>> futures = new ArrayList<>();
         CloseableHttpAsyncClient client = testGoosale();
 
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 2000; i++) {
             futures.add(goosale(client, "https://en.wikipedia.org/wiki/" + i));
         }
 
@@ -101,15 +101,17 @@ public class ElasticClientFactoryTest {
         System.out.println("action phase!! >:]");
         Thread.sleep(5000L);
 
+        long time = System.currentTimeMillis();
         new Thread(newThread).start();
 
         for (int i = 0; i < models.size(); i++) {
             ElasticsearchWebpageModel model = models.get(i);
             System.out.println("putting doc number " + i + ", queue size : " + queue.size());
             queue.put(model);
-            Thread.sleep(10L);
+            Thread.sleep(5L);
         }
 
+        System.out.println("Done" + (System.currentTimeMillis() - time));
         Thread.sleep(10000L);
 
     }

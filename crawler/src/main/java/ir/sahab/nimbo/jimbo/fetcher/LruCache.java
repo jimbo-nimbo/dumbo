@@ -61,6 +61,10 @@ class LruCache {
         return true;
     }
 
+    synchronized void remove(String url) {
+        cache.invalidate(url);
+    }
+
     boolean exist(String url) {
         return cache.getIfPresent(url) != null;
 

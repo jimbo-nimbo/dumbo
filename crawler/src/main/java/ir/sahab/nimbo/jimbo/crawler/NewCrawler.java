@@ -2,7 +2,9 @@ package ir.sahab.nimbo.jimbo.crawler;
 
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.NewFetcher;
+import ir.sahab.nimbo.jimbo.hbase.HbaseBulkThread;
 import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
+import org.apache.hadoop.hbase.client.Put;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -14,6 +16,9 @@ public class NewCrawler {
     private final NewFetcher fetcher;
     private final ArrayBlockingQueue<String> rawPagesQueue;
 
+//    private final HbaseBulkThread hbaseBulkThread;
+//    private final ArrayBlockingQueue<Put> hbaseDataQueue;
+
     public NewCrawler(CrawlSetting crawlSetting){
 
         shuffledLinksQueue = new ArrayBlockingQueue<>(crawlSetting.getShuffledQueueMaxSize());
@@ -22,8 +27,6 @@ public class NewCrawler {
         rawPagesQueue = new ArrayBlockingQueue<>(crawlSetting.getRawPagesQueueMaxSize());
         //todo: read thread count from properties
         fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(200));
-
-
     }
 
     /**

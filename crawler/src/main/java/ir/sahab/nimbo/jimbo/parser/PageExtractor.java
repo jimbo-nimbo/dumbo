@@ -83,10 +83,13 @@ public class PageExtractor implements Runnable {
         while (running) {
             try {
                 final Document doc = queue.take();
+
                 List<Link> links = extractLinks(doc);
                 HBase.getInstance().putData(doc.location(), links);
+
                 sendLinksToKafka(links);
                 sendLinksToElastic(doc);
+
                 pageCounter.incrementAndGet();
             } catch (InterruptedException e) {
                 e.printStackTrace();
