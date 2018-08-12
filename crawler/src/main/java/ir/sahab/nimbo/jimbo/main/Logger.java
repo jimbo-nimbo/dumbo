@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.main;
 
-
 import org.slf4j.LoggerFactory;
 
 public class Logger {

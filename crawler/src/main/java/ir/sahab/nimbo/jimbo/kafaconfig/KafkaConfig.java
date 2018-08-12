@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-class KafkaConfig {
+public class KafkaConfig {
     static final String BOOTSTRAP_SERVERS;
     static final String PRODUCER_CLIENT_ID;
     static final String CONSUMER_GROUP_ID;
-    static final int MAX_POLL_RECORDS;
+    public static final int MAX_POLL_RECORDS;
 
     static {
         String resourceName = "kafka.properties";

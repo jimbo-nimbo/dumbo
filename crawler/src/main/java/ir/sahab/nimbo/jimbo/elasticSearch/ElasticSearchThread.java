@@ -68,7 +68,6 @@ public class ElasticSearchThread implements Runnable{
             );
         }
 
-        System.out.println("Submitted!!!!");
         return !bulkRequestBuilder.get().hasFailures();
     }
 
