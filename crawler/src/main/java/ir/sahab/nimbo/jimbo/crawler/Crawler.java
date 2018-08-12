@@ -1,8 +1,8 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
-import ir.sahab.nimbo.jimbo.elasticSearch.ElasticCannotLoadException;
-import ir.sahab.nimbo.jimbo.elasticSearch.ElasticsearchThreadFactory;
-import ir.sahab.nimbo.jimbo.elasticSearch.ElasticsearchWebpageModel;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticCannotLoadException;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchThreadFactory;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;

@@ -1,7 +1,7 @@
 package ir.sahab.nimbo.jimbo.main;
 
 import ir.sahab.nimbo.jimbo.crawler.Crawler;
-import ir.sahab.nimbo.jimbo.elasticSearch.ElasticCannotLoadException;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticCannotLoadException;
 
 import java.io.IOException;
 

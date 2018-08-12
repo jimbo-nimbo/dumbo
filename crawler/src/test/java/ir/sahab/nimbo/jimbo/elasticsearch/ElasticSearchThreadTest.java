@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo.elasticSearch;
+package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import org.junit.Test;
 

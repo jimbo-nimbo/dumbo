@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.parser;
 
-import ir.sahab.nimbo.jimbo.elasticSearch.ElasticsearchWebpageModel;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;

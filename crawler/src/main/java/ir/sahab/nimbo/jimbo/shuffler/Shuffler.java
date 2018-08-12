@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo.fetcher;
+package ir.sahab.nimbo.jimbo.shuffler;
 
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-class Shuffler implements Runnable{
+public  class Shuffler implements Runnable{
 
     private final Consumer<String, String> consumer =  new KafkaConsumer<>(
             KafkaPropertyFactory.getConsumerProperties());
@@ -26,13 +26,13 @@ class Shuffler implements Runnable{
     /**
      * constructor for testing
      */
-    Shuffler(String kafkaTopic, ArrayBlockingQueue<String> linksQueue)
+    public Shuffler(String kafkaTopic, ArrayBlockingQueue<String> linksQueue)
     {
         this.linksQueue = linksQueue;
         consumer.subscribe(Collections.singletonList(kafkaTopic));
     }
 
-    Shuffler(ArrayBlockingQueue<String> linksQueue)
+    public Shuffler(ArrayBlockingQueue<String> linksQueue)
     {
         this.linksQueue = linksQueue;
         consumer.subscribe(Collections.singletonList(Config.URL_FRONTIER_TOPIC));;

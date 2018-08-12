@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo.elasticSearch;
+package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import ir.sahab.nimbo.jimbo.main.Logger;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;

@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.parser;
 
-import ir.sahab.nimbo.jimbo.elasticSearch.ElasticsearchWebpageModel;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.producer.KafkaProducer;

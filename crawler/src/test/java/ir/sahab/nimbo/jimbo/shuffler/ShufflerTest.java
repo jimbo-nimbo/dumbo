@@ -1,7 +1,8 @@
-package ir.sahab.nimbo.jimbo.fetcher;
+package ir.sahab.nimbo.jimbo.shuffler;
 
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaConfig;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -33,7 +34,7 @@ public class ShufflerTest {
     public void consume() throws InterruptedException {
 
         Producer<String, String> producer = new KafkaProducer<>(
-            KafkaPropertyFactory.getProducerProperties());
+                KafkaPropertyFactory.getProducerProperties());
 
         producer.send(new ProducerRecord<>(kafkaTopic, null, testValue1));
 
@@ -56,7 +57,7 @@ public class ShufflerTest {
     public void testMaxPollSize()
     {
         Producer<String, String> producer = new KafkaProducer<>(
-            KafkaPropertyFactory.getProducerProperties());
+                KafkaPropertyFactory.getProducerProperties());
 
         for (long i = 0; i < maxPollSize + 100; i++) {
             producer.send(new ProducerRecord<>(kafkaTopic, null, testValue1));
@@ -79,7 +80,7 @@ public class ShufflerTest {
     public void testShuffle()
     {
         Producer<String, String> producer = new KafkaProducer<>(
-            KafkaPropertyFactory.getProducerProperties());
+                KafkaPropertyFactory.getProducerProperties());
 
         for (long i = 0; i < maxPollSize/2; i++) {
             producer.send(new ProducerRecord<>(kafkaTopic, null, testValue1));

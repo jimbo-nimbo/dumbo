@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo.elasticSearch;
+package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -39,35 +39,39 @@ public class ElasticClientFactoryTest {
         return client;
     }
 
-    Future<HttpResponse> goosale(CloseableHttpAsyncClient client, String uri)
-            throws ExecutionException, InterruptedException, IOException {
+    Future<HttpResponse> goosale(CloseableHttpAsyncClient client, String uri) {
 
         HttpGet request = new HttpGet(uri);
-        Future<HttpResponse> future = client.execute(request, new FutureCallback<HttpResponse>() {
-            @Override
-            public void completed(HttpResponse httpResponse) {
-//                System.out.println(uri + "done");
-            }
-
-            @Override
-            public void failed(Exception e) {
-
-                System.err.println("cant get uri " + uri);
-            }
-
-            @Override
-            public void cancelled() {
-
-            }
-        });
+        Future<HttpResponse> future = client.execute(request, null);
 
         return future;
+    }
+
+    @Test
+    public void testClient() throws InterruptedException, ExecutionException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
+        List<Future<HttpResponse>> futures = new ArrayList<>();
+        CloseableHttpAsyncClient client = testGoosale();
+
+        for (int i = 0; i < 200; i++) {
+            futures.add(goosale(client, "https://en.wikipedia.org/wiki/" + i));
+        }
+
+        for (int i = 0; i < futures.size(); i++) {
+            Future<HttpResponse> responseFuture = futures.get(i);
+
+            EntityUtils.toString(responseFuture.get().getEntity());
+
+            System.out.println("document number " + i);
+        }
+
+        client.close();
     }
 
     @Test
     public void completeTest()
             throws ElasticCannotLoadException, IOException, InterruptedException,
             ExecutionException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+
         ArrayBlockingQueue<ElasticsearchWebpageModel> queue = new ArrayBlockingQueue<>(10000);
         ElasticsearchThreadFactory elasticsearchThreadFactory = new ElasticsearchThreadFactory(queue);
 
@@ -79,7 +83,7 @@ public class ElasticClientFactoryTest {
         List<Future<HttpResponse>> futures = new ArrayList<>();
         CloseableHttpAsyncClient client = testGoosale();
 
-        for (int i = 0; i < 101; i++) {
+        for (int i = 0; i < 200; i++) {
             futures.add(goosale(client, "https://en.wikipedia.org/wiki/" + i));
         }
 
