@@ -41,6 +41,15 @@ public class Validate {
         return isBadUrl(url);
     }
 
+    public static boolean allValidation(Document document){
+        String article = document.text();
+        if (article.length() > 400)
+            article = article.substring(0, 400);
+        return isEnglish(article) && isNotBan(document) && isNotBanBody(article);
+
+    }
+
+
 //    static boolean isEnglishWithApi(String article) {
 //        try {
 //            String language = DetectLanguage.simpleDetect(article);
@@ -92,9 +101,9 @@ public class Validate {
     }
 
     //TODO can add body check if our speed is ok
-    static boolean isNotBanBody(Document document){
+    static boolean isNotBanBody(String article){
         for (String word : banWords) {
-            if ((document.text() != null && document.text().toLowerCase().contains(word))) {
+            if ((article != null && article.toLowerCase().contains(word))) {
                 return false;
             }
         }
