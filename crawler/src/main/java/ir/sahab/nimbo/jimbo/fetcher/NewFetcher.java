@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class NewFetcher {
 
-    private final ArrayBlockingQueue<String> shuffledLinksQueue;
+    private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
     private final FetcherSetting fetcherSetting;
@@ -41,7 +41,7 @@ public class NewFetcher {
 
     private final Worker[] workers;
 
-    public NewFetcher(ArrayBlockingQueue<String> shuffledLinksQueue
+    public NewFetcher(ArrayBlockingQueue<List<String>> shuffledLinksQueue
             , ArrayBlockingQueue<WebPageModel> rawPagesQueue, FetcherSetting fetcherSetting){
         this.shuffledLinksQueue = shuffledLinksQueue;
         this.rawPagesQueue = rawPagesQueue;
@@ -96,7 +96,7 @@ public class NewFetcher {
         }
     }
 
-    ArrayBlockingQueue<String> getShuffledLinksQueue() {
+    ArrayBlockingQueue<List<String>> getShuffledLinksQueue() {
         return shuffledLinksQueue;
     }
 
@@ -120,7 +120,7 @@ class Worker implements Runnable
     private static final LruCache lruCache = LruCache.getInstance();
 
     private final CloseableHttpAsyncClient client;
-    private final ArrayBlockingQueue<String> shuffledLinksQueue;
+    private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawWebPagesQueue;
     private final NewFetcher newFetcher;
     private final int workerId;
@@ -141,49 +141,36 @@ class Worker implements Runnable
     public void run() {
 
         List<Future<HttpResponse>> futures = new ArrayList<>();
-        List<String> links = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
         while(running)
         {
-            while (futures.size() < LINKS_PER_CYCLE) {
-                try {
-                    final String link = shuffledLinksQueue.poll(5, TimeUnit.SECONDS);
-                    if (link == null && futures.size() != 0) {
-                        break;
-                    }
-                    if (!checkLink(link)){
-                        continue;
-                    }
-
-                    final HttpGet request = new HttpGet(link);
-                    futures.add(client.execute(request, null));
-                    links.add(link);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
             int i = 0;
             try {
-
-                if (futures.size() != 0)
-                    System.out.println(futures.size());
+                final List<String> shuffledLinks = shuffledLinksQueue.take();
+                for (int i1 = 0; i1 < shuffledLinks.size(); i1++) {
+                    String link = shuffledLinks.get(i1);
+                    if (checkLink(link)) {
+                        System.out.println(i1 + "<---");
+                        futures.add(client.execute(new HttpGet(link), null));
+                        urls.add(link);
+                    }
+                }
                 for (; i < futures.size(); i++) {
-                    final HttpResponse response = futures.get(i).get();
-                    final String text = EntityUtils.toString(response.getEntity());
-                    rawWebPagesQueue.put(new WebPageModel(text, links.get(i)));
+                    final String text = EntityUtils.toString(futures.get(i).get().getEntity());
+                    rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
                 }
 
             } catch (InterruptedException e) {
-                System.out.println("interupt exeption" + links.get(i));
+                System.out.println("interupt exeption" + urls.get(i));
             } catch (ExecutionException e) {
-//                System.out.println("execution exeption" + links.get(i));
+                System.out.println("execution exeption" + urls.get(i));
                 //todo: handle
             } catch (IOException e) {
-                System.out.println("ioException exeption" + links.get(i));
+                System.out.println("ioException exeption" + urls.get(i));
             }
 
             futures.clear();
-            links.clear();
+            urls.clear();
         }
     }
 

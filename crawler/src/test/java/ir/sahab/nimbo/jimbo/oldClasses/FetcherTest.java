@@ -1,7 +1,8 @@
-package ir.sahab.nimbo.jimbo.fetcher;
+package ir.sahab.nimbo.jimbo.oldClasses;
 
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
+import ir.sahab.nimbo.jimbo.oldClasses.Fetcher;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.Assert;
 import org.junit.BeforeClass;

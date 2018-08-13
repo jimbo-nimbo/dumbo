@@ -20,7 +20,7 @@ import java.util.concurrent.Future;
 public class NewFetcherTest {
 
     private final int queueSize = 10000;
-    private final ArrayBlockingQueue<String> shuffledLinksQueue = new ArrayBlockingQueue<>(queueSize);
+    private final ArrayBlockingQueue<List<String>> shuffledLinksQueue = new ArrayBlockingQueue<>(queueSize);
     private final ArrayBlockingQueue<WebPageModel> webPagesQueue = new ArrayBlockingQueue<>(queueSize);
 
     private final int threadCount = 20;
@@ -149,8 +149,13 @@ public class NewFetcherTest {
         NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 
         int numberOfRecords = 1005;
+        List<String> list = new ArrayList<>();
         for (int i = 0; i < numberOfRecords; i++) {
-            shuffledLinksQueue.put("https://en.wikipedia.org/wiki/" + i);
+            list.add("https://en.wikipedia.org/wiki/" + i);
+            if (i % 100 == 99) {
+                shuffledLinksQueue.put(list);
+                list.clear();
+            }
         }
 
         newFetcher.runWorkers();

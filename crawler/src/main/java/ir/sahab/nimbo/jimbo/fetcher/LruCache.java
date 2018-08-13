@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * cache the domains
  * //TODO: handle exception
  */
-class LruCache {
+public class LruCache {
     private static final String PROP_NAME = "lru.properties";
     private static LruCache lruCache = null;
     private int maxCacheSize;
@@ -36,7 +36,7 @@ class LruCache {
                 .build();
     }
 
-    synchronized static LruCache getInstance() {
+    public synchronized static LruCache getInstance() {
         if (lruCache == null) {
             lruCache = new LruCache();
         }
@@ -52,7 +52,7 @@ class LruCache {
      * @param url domain of site
      * @throws CloneNotSupportedException if domain is in cache throw exception, else add it
      */
-    synchronized boolean add(String url) {
+    public synchronized boolean add(String url) {
 
         if (exist(url)) {
             return false;
@@ -65,7 +65,7 @@ class LruCache {
         cache.invalidate(url);
     }
 
-    boolean exist(String url) {
+    public boolean exist(String url) {
         return cache.getIfPresent(url) != null;
 
     }
