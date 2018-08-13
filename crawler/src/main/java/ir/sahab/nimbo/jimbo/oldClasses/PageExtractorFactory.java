@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo.parser;
+package ir.sahab.nimbo.jimbo.oldClasses;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;

@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
+import ir.sahab.nimbo.jimbo.oldClasses.Crawler;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
