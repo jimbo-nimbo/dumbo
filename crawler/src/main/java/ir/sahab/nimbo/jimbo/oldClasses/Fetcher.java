@@ -1,5 +1,7 @@
-package ir.sahab.nimbo.jimbo.fetcher;
+package ir.sahab.nimbo.jimbo.oldClasses;
 
+import ir.sahab.nimbo.jimbo.fetcher.LruCache;
+import ir.sahab.nimbo.jimbo.fetcher.Validate;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import org.apache.kafka.clients.consumer.Consumer;

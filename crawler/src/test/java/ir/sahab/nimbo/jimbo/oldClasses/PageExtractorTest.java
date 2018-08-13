@@ -1,5 +1,8 @@
-package ir.sahab.nimbo.jimbo.parser;
+package ir.sahab.nimbo.jimbo.oldClasses;
 
+import ir.sahab.nimbo.jimbo.oldClasses.PageExtractor;
+import ir.sahab.nimbo.jimbo.oldClasses.PageExtractorFactory;
+import ir.sahab.nimbo.jimbo.parser.Link;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;

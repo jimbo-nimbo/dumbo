@@ -1,7 +1,8 @@
-package ir.sahab.nimbo.jimbo.parser;
+package ir.sahab.nimbo.jimbo.oldClasses;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
+import ir.sahab.nimbo.jimbo.parser.Link;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.nodes.Document;

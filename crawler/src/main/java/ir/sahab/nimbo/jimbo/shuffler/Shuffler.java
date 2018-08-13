@@ -17,7 +17,7 @@ public  class Shuffler implements Runnable{
     private final Consumer<String, String> consumer =  new KafkaConsumer<>(
             KafkaPropertyFactory.getConsumerProperties());
 
-    private final ArrayBlockingQueue<String> linksQueue;
+    private final ArrayBlockingQueue<List<String>> linksQueue;
 
 
     private boolean running = true;
@@ -25,13 +25,13 @@ public  class Shuffler implements Runnable{
     /**
      * constructor for testing
      */
-    public Shuffler(String kafkaTopic, ArrayBlockingQueue<String> linksQueue)
+    Shuffler(String kafkaTopic, ArrayBlockingQueue<List<String>> linksQueue)
     {
         this.linksQueue = linksQueue;
         consumer.subscribe(Collections.singletonList(kafkaTopic));
     }
 
-    public Shuffler(ArrayBlockingQueue<String> linksQueue)
+    public Shuffler(ArrayBlockingQueue<List<String>> linksQueue)
     {
         this.linksQueue = linksQueue;
         consumer.subscribe(Collections.singletonList(Config.URL_FRONTIER_TOPIC));;
@@ -47,7 +47,6 @@ public  class Shuffler implements Runnable{
     List<String> consumeAndShuffle()
     {
         final List<String> list = new ArrayList<>();
-        list.clear();
         ConsumerRecords<String, String> consumerRecords = consume();
 
         for (ConsumerRecord<String, String> consumerRecord: consumerRecords){
@@ -67,13 +66,20 @@ public  class Shuffler implements Runnable{
     @Override
     public void run() {
         List<String> list;
+        List<String> putList = new ArrayList<>();
 
         while(running) {
             list = consumeAndShuffle();
+
             try {
-                for (String s : list) {
-                    linksQueue.put(s);
+                for (int i = 0; i < list.size(); i++) {
+                    if (i % 100 == 99 || i == list.size() -1 ) {
+                        linksQueue.put(putList);
+                        putList = new ArrayList<>();
+                    }
+                    putList.add(list.get(i));
                 }
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

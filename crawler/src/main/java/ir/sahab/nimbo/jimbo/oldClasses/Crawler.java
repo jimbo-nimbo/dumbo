@@ -1,13 +1,10 @@
-package ir.sahab.nimbo.jimbo.crawler;
+package ir.sahab.nimbo.jimbo.oldClasses;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticCannotLoadException;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchThreadFactory;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
-import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
-import ir.sahab.nimbo.jimbo.parser.PageExtractor;
-import ir.sahab.nimbo.jimbo.parser.PageExtractorFactory;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.jsoup.nodes.Document;

@@ -32,7 +32,7 @@ public class Validate {
 
     }
 
-    static boolean isValidBody(Document document) {
+    public static boolean isValidBody(Document document) {
         //return isEnglish(document.text().substring(0, 200));
         return isEnglish(document.text()) && isNotBan(document);
     }
