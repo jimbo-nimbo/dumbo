@@ -2,14 +2,17 @@ package ir.sahab.nimbo.jimbo.sparkstream;
 
 import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
+import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.twitter.TwitterUtils;
 import scala.Serializable;
 import scala.Tuple2;
@@ -19,6 +22,7 @@ import twitter4j.Status;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
@@ -36,10 +40,14 @@ public class SparkStream implements Serializable {
         System.setProperty("twitter4j.oauth.consumerSecret", TWITTER_CONSUMER_SECRET);
         System.setProperty("twitter4j.oauth.accessToken", TWITTER_ACCESS_TOKEN);
         System.setProperty("twitter4j.oauth.accessTokenSecret", TWITTER_ACCESS_TOKEN_SECRET);
-        SparkConf conf = new SparkConf().setMaster("local").setAppName("NetworkWordCount");
-        JavaSparkContext sparkContext = new JavaSparkContext(conf);
+        JavaSparkContext sparkContext = new JavaSparkContext("local", "twitterApp");
         sparkContext.setLogLevel("ALL");
-        jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(1000));
+        jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(3000));
+        try {
+            jssc.awaitTerminationOrTimeout(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
     }
 
@@ -58,7 +66,7 @@ public class SparkStream implements Serializable {
         }
     }
 
-    void getTrend() throws FileNotFoundException {
+    void getTrend(){
         JavaReceiverInputDStream<Status> twitterStream = TwitterUtils.createStream(jssc, new String[]{"en"});
         JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
             ArrayList<String> list = new ArrayList<>();
@@ -71,7 +79,16 @@ public class SparkStream implements Serializable {
                 s -> new Tuple2<>(s, 1));
         JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
                 (integer, integer2) -> integer + integer2);
-        counting.print();
+        //counting.dstream().saveAsTextFiles("nimac",".rawFile");
+        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
+            @Override
+            public void call(JavaPairRDD<String, Integer> stringIntegerJavaPairRDD) throws Exception {
+                for(Map.Entry<String, Integer> entry : stringIntegerJavaPairRDD.collectAsMap().entrySet()){
+                    System.out.println(entry.getKey() + " " + entry.getValue());
+                }
+            }
+        });
+        //counting.print();
         jssc.start();
         try {
             jssc.awaitTermination();

@@ -24,12 +24,8 @@ public class SparkStreamTest {
     }
 
     @Test
-    public void getTrend() throws InterruptedException {
-        try {
-            sparkStream.getTrend();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        Thread.sleep(10000);
+    public void getTrend() throws InterruptedException{
+        sparkStream.getTrend();
+        //Thread.sleep(10000);
     }
 }
