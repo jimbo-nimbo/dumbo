@@ -79,11 +79,11 @@ public class HBaseTest {
     @Test
     public void revUrlTest() throws MalformedURLException {
         //assertEquals("https://com.google", HBase.getInstance().reverseUrl(new URL("https://google.com")));
-        assertEquals("https://com.google.www", HBase.getInstance().reverseUrl(new URL("https://www.google.com")));
-        assertEquals("https://com.google.dev.www", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com")));
+        assertEquals("com.google.www", HBase.getInstance().reverseUrl(new URL("https://www.google.com")));
+        assertEquals("com.google.dev.www", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com")));
         //assertEquals("https://com.google/test/test", HBase.getInstance().reverseUrl(new URL("https://google.com/test/test")));
-        assertEquals("https://com.google.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.google.com/test/test")));
-        assertEquals("https://com.google.dev.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
+        assertEquals("com.google.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.google.com/test/test")));
+        assertEquals("com.google.dev.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
     }
 
     @Test
@@ -99,6 +99,7 @@ public class HBaseTest {
 
     @Test
     public void putBulkMark() throws MalformedURLException {
+        HBase.getInstance().bulkData.clear();
         for(int i = 0; i < 100; i++){
             HBase.getInstance().putBulkMark("https://www.test.com", "testVal");
         }
