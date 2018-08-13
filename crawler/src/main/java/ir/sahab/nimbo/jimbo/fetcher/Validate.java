@@ -32,12 +32,12 @@ public class Validate {
 
     }
 
-    public static boolean isValidBody(Document document) {
+    static boolean isValidBody(Document document) {
         //return isEnglish(document.text().substring(0, 200));
         return isEnglish(document.text()) && isNotBan(document);
     }
 
-    public static boolean isValidUrl(URL url) {
+    static boolean isValidUrl(URL url) {
         return isBadUrl(url);
     }
 
@@ -103,7 +103,7 @@ public class Validate {
     //TODO can add body check if our speed is ok
     static boolean isNotBanBody(String article){
         for (String word : banWords) {
-            if ((article != null && article.toLowerCase().contains(word))) {
+            if ((article != null && article.contains(word))) {
                 return false;
             }
         }
