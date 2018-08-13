@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
+import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -20,7 +21,7 @@ public class NewFetcherTest {
 
     private final int queueSize = 10000;
     private final ArrayBlockingQueue<String> shuffledLinksQueue = new ArrayBlockingQueue<>(queueSize);
-    private final ArrayBlockingQueue<String> webPagesQueue = new ArrayBlockingQueue<>(queueSize);
+    private final ArrayBlockingQueue<WebPageModel> webPagesQueue = new ArrayBlockingQueue<>(queueSize);
 
     private final int threadCount = 20;
     private final FetcherSetting fetcherSetting = new FetcherSetting(threadCount);
@@ -33,9 +34,9 @@ public class NewFetcherTest {
         NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
         List<Future<HttpResponse>> futures = new ArrayList<>();
 
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 2000; i++) {
             HttpGet get = new HttpGet("https://en.wikipedia.org/wiki/" + i);
-            newFetcher.getClient(0).execute(get, null);
+            futures.add(newFetcher.getClient(0).execute(get, null));
         }
 
         for (int i = 0; i < futures.size(); i++) {
@@ -109,7 +110,7 @@ public class NewFetcherTest {
     }
 
     @Test
-    public void createClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+    public void createClient() throws IOException {
         NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
         CloseableHttpAsyncClient client = newFetcher.getClient(0);
 

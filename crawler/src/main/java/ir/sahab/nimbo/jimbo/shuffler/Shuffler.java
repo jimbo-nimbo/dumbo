@@ -19,7 +19,6 @@ public  class Shuffler implements Runnable{
 
     private final ArrayBlockingQueue<String> linksQueue;
 
-    private final List<String> list = new ArrayList<>();
 
     private boolean running = true;
 
@@ -47,6 +46,7 @@ public  class Shuffler implements Runnable{
 
     List<String> consumeAndShuffle()
     {
+        final List<String> list = new ArrayList<>();
         list.clear();
         ConsumerRecords<String, String> consumerRecords = consume();
 
@@ -66,18 +66,18 @@ public  class Shuffler implements Runnable{
 
     @Override
     public void run() {
-        List<String> list = new ArrayList<>();
+        List<String> list;
 
         while(running) {
-            if (list.size() <= 0 ) {
-                list = consumeAndShuffle();
-            } else {
-                try {
-                    linksQueue.put(list.remove(0));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            list = consumeAndShuffle();
+            try {
+                for (String s : list) {
+                    linksQueue.put(s);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
 }
+

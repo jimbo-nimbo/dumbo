@@ -20,14 +20,32 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Parser {
-    private final ArrayBlockingQueue<String> webPages;
+    private final ArrayBlockingQueue<WebPageModel> webPages;
+    private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
     private final Producer<String, String> producer = new KafkaProducer<>(
             KafkaPropertyFactory.getProducerProperties());
+    private final ParserSetting parserSetting;
 
-    Parser(ArrayBlockingQueue<String> webPages) {
+    private final Worker[] workers;
+
+    Parser(ArrayBlockingQueue<WebPageModel> webPages,
+           ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue, ParserSetting parserSetting) {
 
         this.webPages = webPages;
+        this.elasticQueue = elasticQueue;
+        this.parserSetting = parserSetting;
+
+        this.workers = new Worker[parserSetting.getParserThreadCount()];
+        for (int i = 0; i < workers.length; i++) {
+                workers[i] = new Worker(producer, webPages, elasticQueue);
+        }
+    }
+
+    void runWorkers() {
+        for (Worker worker : workers) {
+            new Thread(worker).start();
+        }
     }
 
 }
@@ -35,13 +53,13 @@ public class Parser {
 class Worker implements Runnable {
 
     private final Producer<String, String> producer;
-    private final ArrayBlockingQueue<String> webPage;
+    private final ArrayBlockingQueue<WebPageModel> webPage;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
     private boolean running = true;
 
     Worker(Producer<String, String> producer,
-           ArrayBlockingQueue<String> webPage, ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue) {
+           ArrayBlockingQueue<WebPageModel> webPage, ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue) {
         this.producer = producer;
         this.webPage = webPage;
         this.elasticQueue = elasticQueue;
@@ -55,41 +73,41 @@ class Worker implements Runnable {
     public void run() {
         while (running) {
             try {
-                final Document document = Jsoup.parse(webPage.take());
+                WebPageModel model = webPage.take();
+                final Document document = Jsoup.parse(model.getHtml());
                 if (Validate.isValidBody(document)) {
-                    synchronized (producer) {
-                        producer.send(
-                                new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null));
-                    }
+
+                    sendToElastic(model, document);
+
+                    List<Link> links = extractLinks(document);
+                    sendLinksToKafka(links);
+                    long time = System.currentTimeMillis();
+                    HBase.getInstance().putData(model.getLink(), links);
+                    System.out.println(System.currentTimeMillis() - time);
                 }
-
-                List<Link> links = extractLinks(document);
-                HBase.getInstance().putData(document.location(), links);
-
-                sendLinksToKafka(links);
-                submitToElastic(document);
-
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private String getDescriptionTag(Document document){
-        Elements metaTags = document.getElementsByTag("meta");
-
-        for (Element metaTag : metaTags) {
-            String name = metaTag.attr("name");
-            String content = metaTag.attr("content");
-            if (name.equalsIgnoreCase("description"))
-                return content;
+    private void sendToElastic(WebPageModel model, Document document) throws InterruptedException {
+        String description = "";
+        for (Element metaTag: document.getElementsByTag("meta")) {
+            if (metaTag.attr("name").equalsIgnoreCase("description")) {
+                description = metaTag.attr("content");
+                break;
+            }
         }
-        return "";
+        elasticQueue.put(new ElasticsearchWebpageModel(model.getLink(),
+                document.text(), document.getElementsByTag("title").text(), description));
     }
 
-    private void submitToElastic(Document document) throws InterruptedException {
-        elasticQueue.put(new ElasticsearchWebpageModel(
-                "", document.text(), document.title(), getDescriptionTag(document)));
+    private void sendLinksToKafka(List<Link> links) {
+        for (Link link : links) {
+            producer.send(
+                    new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref().toString()));
+        }
     }
 
     private List<Link> extractLinks(Document document) {
@@ -98,25 +116,15 @@ class Worker implements Runnable {
 
         for (Element aTag : aTags) {
             String href = aTag.absUrl("href");
-            String text = aTag.text();
             if (href == null || href.equals(""))
                 continue;
             try {
-                links.add(new Link(new URL(href), text));
+                links.add(new Link(new URL(href), aTag.text()));
             } catch (MalformedURLException e) {
-                // TODO: log!
+                //Todo: log
                 System.err.println("bad url" + href);
             }
         }
         return links;
-    }
-
-    private void sendLinksToKafka(List<Link> links) {
-        for (Link link : links) {
-            ProducerRecord<String, String> record =
-                    new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref().toString());
-
-            producer.send(record);
-        }
     }
 }

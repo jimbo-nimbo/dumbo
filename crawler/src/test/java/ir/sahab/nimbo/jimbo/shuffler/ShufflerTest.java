@@ -126,8 +126,8 @@ public class ShufflerTest {
             producer.send(new ProducerRecord<>(kafkaTopic, null, testValue2));
         }
 
-        for (int i = 0; i < maxPollSize/2; i++) {
-            if (links.take() != testValue1){
+        for (int i = 0; i < maxPollSize / 2; i++) {
+            if (!links.take().equals(testValue1)) {
                 assertTrue(true);
                 return;
             }

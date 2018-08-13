@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import ir.sahab.nimbo.jimbo.hbase.HBase;
+import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -23,7 +24,7 @@ import java.util.concurrent.*;
 public class NewFetcher implements Runnable{
 
     private final ArrayBlockingQueue<String> shuffledLinksQueue;
-    private final ArrayBlockingQueue<String> rawPagesQueue;
+    private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
     private final FetcherSetting fetcherSetting;
 
@@ -34,7 +35,7 @@ public class NewFetcher implements Runnable{
     private final Worker[] workers;
 
     public NewFetcher(ArrayBlockingQueue<String> shuffledLinksQueue
-            , ArrayBlockingQueue<String> rawPagesQueue, FetcherSetting fetcherSetting){
+            , ArrayBlockingQueue<WebPageModel> rawPagesQueue, FetcherSetting fetcherSetting){
         this.shuffledLinksQueue = shuffledLinksQueue;
         this.rawPagesQueue = rawPagesQueue;
         this.fetcherSetting = fetcherSetting;
@@ -111,7 +112,7 @@ public class NewFetcher implements Runnable{
         return shuffledLinksQueue;
     }
 
-    ArrayBlockingQueue<String> getRawPagesQueue() {
+    ArrayBlockingQueue<WebPageModel> getRawPagesQueue() {
         return rawPagesQueue;
     }
 
@@ -128,7 +129,7 @@ class Worker implements Runnable
 
     private final CloseableHttpAsyncClient client;
     private final ArrayBlockingQueue<String> shuffledLinksQueue;
-    private final ArrayBlockingQueue<String> rawWebPagesQueue;
+    private final ArrayBlockingQueue<WebPageModel> rawWebPagesQueue;
     private final NewFetcher newFetcher;
     private final int workerId;
 
@@ -149,6 +150,7 @@ class Worker implements Runnable
 
         System.out.println("thread " + workerId + " started!");
         List<Future<HttpResponse>> futures = new ArrayList<>();
+        List<String> links = new ArrayList<>();
         while(running)
         {
             while (futures.size() < LINKS_PER_CYCLE) {
@@ -163,6 +165,7 @@ class Worker implements Runnable
 
                     final HttpGet request = new HttpGet(link);
                     futures.add(client.execute(request, null));
+                    links.add(link);
                 } catch (InterruptedException | MalformedURLException e) {
                     e.printStackTrace();
                 }
@@ -170,10 +173,10 @@ class Worker implements Runnable
 
             try {
 
-                for (Future<HttpResponse> future : futures) {
-                    final HttpResponse response = future.get();
+                for (int i = 0; i < futures.size(); i++) {
+                    final HttpResponse response = futures.get(i).get();
                     final String text = EntityUtils.toString(response.getEntity());
-                    rawWebPagesQueue.put(text);
+                    rawWebPagesQueue.put(new WebPageModel(text, links.get(i)));
                 }
 
             } catch (InterruptedException | ExecutionException | IOException e) {
@@ -181,6 +184,7 @@ class Worker implements Runnable
             }
 
             futures.clear();
+            links.clear();
         }
     }
 }
