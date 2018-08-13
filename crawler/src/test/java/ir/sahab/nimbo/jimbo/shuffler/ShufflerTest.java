@@ -40,7 +40,7 @@ public class ShufflerTest {
 
         Thread.sleep(5000);
 
-        ArrayBlockingQueue<String> linksQueue = new ArrayBlockingQueue<>(linksQueueSize);
+        ArrayBlockingQueue<List<String>> linksQueue = new ArrayBlockingQueue<>(linksQueueSize);
         Shuffler shuffler = new Shuffler(kafkaTopic, linksQueue);
         ConsumerRecords<String, String> messages = shuffler.consume();
 
@@ -63,7 +63,7 @@ public class ShufflerTest {
             producer.send(new ProducerRecord<>(kafkaTopic, null, testValue1));
         }
 
-        ArrayBlockingQueue<String> linksQueue = new ArrayBlockingQueue<>(linksQueueSize);
+        ArrayBlockingQueue<List<String>> linksQueue = new ArrayBlockingQueue<>(linksQueueSize);
         Shuffler shuffler = new Shuffler(kafkaTopic, linksQueue);
         ConsumerRecords<String, String> messages = shuffler.consume();
 
@@ -87,7 +87,7 @@ public class ShufflerTest {
             producer.send(new ProducerRecord<>(kafkaTopic, null, testValue2));
         }
 
-        ArrayBlockingQueue<String> linksQueue = new ArrayBlockingQueue<>(linksQueueSize);
+        ArrayBlockingQueue<List<String>> linksQueue = new ArrayBlockingQueue<>(linksQueueSize);
         Shuffler shuffler = new Shuffler(kafkaTopic, linksQueue);
         List<String> list = shuffler.consumeAndShuffle();
 
@@ -113,7 +113,7 @@ public class ShufflerTest {
     @Test
     public void linksQueueTest() throws InterruptedException {
 
-        ArrayBlockingQueue<String> links = new ArrayBlockingQueue<>(linksQueueSize);
+        ArrayBlockingQueue<List<String>> links = new ArrayBlockingQueue<>(linksQueueSize);
 
         Shuffler shuffler = new Shuffler(kafkaTopic, links);
         new Thread(shuffler).start();
