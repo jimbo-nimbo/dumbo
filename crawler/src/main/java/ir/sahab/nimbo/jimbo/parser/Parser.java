@@ -75,7 +75,7 @@ class Worker implements Runnable {
             try {
                 WebPageModel model = webPage.take();
                 final Document document = Jsoup.parse(model.getHtml());
-                if (Validate.isValidBody(document)) {
+                if (Validate.allValidation(document)) {
 
                     sendToElastic(model, document);
 
