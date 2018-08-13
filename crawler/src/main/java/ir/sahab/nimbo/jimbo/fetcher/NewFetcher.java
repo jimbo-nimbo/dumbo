@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import ir.sahab.nimbo.jimbo.hbase.HBase;
+import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -9,10 +10,14 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -20,15 +25,17 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class NewFetcher implements Runnable{
+public class NewFetcher {
 
     private final ArrayBlockingQueue<String> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
     private final FetcherSetting fetcherSetting;
 
-    private static final LruCache lruCache = LruCache.getInstance();
+    public static AtomicInteger linkpassed = new AtomicInteger(1);
+    public static AtomicInteger linkNotPassed = new AtomicInteger(1);
 
     private CloseableHttpAsyncClient[] clients;
 
@@ -65,27 +72,8 @@ public class NewFetcher implements Runnable{
         return client;
     }
 
-    public static boolean checkLink(String link) throws MalformedURLException {
-        String host = new URL(link).getHost();
-        if (lruCache.exist(host)) {
-            //todo: produce to kafka
-            return false;
-        }
 
-        lruCache.add(host);
-        if (HBase.getInstance().existMark(link)){
-            lruCache.remove(host);
-            return false;
-        }
 
-        HBase.getInstance().putMark(link, "1");
-        return true;
-    }
-
-    @Override
-    public void run() {
-        runWorkers();
-    }
 
     @Override
     protected void finalize() throws Throwable {
@@ -95,7 +83,7 @@ public class NewFetcher implements Runnable{
         }
     }
 
-    private void runWorkers() {
+    public void runWorkers() {
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new Worker(this, i);
             new Thread(workers[i]).start();
@@ -125,7 +113,11 @@ class Worker implements Runnable
 {
     private static final int LINKS_PER_CYCLE = 100;
 
+    private static final Producer<String, String> producer = new KafkaProducer<>(
+            KafkaPropertyFactory.getProducerProperties());
+
     private boolean running = true;
+    private static final LruCache lruCache = LruCache.getInstance();
 
     private final CloseableHttpAsyncClient client;
     private final ArrayBlockingQueue<String> shuffledLinksQueue;
@@ -148,7 +140,6 @@ class Worker implements Runnable
     @Override
     public void run() {
 
-        System.out.println("thread " + workerId + " started!");
         List<Future<HttpResponse>> futures = new ArrayList<>();
         List<String> links = new ArrayList<>();
         while(running)
@@ -156,35 +147,73 @@ class Worker implements Runnable
             while (futures.size() < LINKS_PER_CYCLE) {
                 try {
                     final String link = shuffledLinksQueue.poll(5, TimeUnit.SECONDS);
-                    if (link == null) {
+                    if (link == null && futures.size() != 0) {
                         break;
                     }
-                    if (NewFetcher.checkLink(link)){
+                    if (!checkLink(link)){
                         continue;
                     }
 
                     final HttpGet request = new HttpGet(link);
                     futures.add(client.execute(request, null));
                     links.add(link);
-                } catch (InterruptedException | MalformedURLException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
 
+            int i = 0;
             try {
 
-                for (int i = 0; i < futures.size(); i++) {
+                if (futures.size() != 0)
+                    System.out.println(futures.size());
+                for (; i < futures.size(); i++) {
                     final HttpResponse response = futures.get(i).get();
                     final String text = EntityUtils.toString(response.getEntity());
                     rawWebPagesQueue.put(new WebPageModel(text, links.get(i)));
                 }
 
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                e.printStackTrace();
+            } catch (InterruptedException e) {
+                System.out.println("interupt exeption" + links.get(i));
+            } catch (ExecutionException e) {
+//                System.out.println("execution exeption" + links.get(i));
+                //todo: handle
+            } catch (IOException e) {
+                System.out.println("ioException exeption" + links.get(i));
             }
 
             futures.clear();
             links.clear();
         }
+    }
+
+    static boolean checkLink(String link) {
+
+        URL url;
+        try {
+            url = new URL(link);
+            url.toURI();
+        } catch (URISyntaxException | MalformedURLException e) {
+            return false;
+        }
+
+        String host = url.getHost();
+        if (lruCache.exist(host)) {
+            producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link));
+
+            NewFetcher.linkNotPassed.incrementAndGet();
+            return false;
+        }
+
+        NewFetcher.linkpassed.incrementAndGet();
+
+        lruCache.add(host);
+//        if (HBase.getInstance().existMark(link)){
+//            lruCache.remove(host);
+//            return false;
+//        }
+//
+//        HBase.getInstance().putMark(link, "1");
+        return true;
     }
 }

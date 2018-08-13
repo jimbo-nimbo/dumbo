@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Parser {
     private final ArrayBlockingQueue<WebPageModel> webPages;
@@ -29,8 +30,10 @@ public class Parser {
 
     private final Worker[] workers;
 
-    Parser(ArrayBlockingQueue<WebPageModel> webPages,
-           ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue, ParserSetting parserSetting) {
+    public static AtomicInteger parsedPages = new AtomicInteger(0);
+
+    public Parser(ArrayBlockingQueue<WebPageModel> webPages,
+                  ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue, ParserSetting parserSetting) {
 
         this.webPages = webPages;
         this.elasticQueue = elasticQueue;
@@ -42,7 +45,7 @@ public class Parser {
         }
     }
 
-    void runWorkers() {
+    public void runWorkers() {
         for (Worker worker : workers) {
             new Thread(worker).start();
         }
@@ -76,14 +79,12 @@ class Worker implements Runnable {
                 WebPageModel model = webPage.take();
                 final Document document = Jsoup.parse(model.getHtml());
                 if (Validate.allValidation(document)) {
-
-                    sendToElastic(model, document);
+                    Parser.parsedPages.incrementAndGet();
+//                    sendToElastic(model, document);
 
                     List<Link> links = extractLinks(document);
                     sendLinksToKafka(links);
-                    long time = System.currentTimeMillis();
-                    HBase.getInstance().putData(model.getLink(), links);
-                    System.out.println(System.currentTimeMillis() - time);
+//                    HBase.getInstance().putData(model.getLink(), links);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

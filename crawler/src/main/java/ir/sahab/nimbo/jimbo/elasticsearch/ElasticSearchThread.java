@@ -47,7 +47,6 @@ public class ElasticSearchThread implements Runnable{
     private String getId(ElasticsearchWebpageModel elasticsearchWebpageModel)
     {
         Integer i = elasticsearchWebpageModel.getUrl().hashCode();
-        System.out.println(i);
         return i.toString();
     }
 

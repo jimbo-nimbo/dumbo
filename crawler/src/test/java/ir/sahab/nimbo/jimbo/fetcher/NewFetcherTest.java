@@ -153,7 +153,7 @@ public class NewFetcherTest {
             shuffledLinksQueue.put("https://en.wikipedia.org/wiki/" + i);
         }
 
-        new Thread(newFetcher).start();
+        newFetcher.runWorkers();
 
         while(true) {
             System.out.println(webPagesQueue.size());

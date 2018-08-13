@@ -2,16 +2,22 @@ package ir.sahab.nimbo.jimbo.crawler;
 
 public class CrawlSetting {
 
-    private int shuffledQueueMaxSize;
+    private final int shuffledQueueMaxSize;
 
-    private int rawPagesQueueMaxSize;
+    private final int rawPagesQueueMaxSize;
 
+    private final int elasticQueueMaxSize;
     /**
      * constructor for testing
      */
-    CrawlSetting(int shuffledQueueMaxSize, int rawPagesQueueMaxSize){
+    public CrawlSetting(int shuffledQueueMaxSize, int rawPagesQueueMaxSize, int elasticQueueMaxSize){
         this.shuffledQueueMaxSize = shuffledQueueMaxSize;
         this.rawPagesQueueMaxSize = rawPagesQueueMaxSize;
+        this.elasticQueueMaxSize = elasticQueueMaxSize;
+    }
+
+    public int getElasticQueueMaxSize() {
+        return elasticQueueMaxSize;
     }
 
     int getShuffledQueueMaxSize() {
