@@ -12,6 +12,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +76,12 @@ public class HBase {
      */
 
     public void putBulkData(String sourceUrl, List<Link> links) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Link link;
         for (int i = 0; i < links.size(); i++) {
             link = links.get(i);
@@ -90,7 +96,12 @@ public class HBase {
     }
 
     public void putData(String sourceUrl, List<Link> links) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Link link;
         for (int i = 0; i < links.size(); i++) {
             link = links.get(i);
@@ -107,7 +118,12 @@ public class HBase {
     }
 
     public void putBulkMark(String sourceUrl, String value) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
         //TODO
         try {
@@ -118,7 +134,12 @@ public class HBase {
     }
 
     public void putMark(String sourceUrl, String value) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
         //TODO
         try {
@@ -129,7 +150,12 @@ public class HBase {
     }
 
     public byte[] getData(String sourceUrl, String qualifier) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
@@ -141,7 +167,12 @@ public class HBase {
     }
 
     public byte[] getMark(String sourceUrl, String qualifier) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
@@ -154,7 +185,12 @@ public class HBase {
 
 
     public boolean existData(String sourceUrl) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             result = table.get(get);
@@ -171,7 +207,12 @@ public class HBase {
     }
 
     public boolean existMark(String sourceUrl) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             result = table.get(get);
@@ -189,7 +230,8 @@ public class HBase {
 
 
     String reverseUrl(URL url) {
-        return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
+        //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
+        return reverseDomain(url.getHost()) + url.getPath();
     }
 
     String reverseDomain(String domain) {

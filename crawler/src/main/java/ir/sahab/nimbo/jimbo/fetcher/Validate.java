@@ -33,6 +33,7 @@ public class Validate {
     }
 
     public static boolean isValidBody(Document document) {
+        //return isEnglish(document.text().substring(0, 200));
         return isEnglish(document.text()) && isNotBan(document);
     }
 
@@ -73,7 +74,8 @@ public class Validate {
 
     static boolean isBadUrl(URL url) {
         for (String word : banWords) {
-            if ((url.getQuery() != null && url.getQuery().contains(word)) || (url.getHost() != null && url.getHost().contains(word)))
+            if ((url.getQuery() != null && url.getQuery().toLowerCase().contains(word))
+                    || (url.getHost() != null && url.getHost().toLowerCase().contains(word)))
                 return true;
         }
         return false;
@@ -81,12 +83,22 @@ public class Validate {
 
     static boolean isNotBan(Document document) {
         for (String word : banWords) {
-            if ((document.title() != null && document.title().contains(word)) || (document.head() != null && document.head().text().contains(word))) {
+            if ((document.title() != null && document.title().toLowerCase().contains(word))
+                    || (document.head() != null && document.head().text().toLowerCase().contains(word))) {
                 return false;
             }
         }
         return true;
+    }
 
+    //TODO can add body check if our speed is ok
+    static boolean isNotBanBody(Document document){
+        for (String word : banWords) {
+            if ((document.text() != null && document.text().toLowerCase().contains(word))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void initLanguageDetect() {

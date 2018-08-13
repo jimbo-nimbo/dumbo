@@ -45,6 +45,24 @@ public class ValidateTest {
     }
 
     @Test
+    public void benchMarkTest(){
+        Date f = new Date(System.currentTimeMillis());
+        assertTrue(Validate.isNotBanBody(goodSite));
+        assertTrue(Validate.isNotBan(goodSite));
+        assertTrue(Validate.isValidBody(goodSite));
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
+    }
+
+    @Test
+    public void isNotBanBodyTest() {
+        Date f = new Date(System.currentTimeMillis());
+        assertTrue(Validate.isNotBanBody(goodSite));
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
+    }
+
+    @Test
     public void isValidTest() {
         Date f = new Date(System.currentTimeMillis());
         assertFalse(Validate.isValidBody(banSite));

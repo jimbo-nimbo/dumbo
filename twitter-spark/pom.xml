@@ -7,42 +7,60 @@
         <groupId>ir.sahab.nimbo.jimbo</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>twitter-spark</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.bahir</groupId>
-            <artifactId>spark-streaming-twitter_2.11</artifactId>
-            <version>2.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>2.12.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
-            <version>2.3.1</version>
-        </dependency>
+    <properties>
+        <spark.stream.version>2.2.0</spark.stream.version>
+        <spark.stream.twitter.version>2.2.0</spark.stream.twitter.version>
 
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming_2.11</artifactId>
-            <version>2.3.1</version>
+            <version>${spark.stream.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-reflect</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
+        <!--<dependency>-->
+        <!--<groupId>org.apache.spark</groupId>-->
+        <!--<artifactId>spark-streaming-twitter_2.11</artifactId>-->
+        <!--<version>${spark.stream.twitter.version}</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>org.apache.spark</groupId>
+            <groupId>org.apache.bahir</groupId>
             <artifactId>spark-streaming-twitter_2.11</artifactId>
-            <version>1.6.3</version>
+            <version>${spark.stream.twitter.version}</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.twitter4j</groupId>-->
+            <!--<artifactId>twitter4j-stream</artifactId>-->
+            <!--<version>4.0.6</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.scala-lang</groupId>-->
+            <!--<artifactId>scala-library</artifactId>-->
+            <!--<version>2.11.8</version>-->
+        <!--</dependency>-->
+
         <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-examples_2.10</artifactId>
-            <version>1.1.1</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>
