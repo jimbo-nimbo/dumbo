@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.crawler;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.NewFetcher;
+import ir.sahab.nimbo.jimbo.main.KafkaConsumerExample;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -45,9 +46,11 @@ public class NewCrawler {
     }
 
     public void crawl() throws InterruptedException {
-        new Thread(shuffler).start();
+//        new Thread(shuffler).start();
+
+        KafkaConsumerExample.runConsumer();
 //        parser.runWorkers();
-        fetcher.runWorkers();
+//        fetcher.runWorkers();
 
         while(true) {
             System.out.println("shuffled links: " + shuffledLinksQueue.size()
