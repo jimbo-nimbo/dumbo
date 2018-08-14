@@ -32,7 +32,6 @@ class Seeder {
             String url = "https://www." + inp.next();
             ProducerRecord<String, String> record = new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null,
                     url);
-	    System.out.println(url + " -> produced");
             producer.send(record);
         }
     }
