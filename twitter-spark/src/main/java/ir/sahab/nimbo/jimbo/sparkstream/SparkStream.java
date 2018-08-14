@@ -46,7 +46,7 @@ public class SparkStream implements Serializable {
         System.setProperty("twitter4j.oauth.accessTokenSecret", TWITTER_ACCESS_TOKEN_SECRET);
         SparkConf sparkConf = new SparkConf().setAppName("twitterApp");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
-        sparkContext.setLogLevel("ALL");
+        sparkContext.setLogLevel("ERROR");
         jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(3000));
         //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
     }
