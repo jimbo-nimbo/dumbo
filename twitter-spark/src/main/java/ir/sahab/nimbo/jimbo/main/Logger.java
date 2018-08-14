@@ -6,6 +6,8 @@ public class Logger {
     private static org.slf4j.Logger logWriterRoot = LoggerFactory.getLogger(Logger.class);
     private static org.slf4j.Logger logWriterWarn = LoggerFactory.getLogger("admin");
     private static org.slf4j.Logger logWriterInfo = LoggerFactory.getLogger("file");
+    private static org.slf4j.Logger logWriterFatal = LoggerFactory.getLogger("fatal");
+    private static org.slf4j.Logger logWriterError = LoggerFactory.getLogger("error");
     private static Logger logger = null;
 
 
@@ -47,6 +49,20 @@ public class Logger {
     public synchronized void infoLog(String s) {
         try {
             logWriterInfo.info(s);
+        } catch (Exception e) {
+            //
+        }
+    }
+    public synchronized void errorLog(String s) {
+        try {
+            logWriterError.info(s);
+        } catch (Exception e) {
+            //
+        }
+    }
+    public synchronized void fatalLog(String s) {
+        try {
+            logWriterFatal.info(s);
         } catch (Exception e) {
             //
         }
