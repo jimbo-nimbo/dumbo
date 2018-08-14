@@ -150,7 +150,7 @@ class Worker implements Runnable
                 for (int i1 = 0; i1 < shuffledLinks.size(); i1++) {
                     String link = shuffledLinks.get(i1);
                     if (checkLink(link)) {
-                        System.out.println(i1 + "<---");
+//                        System.out.println(i1 + "<---" + link);
                         futures.add(client.execute(new HttpGet(link), null));
                         urls.add(link);
                     }

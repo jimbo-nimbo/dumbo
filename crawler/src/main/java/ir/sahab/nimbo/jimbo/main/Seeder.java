@@ -25,7 +25,6 @@ class Seeder {
     }
 
     void initializeKafka() {	
-	System.out.println("hello");
         final Producer<String, String> producer = new KafkaProducer<>(
                 KafkaPropertyFactory.getProducerProperties());
         while (inp.hasNext()) {
