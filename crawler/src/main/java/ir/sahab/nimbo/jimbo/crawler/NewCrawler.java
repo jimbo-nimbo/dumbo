@@ -31,11 +31,11 @@ public class NewCrawler {
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlSetting.getRawPagesQueueMaxSize());
         //todo: read thread count from properties
-        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(100));
+        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(20));
 
         elasticQueue = new ArrayBlockingQueue<>(crawlSetting.getElasticQueueMaxSize());
         //todo: read thread count from properties
-        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(4));
+        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(3));
     }
 
     /**

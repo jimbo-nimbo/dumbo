@@ -163,7 +163,7 @@ class Worker implements Runnable
             } catch (InterruptedException e) {
                 System.out.println("interupt exeption" + urls.get(i));
             } catch (ExecutionException e) {
-                System.out.println("execution exeption" + urls.get(i));
+//                System.out.println("execution exeption" + urls.get(i));
                 //todo: handle
             } catch (IOException e) {
                 System.out.println("ioException exeption" + urls.get(i));
