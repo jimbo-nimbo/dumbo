@@ -3,7 +3,6 @@ package ir.sahab.nimbo.jimbo.crawler;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.NewFetcher;
-//import ir.sahab.nimbo.jimbo.main.KafkaConsumerExample;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -12,7 +11,7 @@ import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class NewCrawler {
+public class Crawler {
 
     private final Shuffler shuffler;
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
@@ -23,26 +22,23 @@ public class NewCrawler {
     private final Parser parser;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
-//    private final ElasticsearchThreadFactory;
-    public NewCrawler(CrawlSetting crawlSetting){
+    public Crawler(CrawlerSetting crawlerSetting){
 
-        shuffledLinksQueue = new ArrayBlockingQueue<>(crawlSetting.getShuffledQueueMaxSize());
+        shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
         shuffler = new Shuffler(shuffledLinksQueue);
 
-        rawPagesQueue = new ArrayBlockingQueue<>(crawlSetting.getRawPagesQueueMaxSize());
-        //todo: read thread count from properties
-        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(40));
+        rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
+        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting());
 
-        elasticQueue = new ArrayBlockingQueue<>(crawlSetting.getElasticQueueMaxSize());
-        //todo: read thread count from properties
-        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(1));
+        elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
+        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting());
     }
 
     /**
      * constructor for testing
      */
-    NewCrawler(){
-        this(new CrawlSetting(10000, 10000, 10000));
+    Crawler(){
+        this(new CrawlerSetting(10000, 10000, 10000));
     }
 
     public void crawl() throws InterruptedException {

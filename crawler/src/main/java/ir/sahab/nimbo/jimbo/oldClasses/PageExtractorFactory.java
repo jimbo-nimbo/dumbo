@@ -1,7 +1,7 @@
 package ir.sahab.nimbo.jimbo.oldClasses;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;

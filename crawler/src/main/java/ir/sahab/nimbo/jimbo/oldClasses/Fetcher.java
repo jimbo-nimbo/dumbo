@@ -1,9 +1,9 @@
 package ir.sahab.nimbo.jimbo.oldClasses;
 
 import ir.sahab.nimbo.jimbo.fetcher.LruCache;
-import ir.sahab.nimbo.jimbo.fetcher.Validate;
+import ir.sahab.nimbo.jimbo.fetcher.Validator;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -52,7 +52,7 @@ public class Fetcher implements Runnable {
                     HBase.getInstance().putMark(url, "Marked!");
                     lruAdd(siteUrl);
                     body = fetchUrl(siteUrl);
-                    if (body == null || !Validate.isValidBody(body)) {
+                    if (body == null || !Validator.isValidBody(body)) {
                         return;
                     }
                     queue.put(body);

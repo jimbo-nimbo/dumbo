@@ -8,10 +8,10 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Date;
 
-import static ir.sahab.nimbo.jimbo.fetcher.Validate.isEnglish;
+import static ir.sahab.nimbo.jimbo.fetcher.Validator.isEnglish;
 import static org.junit.Assert.*;
 
-public class ValidateTest {
+public class ValidatorTest {
 
     private static Document banSite;
     private static Document goodSite;
@@ -24,7 +24,7 @@ public class ValidateTest {
         goodSite = Jsoup.connect("http://hbase.apache.org").get();
         banSiteText = banSite.text();
         goodSiteText = goodSite.text();
-        Validate.init();
+        Validator.init();
     }
 
     @Test
@@ -40,27 +40,27 @@ public class ValidateTest {
 
     @Test
     public void banInitialListTest() {
-        Validate.isValidBody(goodSite);
-        assertEquals(Validate.banWords.size(), 5);
+        Validator.isValidBody(goodSite);
+        assertEquals(Validator.banWords.size(), 5);
     }
 
     @Test
     public void benchMarkTest(){
-        assertTrue(Validate.isNotBanBody(goodSite.text()));
-        assertTrue(Validate.isNotBan(goodSite));
-        assertTrue(Validate.isValidBody(goodSite));
+        assertTrue(Validator.isNotBanBody(goodSite.text()));
+        assertTrue(Validator.isNotBan(goodSite));
+        assertTrue(Validator.isValidBody(goodSite));
         Date f = new Date(System.currentTimeMillis());
-        Validate.isNotBanBody(goodSite.text());
+        Validator.isNotBanBody(goodSite.text());
         Date s = new Date(System.currentTimeMillis());
         System.err.println("time of notBanBody time : " + String.valueOf(s.getTime() - f.getTime()));
-        Validate.isNotBan(goodSite);
+        Validator.isNotBan(goodSite);
         s = new Date(System.currentTimeMillis());
         System.err.println("time of NotBan time : " + String.valueOf(s.getTime() - f.getTime()));
-        Validate.isValidBody(goodSite);
+        Validator.isValidBody(goodSite);
         s = new Date(System.currentTimeMillis());
         System.err.println("time of ValidBody time : " + String.valueOf(s.getTime() - f.getTime()));
         f = new Date(System.currentTimeMillis());
-        Validate.allValidation(goodSite);
+        Validator.allValidation(goodSite);
         s = new Date(System.currentTimeMillis());
         System.err.println("time of AllValid time : " + String.valueOf(s.getTime() - f.getTime()));
 
@@ -70,7 +70,7 @@ public class ValidateTest {
     @Test
     public void isNotBanBodyTest() {
         Date f = new Date(System.currentTimeMillis());
-        assertTrue(Validate.isNotBanBody(goodSite.text()));
+        assertTrue(Validator.isNotBanBody(goodSite.text()));
         Date s = new Date(System.currentTimeMillis());
         System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
     }
@@ -78,20 +78,20 @@ public class ValidateTest {
     @Test
     public void isValidTest() {
         Date f = new Date(System.currentTimeMillis());
-        assertFalse(Validate.isValidBody(banSite));
+        assertFalse(Validator.isValidBody(banSite));
         Date s = new Date(System.currentTimeMillis());
         System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
     }
 
     @Test
     public void notBanTest() {
-        assertTrue(Validate.isNotBan(goodSite));
+        assertTrue(Validator.isNotBan(goodSite));
     }
 
     @Test
     public void banTest() {
         Date f = new Date(System.currentTimeMillis());
-        assertFalse(Validate.isNotBan(banSite));
+        assertFalse(Validator.isNotBan(banSite));
         Date s = new Date(System.currentTimeMillis());
         System.err.println("time of banTest time : " + String.valueOf(s.getTime() - f.getTime()));
     }

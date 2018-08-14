@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Validate {
+public class Validator {
 
     static List<String> banWords = null;
     private static TextObjectFactory textObjectFactory = null;
@@ -29,7 +29,6 @@ public class Validate {
 
     static {
         init();
-
     }
 
     public static boolean isValidBody(Document document) {
@@ -48,20 +47,6 @@ public class Validate {
         return isEnglish(article) && isNotBan(document) && isNotBanBody(article);
 
     }
-
-
-//    static boolean isEnglishWithApi(String article) {
-//        try {
-//            String language = DetectLanguage.simpleDetect(article);
-//            //List<Result> results = DetectLanguage.detect(article);
-//            //System.err.println(results.get(0).language);
-//            return language.equals("en");
-//        } catch (APIError apiError) {
-//            apiError.printStackTrace();
-//            return false;
-//        }
-//
-//    }
 
     static boolean isEnglish(String article) {
         TextObject textObject = textObjectFactory.forText(article);

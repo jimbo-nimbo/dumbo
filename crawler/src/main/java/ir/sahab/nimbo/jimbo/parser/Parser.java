@@ -1,9 +1,8 @@
 package ir.sahab.nimbo.jimbo.parser;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
-import ir.sahab.nimbo.jimbo.fetcher.Validate;
-import ir.sahab.nimbo.jimbo.hbase.HBase;
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.fetcher.Validator;
+import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -80,7 +79,7 @@ class Worker implements Runnable {
                 WebPageModel model = webPage.take();
 //                System.out.println(model.getLink() + "=============================");
                 final Document document = Jsoup.parse(model.getHtml());
-                if (Validate.allValidation(document)) {
+                if (Validator.allValidation(document)) {
                     Parser.parsedPages.incrementAndGet();
 //                    sendToElastic(model, document);
 

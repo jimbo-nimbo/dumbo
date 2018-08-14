@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.main;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;

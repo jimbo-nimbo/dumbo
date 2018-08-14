@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.shuffler;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.StringDeserializer;

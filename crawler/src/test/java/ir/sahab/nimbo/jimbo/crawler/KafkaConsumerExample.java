@@ -1,6 +1,6 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
+import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
