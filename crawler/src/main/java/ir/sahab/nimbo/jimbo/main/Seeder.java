@@ -26,11 +26,11 @@ class Seeder {
 
     void initializeKafka() {	
 	System.out.println("hello");
-        final Producer<Long, String> producer = new KafkaProducer<>(
+        final Producer<String, String> producer = new KafkaProducer<>(
                 KafkaPropertyFactory.getProducerProperties());
         while (inp.hasNext()) {
             String url = "https://www." + inp.next();
-            ProducerRecord<Long, String> record = new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null,
+            ProducerRecord<String, String> record = new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null,
                     url);
 	    System.out.println(url + " -> produced");
             producer.send(record);
