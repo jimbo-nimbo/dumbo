@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.fetcher;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -156,9 +157,9 @@ class Worker implements Runnable
                     }
                 }
                 for (; i < futures.size(); i++) {
-                    HttpResponse response = futures.get(i).get();
-                    if (response != null) {
-                        final String text = EntityUtils.toString(response.getEntity());
+                    HttpEntity entity = futures.get(i).get().getEntity();
+                    if (entity != null) {
+                        final String text = EntityUtils.toString(entity);
                         rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
                     }
                 }
