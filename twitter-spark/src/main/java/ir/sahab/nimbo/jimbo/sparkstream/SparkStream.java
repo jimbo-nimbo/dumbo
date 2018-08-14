@@ -79,8 +79,8 @@ public class SparkStream implements Serializable {
                 s -> new Tuple2<>(s, 1));
         JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
                 (integer, integer2) -> integer + integer2);
-        counting.dstream().saveAsTextFiles("hdfs://nimbo1:9000/spark/", "txt");
-        //counting.saveAsHadoopFiles("hdfs://46.105.100.63:9000/spark/","txt", Text.class,
+        //counting.dstream().saveAsTextFiles("hdfs://nimbo1:9000/spark/",);
+        counting.saveAsHadoopFiles("hdfs://nimbo1:9000/spark/","txt", Text.class,
                 //IntWritable.class, TextOutputFormat.class);
         //counting.dstream().saveAsTextFiles("nimac",".rawFile");
 //        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
