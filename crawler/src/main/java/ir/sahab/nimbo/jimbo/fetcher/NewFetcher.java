@@ -139,11 +139,10 @@ class Worker implements Runnable
 
     @Override
     public void run() {
-
-        List<Future<HttpResponse>> futures = new ArrayList<>();
-        List<String> urls = new ArrayList<>();
         while(running)
         {
+            List<Future<HttpResponse>> futures = new ArrayList<>();
+            List<String> urls = new ArrayList<>();
             int i = 0;
             try {
                 final List<String> shuffledLinks = shuffledLinksQueue.take();
@@ -168,9 +167,6 @@ class Worker implements Runnable
             } catch (IOException e) {
                 System.out.println("ioException exeption" + urls.get(i));
             }
-
-            futures.clear();
-            urls.clear();
         }
     }
 
