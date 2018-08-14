@@ -10,11 +10,9 @@ public class Main
 {
     public static void main(String[] args) throws ElasticCannotLoadException, IOException {
         Seeder.getInstance().initializeKafka();
-        //(new Crawler()).run();
         try {
-            new NewCrawler(new CrawlSetting(10000,
+            new NewCrawler(new CrawlSetting(100,
                     10000, 10000)).crawl();
-            System.out.println("hello");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

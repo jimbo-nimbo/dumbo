@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.crawler;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.NewFetcher;
+//import ir.sahab.nimbo.jimbo.main.KafkaConsumerExample;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -30,11 +31,11 @@ public class NewCrawler {
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlSetting.getRawPagesQueueMaxSize());
         //todo: read thread count from properties
-        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(1));
+        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(40));
 
         elasticQueue = new ArrayBlockingQueue<>(crawlSetting.getElasticQueueMaxSize());
         //todo: read thread count from properties
-        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(4));
+        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(1));
     }
 
     /**
@@ -45,8 +46,10 @@ public class NewCrawler {
     }
 
     public void crawl() throws InterruptedException {
+
         new Thread(shuffler).start();
-//        parser.runWorkers();
+
+        parser.runWorkers();
         fetcher.runWorkers();
 
         while(true) {

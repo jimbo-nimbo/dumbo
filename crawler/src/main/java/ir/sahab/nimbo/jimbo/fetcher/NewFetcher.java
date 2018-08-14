@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.fetcher;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -150,20 +151,23 @@ class Worker implements Runnable
                 for (int i1 = 0; i1 < shuffledLinks.size(); i1++) {
                     String link = shuffledLinks.get(i1);
                     if (checkLink(link)) {
-                        System.out.println(i1 + "<---");
+//                        System.out.println(i1 + "<---" + link);
                         futures.add(client.execute(new HttpGet(link), null));
                         urls.add(link);
                     }
                 }
                 for (; i < futures.size(); i++) {
-                    final String text = EntityUtils.toString(futures.get(i).get().getEntity());
-                    rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
+                    HttpEntity entity = futures.get(i).get().getEntity();
+                    if (entity != null) {
+                        final String text = EntityUtils.toString(entity);
+                        rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
+                    }
                 }
 
             } catch (InterruptedException e) {
                 System.out.println("interupt exeption" + urls.get(i));
             } catch (ExecutionException e) {
-                System.out.println("execution exeption" + urls.get(i));
+//                System.out.println("execution exeption" + urls.get(i));
                 //todo: handle
             } catch (IOException e) {
                 System.out.println("ioException exeption" + urls.get(i));
