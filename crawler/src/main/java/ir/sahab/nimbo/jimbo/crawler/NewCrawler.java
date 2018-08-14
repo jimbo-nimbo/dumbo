@@ -35,7 +35,7 @@ public class NewCrawler {
 
         elasticQueue = new ArrayBlockingQueue<>(crawlSetting.getElasticQueueMaxSize());
         //todo: read thread count from properties
-        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(3));
+        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting(1));
     }
 
     /**

@@ -15,7 +15,7 @@ public class KafkaConsumerExample {
                 new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties());
         consumer.subscribe(Collections.singletonList(TOPIC));
 
-        final int giveUp = 100;
+        final int giveUp = linksQueueSize;
         int noRecordsCount = 0;
         while (noRecordsCount < giveUp) {
             final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
