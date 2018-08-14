@@ -52,11 +52,18 @@ public class NewCrawler {
         parser.runWorkers();
         fetcher.runWorkers();
 
+        int tmp = 0;
+        int p = 0;
         while(true) {
+
+            p = NewFetcher.fetchedPages.get();
             System.out.println("shuffled links: " + shuffledLinksQueue.size()
                     + ",\t webpages: " + rawPagesQueue.size() + ", " +  Parser.parsedPages.intValue()
                     + " page parsed!\t, lru rate = "
-                    + NewFetcher.linkpassed.doubleValue()/NewFetcher.linkNotPassed.doubleValue());
+                    + NewFetcher.linkpassed.doubleValue()/
+                    (NewFetcher.linkpassed.doubleValue() + NewFetcher.linkNotPassed.doubleValue())
+            + " , \t" + (p - tmp) + "page fetched");
+            tmp = p;
             Thread.sleep(3000);
         }
     }

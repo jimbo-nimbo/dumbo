@@ -27,9 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NewFetcher {
 
+    public static AtomicInteger fetchedPages = new AtomicInteger(0);
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
@@ -159,6 +161,7 @@ class Worker implements Runnable
                     HttpEntity entity = futures.get(i).get().getEntity();
                     if (entity != null) {
                         final String text = EntityUtils.toString(entity);
+                        NewFetcher.fetchedPages.getAndIncrement();
                         rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
                     }
                 }
