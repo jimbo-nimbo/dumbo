@@ -87,7 +87,6 @@ public  class Shuffler implements Runnable{
                     }
                     putList.add(list.get(i));
                 }
-                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
