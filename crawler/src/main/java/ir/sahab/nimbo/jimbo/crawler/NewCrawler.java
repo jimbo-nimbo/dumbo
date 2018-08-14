@@ -62,7 +62,7 @@ public class NewCrawler {
                     + " page parsed!\t, lru rate = "
                     + NewFetcher.linkpassed.doubleValue()/
                     (NewFetcher.linkpassed.doubleValue() + NewFetcher.linkNotPassed.doubleValue())
-            + " , \t" + (p - tmp) + "page fetched");
+            + " , \t>" + (p - tmp) + "page fetched <");
             tmp = p;
             Thread.sleep(3000);
         }
