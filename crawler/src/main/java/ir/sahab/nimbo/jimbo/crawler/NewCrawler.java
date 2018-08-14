@@ -31,7 +31,7 @@ public class NewCrawler {
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlSetting.getRawPagesQueueMaxSize());
         //todo: read thread count from properties
-        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(1));
+        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting(100));
 
         elasticQueue = new ArrayBlockingQueue<>(crawlSetting.getElasticQueueMaxSize());
         //todo: read thread count from properties
@@ -48,9 +48,8 @@ public class NewCrawler {
     public void crawl() throws InterruptedException {
         new Thread(shuffler).start();
 
-//        KafkaConsumerExample.runConsumer();
-//        parser.runWorkers();
-//        fetcher.runWorkers();
+        parser.runWorkers();
+        fetcher.runWorkers();
 
         while(true) {
             System.out.println("shuffled links: " + shuffledLinksQueue.size()
