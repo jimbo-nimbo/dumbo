@@ -66,7 +66,7 @@ public class SparkStream implements Serializable {
         }
     }
 
-    void getTrend(){
+    public void getTrend(){
         JavaReceiverInputDStream<Status> twitterStream = TwitterUtils.createStream(jssc, new String[]{"en"});
         JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
             ArrayList<String> list = new ArrayList<>();
@@ -79,15 +79,16 @@ public class SparkStream implements Serializable {
                 s -> new Tuple2<>(s, 1));
         JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
                 (integer, integer2) -> integer + integer2);
+        counting.saveAsHadoopFiles("hashTagCount","sparkStream");
         //counting.dstream().saveAsTextFiles("nimac",".rawFile");
-        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
-            @Override
-            public void call(JavaPairRDD<String, Integer> stringIntegerJavaPairRDD) throws Exception {
-                for(Map.Entry<String, Integer> entry : stringIntegerJavaPairRDD.collectAsMap().entrySet()){
-                    System.out.println(entry.getKey() + " " + entry.getValue());
-                }
-            }
-        });
+//        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
+//            @Override
+//            public void call(JavaPairRDD<String, Integer> stringIntegerJavaPairRDD) throws Exception {
+//                for(Map.Entry<String, Integer> entry : stringIntegerJavaPairRDD.collectAsMap().entrySet()){
+//                    System.out.println(entry.getKey() + " " + entry.getValue());
+//                }
+//            }
+//        });
         //counting.print();
         jssc.start();
         try {
