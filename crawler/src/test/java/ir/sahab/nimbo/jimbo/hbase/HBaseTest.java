@@ -106,4 +106,10 @@ public class HBaseTest {
         assertEquals(100, HBase.getInstance().bulkData.size());
     }
 
+    @Test
+    public void processAllTest(){
+
+    }
+
+
 }

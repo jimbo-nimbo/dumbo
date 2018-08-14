@@ -233,7 +233,7 @@ public class HBase {
 
     String reverseUrl(URL url) {
         //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
-        return reverseDomain(url.getHost()) + url.getPath();
+        return reverseDomain(url.getHost()) + getHash(url.getPath());
     }
 
     String reverseDomain(String domain) {
