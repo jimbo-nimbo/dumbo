@@ -32,14 +32,14 @@ import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class SparkStream implements Serializable {
 
-    JavaStreamingContexSerializable jssc;
+    private JavaStreamingContexSerializable jssc;
 
     public SparkStream() {
         initialize();
     }
 
 
-    void initialize() {
+    private void initialize() {
         System.setProperty("twitter4j.oauth.consumerKey", TWITTER_CONSUMER_KEY);
         System.setProperty("twitter4j.oauth.consumerSecret", TWITTER_CONSUMER_SECRET);
         System.setProperty("twitter4j.oauth.accessToken", TWITTER_ACCESS_TOKEN);
@@ -81,7 +81,7 @@ public class SparkStream implements Serializable {
                 (integer, integer2) -> integer + integer2);
         //counting.dstream().saveAsTextFiles("hdfs://nimbo1:9000/spark/",);
         counting.saveAsHadoopFiles("hdfs://nimbo1:9000/spark/","txt", Text.class,
-                //IntWritable.class, TextOutputFormat.class);
+                IntWritable.class, TextOutputFormat.class);
         //counting.dstream().saveAsTextFiles("nimac",".rawFile");
 //        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
 //            @Override
