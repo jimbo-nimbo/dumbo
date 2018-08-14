@@ -14,15 +14,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 public  class Shuffler implements Runnable{
 
     private final static String TOPIC = Config.URL_FRONTIER_TOPIC;
-    private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092";
-
-//    private final Consumer<String, String> consumer =  new KafkaConsumer<>(
-//            KafkaPropertyFactory.getConsumerProperties());
+    private final static String BOOTSTRAP_SERVERS = "localhost:9092";
+    final static int MAX_POLL_RECORDS = 200000;
 
     private final Consumer<String, String> consumer = createConsumer();
     private final ArrayBlockingQueue<List<String>> linksQueue;
-
 
     private boolean running = true;
 
@@ -95,20 +91,21 @@ public  class Shuffler implements Runnable{
 
     private Consumer<String, String> createConsumer() {
         final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG,
                 "KafkaExampleConsumer");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class.getName());
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, MAX_POLL_RECORDS);
         // Create the consumer using props.
         final Consumer<String, String> consumer =
                 new KafkaConsumer<>(props);
         // Subscribe to the topic.
         consumer.subscribe(Collections.singletonList(TOPIC));
         return consumer;
+
     }
 
     public void runConsumer() {

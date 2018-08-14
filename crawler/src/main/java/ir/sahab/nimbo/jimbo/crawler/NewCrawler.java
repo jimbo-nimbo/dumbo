@@ -46,6 +46,7 @@ public class NewCrawler {
     }
 
     public void crawl() throws InterruptedException {
+
         new Thread(shuffler).start();
 
         parser.runWorkers();
