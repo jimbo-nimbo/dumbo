@@ -156,8 +156,11 @@ class Worker implements Runnable
                     }
                 }
                 for (; i < futures.size(); i++) {
-                    final String text = EntityUtils.toString(futures.get(i).get().getEntity());
-                    rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
+                    HttpResponse response = futures.get(i).get();
+                    if (response != null) {
+                        final String text = EntityUtils.toString(response.getEntity());
+                        rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
+                    }
                 }
 
             } catch (InterruptedException e) {
