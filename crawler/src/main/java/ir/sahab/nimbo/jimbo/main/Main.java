@@ -13,7 +13,6 @@ public class Main
         try {
             new NewCrawler(new CrawlSetting(10000,
                     10000, 10000)).crawl();
-            System.out.println("hello");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

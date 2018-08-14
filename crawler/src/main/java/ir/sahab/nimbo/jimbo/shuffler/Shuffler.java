@@ -70,29 +70,31 @@ public  class Shuffler implements Runnable{
     @Override
     public void run() {
 	System.out.println("shuffler started!");
-        List<String> list;
-        List<String> putList = new ArrayList<>();
+            runConsumer();
 
-        while(running) {
-            list = consumeAndShuffle();
-
-            try {
-                for (int i = 0; i < list.size(); i++) {
-                    System.out.println(i + "<-");
-                    if (i % 100 == 99 || i == list.size() -1 ) {
-                        linksQueue.put(putList);
-                        putList = new ArrayList<>();
-                    }
-                    putList.add(list.get(i));
-                }
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        List<String> list;
+//        List<String> putList = new ArrayList<>();
+//
+//        while(running) {
+//            list = consumeAndShuffle();
+//
+//            try {
+//                for (int i = 0; i < list.size(); i++) {
+//                    System.out.println(i + "<-");
+//                    if (i % 100 == 99 || i == list.size() -1 ) {
+//                        linksQueue.put(putList);
+//                        putList = new ArrayList<>();
+//                    }
+//                    putList.add(list.get(i));
+//                }
+//                Thread.sleep(5000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
-    private static Consumer<String, String> createConsumer() {
+    private Consumer<String, String> createConsumer() {
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 BOOTSTRAP_SERVERS);
@@ -110,10 +112,10 @@ public  class Shuffler implements Runnable{
         return consumer;
     }
 
-    public static void runConsumer() throws InterruptedException {
+    public void runConsumer() {
         System.out.println("example! ");
         final Consumer<String, String> consumer = createConsumer();
-        final int giveUp = 100;
+        final int giveUp = 1000;
         int noRecordsCount = 0;
 
         while (true) {
