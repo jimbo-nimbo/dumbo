@@ -11,7 +11,7 @@ public class Main
     public static void main(String[] args) throws ElasticCannotLoadException, IOException {
         Seeder.getInstance().initializeKafka();
         try {
-            new NewCrawler(new CrawlSetting(3000,
+            new NewCrawler(new CrawlSetting(300,
                     10000, 10000)).crawl();
         } catch (InterruptedException e) {
             e.printStackTrace();
