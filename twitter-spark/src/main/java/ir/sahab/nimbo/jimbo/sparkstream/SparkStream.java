@@ -1,6 +1,8 @@
 package ir.sahab.nimbo.jimbo.sparkstream;
 
 import ir.sahab.nimbo.jimbo.main.Logger;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -19,6 +21,7 @@ import scala.Tuple2;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
+import javax.xml.soap.Text;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +82,8 @@ public class SparkStream implements Serializable {
                 s -> new Tuple2<>(s, 1));
         JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
                 (integer, integer2) -> integer + integer2);
-        counting.saveAsHadoopFiles("hashTagCount","sparkStream");
+        counting.saveAsHadoopFiles("hdfs://localhost:9000/spark/","txt", Text.class,
+                IntWritable.class, TextOutputFormat.class);
         //counting.dstream().saveAsTextFiles("nimac",".rawFile");
 //        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
 //            @Override
