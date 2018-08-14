@@ -4,6 +4,7 @@ import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -43,14 +44,10 @@ public class SparkStream implements Serializable {
         System.setProperty("twitter4j.oauth.consumerSecret", TWITTER_CONSUMER_SECRET);
         System.setProperty("twitter4j.oauth.accessToken", TWITTER_ACCESS_TOKEN);
         System.setProperty("twitter4j.oauth.accessTokenSecret", TWITTER_ACCESS_TOKEN_SECRET);
-        JavaSparkContext sparkContext = new JavaSparkContext("local", "twitterApp");
+        SparkConf sparkConf = new SparkConf().setAppName("twitterApp");
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         sparkContext.setLogLevel("ALL");
         jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(3000));
-        try {
-            jssc.awaitTerminationOrTimeout(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
     }
 
@@ -82,7 +79,7 @@ public class SparkStream implements Serializable {
                 s -> new Tuple2<>(s, 1));
         JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
                 (integer, integer2) -> integer + integer2);
-        counting.dstream().saveAsTextFiles("hdfs://nimbo1:9000/spark/","txt");
+        counting.dstream().saveAsTextFiles("hdfs://nimbo1:9000/spark/", "txt");
         //counting.saveAsHadoopFiles("hdfs://46.105.100.63:9000/spark/","txt", Text.class,
                 //IntWritable.class, TextOutputFormat.class);
         //counting.dstream().saveAsTextFiles("nimac",".rawFile");
