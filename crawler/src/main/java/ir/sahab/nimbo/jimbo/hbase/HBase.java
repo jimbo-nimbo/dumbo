@@ -276,6 +276,36 @@ public class HBase {
         } catch (IOException e) {
             Logger.getInstance().debugLog(e.getMessage());
         }
+    }
+
+    public ResultScanner scanData(List<byte[]> qulifiers){
+
+        Scan scan = new Scan();
+        ResultScanner results = null;
+        for(byte[] bytes : qulifiers) {
+            scan.addColumn(HBASE_DATA_CF_NAME.getBytes(), bytes);
+        }
+        try {
+            results = table.getScanner(scan);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+    public ResultScanner scanColumnFamily(List<byte[]> columnFamily){
+
+        Scan scan = new Scan();
+        ResultScanner results = null;
+        for(byte[] bytes : columnFamily) {
+            scan.addFamily(bytes);
+        }
+        try {
+            results = table.getScanner(scan);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+
 
 
     }

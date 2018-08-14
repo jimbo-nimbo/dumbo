@@ -1,15 +1,20 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.Link;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.*;
 
+import static ir.sahab.nimbo.jimbo.main.Config.HBASE_DATA_CF_NAME;
 import static org.junit.Assert.*;
 
 public class HBaseTest {
@@ -107,7 +112,21 @@ public class HBaseTest {
     }
 
     @Test
-    public void processAllTest(){
+    public void processAllTest() throws IOException {
+        ResultScanner results = HBase.getInstance()
+                .scanColumnFamily(Arrays.asList(HBASE_DATA_CF_NAME.getBytes()));
+        for (Result result = results.next(); result != null; result = results.next()){
+            Set<Map.Entry<byte[], byte[]>> enterySet = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes()).entrySet();
+            for(Map.Entry<byte[], byte[]> bytes : enterySet){
+                String qualif = new String(bytes.getKey());
+                if(qualif.contains("link")){
+                    String rev = HBase.getInstance().reverseUrl(new URL(new String(bytes.getValue())));
+                    if(rev.equals("") || rev.length() == 0){
+                        System.err.println(new String(bytes.getValue()));
+                    }
+                }
+            }
+        }
 
     }
 
