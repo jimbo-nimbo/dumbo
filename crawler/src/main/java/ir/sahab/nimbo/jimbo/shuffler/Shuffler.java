@@ -76,12 +76,16 @@ public  class Shuffler implements Runnable{
 
             try {
                 for (int i = 0; i < list.size(); i++) {
-//                    System.out.println(i + " : " + list.get(i));
+                    if (linksQueue.remainingCapacity() == 0) {
+                        Thread.sleep(10000);
+                    }
+
                     if (i % 100 == 99 || i == list.size() -1 ) {
                         linksQueue.put(putList);
                         putList = new ArrayList<>();
                     }
                     putList.add(list.get(i));
+
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
