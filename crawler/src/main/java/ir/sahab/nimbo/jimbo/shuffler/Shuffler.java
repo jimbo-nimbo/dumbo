@@ -70,28 +70,28 @@ public  class Shuffler implements Runnable{
     @Override
     public void run() {
 	System.out.println("shuffler started!");
-            runConsumer();
+//            runConsumer();
 
-//        List<String> list;
-//        List<String> putList = new ArrayList<>();
-//
-//        while(running) {
-//            list = consumeAndShuffle();
-//
-//            try {
-//                for (int i = 0; i < list.size(); i++) {
-//                    System.out.println(i + "<-");
-//                    if (i % 100 == 99 || i == list.size() -1 ) {
-//                        linksQueue.put(putList);
-//                        putList = new ArrayList<>();
-//                    }
-//                    putList.add(list.get(i));
-//                }
-//                Thread.sleep(5000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        List<String> list;
+        List<String> putList = new ArrayList<>();
+
+        while(running) {
+            list = consumeAndShuffle();
+
+            try {
+                for (int i = 0; i < list.size(); i++) {
+                    System.out.println(i + " : " + list.get(i));
+                    if (i % 100 == 99 || i == list.size() -1 ) {
+                        linksQueue.put(putList);
+                        putList = new ArrayList<>();
+                    }
+                    putList.add(list.get(i));
+                }
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private Consumer<String, String> createConsumer() {
