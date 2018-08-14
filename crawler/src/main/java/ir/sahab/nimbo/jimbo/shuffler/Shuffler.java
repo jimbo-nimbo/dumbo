@@ -65,6 +65,7 @@ public  class Shuffler implements Runnable{
 
     @Override
     public void run() {
+	System.out.println("shuffler started!");
         List<String> list;
         List<String> putList = new ArrayList<>();
 
@@ -73,6 +74,7 @@ public  class Shuffler implements Runnable{
 
             try {
                 for (int i = 0; i < list.size(); i++) {
+		    System.out.println(i + "<-");
                     if (i % 100 == 99 || i == list.size() -1 ) {
                         linksQueue.put(putList);
                         putList = new ArrayList<>();
