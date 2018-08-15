@@ -19,6 +19,7 @@ import org.jsoup.Jsoup;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -145,11 +146,17 @@ public class Worker implements Runnable {
                 for (String shuffledLink : shuffledLinks) {
                     if (checkLink(shuffledLink)) {
                         long tmp = System.currentTimeMillis();
-                        rawWebPagesQueue.add(new WebPageModel(
-                                Jsoup.connect(shuffledLink).validateTLSCertificates(false).get().text(),
-                                shuffledLink
-                        ));
-                        FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
+
+                        try {
+                            String text = Jsoup.connect(shuffledLink).timeout(500)
+                                    .validateTLSCertificates(false).get().text();
+                            rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
+                            FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
+                            FETCHED_LINKS.incrementAndGet();
+
+                        } catch (IOException e) {
+                            //todo
+                        }
                     }
                 }
 
@@ -176,7 +183,7 @@ public class Worker implements Runnable {
 //                    }
 //                }
 
-            } catch (InterruptedException | IOException e) {
+            } catch (InterruptedException exception) {
                 //todo
             }
         }
