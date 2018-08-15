@@ -41,7 +41,38 @@ public class ValidateTest {
     @Test
     public void banInitialListTest() {
         Validate.isValidBody(goodSite);
-        assertEquals(Validate.banWords.size(), 10);
+        assertEquals(Validate.banWords.size(), 9);
+    }
+
+    @Test
+    public void benchMarkTest(){
+        assertTrue(Validate.isNotBanBody(goodSite.text()));
+        assertTrue(Validate.isNotBan(goodSite));
+        assertTrue(Validate.isValidBody(goodSite));
+        Date f = new Date(System.currentTimeMillis());
+        Validate.isNotBanBody(goodSite.text());
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of notBanBody time : " + String.valueOf(s.getTime() - f.getTime()));
+        Validate.isNotBan(goodSite);
+        s = new Date(System.currentTimeMillis());
+        System.err.println("time of NotBan time : " + String.valueOf(s.getTime() - f.getTime()));
+        Validate.isValidBody(goodSite);
+        s = new Date(System.currentTimeMillis());
+        System.err.println("time of ValidBody time : " + String.valueOf(s.getTime() - f.getTime()));
+        f = new Date(System.currentTimeMillis());
+        Validate.allValidation(goodSite);
+        s = new Date(System.currentTimeMillis());
+        System.err.println("time of AllValid time : " + String.valueOf(s.getTime() - f.getTime()));
+
+
+    }
+
+    @Test
+    public void isNotBanBodyTest() {
+        Date f = new Date(System.currentTimeMillis());
+        assertTrue(Validate.isNotBanBody(goodSite.text()));
+        Date s = new Date(System.currentTimeMillis());
+        System.err.println("time of valid time : " + String.valueOf(s.getTime() - f.getTime()));
     }
 
     @Test

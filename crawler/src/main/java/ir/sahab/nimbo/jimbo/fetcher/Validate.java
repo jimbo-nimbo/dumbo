@@ -33,12 +33,22 @@ public class Validate {
     }
 
     public static boolean isValidBody(Document document) {
+        //return isEnglish(document.text().substring(0, 200));
         return isEnglish(document.text()) && isNotBan(document);
     }
 
-    public static boolean isValidUrl(URL url) {
+    static boolean isValidUrl(URL url) {
         return isBadUrl(url);
     }
+
+    public static boolean allValidation(Document document){
+        String article = document.text();
+        if (article.length() > 400)
+            article = article.substring(0, 400);
+        return isEnglish(article) && isNotBan(document) && isNotBanBody(article);
+
+    }
+
 
 //    static boolean isEnglishWithApi(String article) {
 //        try {
@@ -73,7 +83,8 @@ public class Validate {
 
     static boolean isBadUrl(URL url) {
         for (String word : banWords) {
-            if ((url.getQuery() != null && url.getQuery().contains(word)) || (url.getHost() != null && url.getHost().contains(word)))
+            if ((url.getQuery() != null && url.getQuery().toLowerCase().contains(word))
+                    || (url.getHost() != null && url.getHost().toLowerCase().contains(word)))
                 return true;
         }
         return false;
@@ -81,12 +92,22 @@ public class Validate {
 
     static boolean isNotBan(Document document) {
         for (String word : banWords) {
-            if ((document.title() != null && document.title().contains(word)) || (document.head() != null && document.head().text().contains(word))) {
+            if ((document.title() != null && document.title().toLowerCase().contains(word))
+                    || (document.head() != null && document.head().text().toLowerCase().contains(word))) {
                 return false;
             }
         }
         return true;
+    }
 
+    //TODO can add body check if our speed is ok
+    static boolean isNotBanBody(String article){
+        for (String word : banWords) {
+            if ((article != null && article.contains(word))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void initLanguageDetect() {

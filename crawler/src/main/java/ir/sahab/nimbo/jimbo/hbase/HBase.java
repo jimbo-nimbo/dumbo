@@ -12,6 +12,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +30,11 @@ public class HBase {
     private static HBase hbase = new HBase();
     TableName tableName;
     private Connection connection = null;
-    private Configuration config = null;
+    private Configuration config;
     private Admin admin = null;
     Table table = null;
     private ExecutorService executorService;
-    ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<Put>(HBASE_BULK_CAPACITY);
+    ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
 
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
@@ -75,7 +76,12 @@ public class HBase {
      */
 
     public void putBulkData(String sourceUrl, List<Link> links) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Link link;
         for (int i = 0; i < links.size(); i++) {
             link = links.get(i);
@@ -90,12 +96,19 @@ public class HBase {
     }
 
     public void putData(String sourceUrl, List<Link> links) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Link link;
         for (int i = 0; i < links.size(); i++) {
             link = links.get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+                    (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
+            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+                    (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
         try {
             if (links.size() > 0) {
@@ -107,7 +120,12 @@ public class HBase {
     }
 
     public void putBulkMark(String sourceUrl, String value) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
         //TODO
         try {
@@ -118,7 +136,12 @@ public class HBase {
     }
 
     public void putMark(String sourceUrl, String value) {
-        Put p = new Put(sourceUrl.getBytes());
+        Put p = null;
+        try {
+            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
         //TODO
         try {
@@ -129,7 +152,12 @@ public class HBase {
     }
 
     public byte[] getData(String sourceUrl, String qualifier) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
@@ -141,7 +169,12 @@ public class HBase {
     }
 
     public byte[] getMark(String sourceUrl, String qualifier) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
@@ -154,7 +187,12 @@ public class HBase {
 
 
     public boolean existData(String sourceUrl) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             result = table.get(get);
@@ -171,7 +209,12 @@ public class HBase {
     }
 
     public boolean existMark(String sourceUrl) {
-        Get get = new Get(sourceUrl.getBytes());
+        Get get = null;
+        try {
+            get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         Result result = null;
         try {
             result = table.get(get);
@@ -189,7 +232,8 @@ public class HBase {
 
 
     String reverseUrl(URL url) {
-        return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
+        //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
+        return reverseDomain(url.getHost()) + getHash(url.getPath());
     }
 
     String reverseDomain(String domain) {
@@ -232,6 +276,36 @@ public class HBase {
         } catch (IOException e) {
             Logger.getInstance().debugLog(e.getMessage());
         }
+    }
+
+    public ResultScanner scanData(List<byte[]> qulifiers){
+
+        Scan scan = new Scan();
+        ResultScanner results = null;
+        for(byte[] bytes : qulifiers) {
+            scan.addColumn(HBASE_DATA_CF_NAME.getBytes(), bytes);
+        }
+        try {
+            results = table.getScanner(scan);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+    public ResultScanner scanColumnFamily(List<byte[]> columnFamily){
+
+        Scan scan = new Scan();
+        ResultScanner results = null;
+        for(byte[] bytes : columnFamily) {
+            scan.addFamily(bytes);
+        }
+        try {
+            results = table.getScanner(scan);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return results;
+
 
 
     }
