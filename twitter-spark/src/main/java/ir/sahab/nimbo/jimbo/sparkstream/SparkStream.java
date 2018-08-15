@@ -50,20 +50,30 @@ public class SparkStream implements Serializable {
 
     public void getTrend(){
         SparkConf sparkConf = new SparkConf().setAppName("twitterApp");
-        //sparkConf.setMaster("spark://nimbo1:7077");
+        if (!sparkConf.contains("spark.master")) {
+            sparkConf.setMaster("local");
+            //sparkConf.setMaster("spark://nimbo1:7077");
+        }
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
-        sparkContext.setLogLevel("ERROR");
-        JavaStreamingContexSerializable jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(10000));
+        sparkContext.setLogLevel("INFO");
+        JavaStreamingContexSerializable jssc =
+                new JavaStreamingContexSerializable(sparkContext, new Duration(3000));
         //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
-        JavaReceiverInputDStream<Status> twitterStream = TwitterUtils.createStream(jssc, new String[]{"en"});
+        try {
+            jssc.awaitTerminationOrTimeout(10000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        JavaReceiverInputDStream<Status> twitterStream =
+                TwitterUtils.createStream(jssc, new String[]{"en"});
+        //twitterStream.print();
 
-
-//        twitterStream.flatMap(s -> Arrays.asList(s.getHashtagEntities()).iterator())
-//                .mapToPair(hsdhtsg -> new Tuple2<>(hsdhtsg.getText(), 1))
-//                .reduceByKey((v1, v2) -> v1 + v2)
-//                .map(pair -> pair._1)
-//                .dstream()
-//                .saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
+        twitterStream.flatMap(s -> Arrays.asList(s.getHashtagEntities()).iterator())
+                .mapToPair(hsdhtsg -> new Tuple2<>(hsdhtsg.getText(), 1))
+                .reduceByKey((v1, v2) -> v1 + v2)
+                .map(pair -> pair._1)
+                .dstream()
+                .saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
 
 //        JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
 //            ArrayList<String> list = new ArrayList<>();

@@ -88,6 +88,11 @@
             <artifactId>cliche</artifactId>
             <version>110413</version>
         </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>transport</artifactId>
+            <version>6.3.2</version>
+        </dependency>
     </dependencies>
 
 
