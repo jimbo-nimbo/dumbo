@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.common.base.Stopwatch;
 
 public class Worker implements Runnable {
 
@@ -46,7 +45,6 @@ public class Worker implements Runnable {
 
     public static final AtomicLong LRU_GET_REQUEST_TIME =new AtomicLong(0);
     private static long lruGetRequestTime;
-    final Stopwatch lruGetWatch = Stopwatch.createStarted();
     public static final AtomicInteger LRU_HIT = new AtomicInteger(1);
     private static int lruHit;
     public static final AtomicInteger LRU_MISS = new AtomicInteger(1);
@@ -54,21 +52,17 @@ public class Worker implements Runnable {
 
     public static final AtomicLong LRU_ADD_REQUEST_TIME = new AtomicLong(0L);
     private static long lruAddRequestTime;
-    final Stopwatch lruAddWatch = Stopwatch.createUnstarted();
 
     public static final AtomicLong PRODUCE_KAFKA_TIME = new AtomicLong(0L);
     private static long produceKafkaTime;
-    final Stopwatch produceKafkaWatch = Stopwatch.createUnstarted();
 
     public static final AtomicInteger FETCHED_LINKS = new AtomicInteger(1);
     private static int fetchedLinks;
     public static final AtomicLong FETCHING_TIME = new AtomicLong();
     private static long fetchingTime;
 
-    final Stopwatch fetchTimeWatch = Stopwatch.createUnstarted();
     public static final AtomicLong PUTTING_TIME = new AtomicLong(0L);
     private static long puttingTime;
-    final Stopwatch putWatch = Stopwatch.createUnstarted();
 
     public static String log() {
         final StringBuilder stringBuilder = new StringBuilder();
@@ -152,20 +146,16 @@ public class Worker implements Runnable {
 
                 for (int i= 0; i < futures.size(); i++) {
 
-                    long tmp = fetchTimeWatch.elapsed(TimeUnit.MILLISECONDS);
-                    fetchTimeWatch.start();
+                    long tmp = System.currentTimeMillis();
                     HttpEntity entity = futures.get(i).get().getEntity();
-                    fetchTimeWatch.stop();
-                    FETCHING_TIME.addAndGet(fetchTimeWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+                    FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
                     FETCHED_LINKS.incrementAndGet();
 
                     if (entity != null) {
                         final String text = EntityUtils.toString(entity);
-                        tmp = putWatch.elapsed(TimeUnit.MILLISECONDS);
-                        putWatch.start();
+                        tmp = System.currentTimeMillis();
                         rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
-                        putWatch.stop();
-                        PUTTING_TIME.addAndGet(putWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+                        PUTTING_TIME.addAndGet(System.currentTimeMillis() - tmp);
                     }
                 }
 
@@ -188,30 +178,24 @@ public class Worker implements Runnable {
 
         String host = url.getHost();
 
-        long tmp = lruGetWatch.elapsed(TimeUnit.MILLISECONDS);
-        lruGetWatch.start();
+        long tmp = System.currentTimeMillis();
         boolean exist = lruCache.exist(host);
-        lruGetWatch.stop();
-        LRU_GET_REQUEST_TIME.addAndGet(lruGetWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+        LRU_GET_REQUEST_TIME.addAndGet(System.currentTimeMillis() - tmp);
 
         if (exist) {
             LRU_HIT.incrementAndGet();
 
-            tmp = produceKafkaWatch.elapsed(TimeUnit.MILLISECONDS);
-            produceKafkaWatch.start();
+            tmp = System.currentTimeMillis();
             producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link));
-            produceKafkaWatch.stop();
-            PRODUCE_KAFKA_TIME.addAndGet(produceKafkaWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+            PRODUCE_KAFKA_TIME.addAndGet(System.currentTimeMillis() - tmp);
 
             return false;
         }
         LRU_MISS.incrementAndGet();
 
-        tmp = lruAddWatch.elapsed(TimeUnit.MILLISECONDS);
-        lruAddWatch.start();
+        tmp = System.currentTimeMillis();
         lruCache.add(host);
-        lruAddWatch.stop();
-        LRU_ADD_REQUEST_TIME.addAndGet(lruAddWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+        LRU_ADD_REQUEST_TIME.addAndGet(System.currentTimeMillis() - tmp);
 
 
 //        if (HBase.getInstance().existMark(link)){
