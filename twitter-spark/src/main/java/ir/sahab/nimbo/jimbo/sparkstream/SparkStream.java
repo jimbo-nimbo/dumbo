@@ -1,53 +1,43 @@
 package ir.sahab.nimbo.jimbo.sparkstream;
 
-import ir.sahab.nimbo.jimbo.main.Logger;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
-import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.twitter.TwitterUtils;
 import scala.Serializable;
 import scala.Tuple2;
-import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import javax.xml.soap.Text;
 import java.util.Arrays;
-import java.util.Map;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class SparkStream implements Serializable {
 
-    JavaStreamingContexSerializable jssc;
+    private JavaStreamingContexSerializable jssc;
 
     public SparkStream() {
         initialize();
     }
 
 
-    void initialize() {
+    private void initialize() {
         System.setProperty("twitter4j.oauth.consumerKey", TWITTER_CONSUMER_KEY);
         System.setProperty("twitter4j.oauth.consumerSecret", TWITTER_CONSUMER_SECRET);
         System.setProperty("twitter4j.oauth.accessToken", TWITTER_ACCESS_TOKEN);
         System.setProperty("twitter4j.oauth.accessTokenSecret", TWITTER_ACCESS_TOKEN_SECRET);
-        JavaSparkContext sparkContext = new JavaSparkContext("local", "twitterApp");
-        sparkContext.setLogLevel("ALL");
-        jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(3000));
-        try {
-            jssc.awaitTerminationOrTimeout(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        SparkConf sparkConf = new SparkConf().setAppName("twitterApp");
+        //sparkConf.setMaster("spark://nimbo1:7077");
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
+        sparkContext.setLogLevel("ERROR");
+        jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(10000));
         //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
     }
 
@@ -66,28 +56,38 @@ public class SparkStream implements Serializable {
         }
     }
 
-    void getTrend(){
+    public void getTrend(){
         JavaReceiverInputDStream<Status> twitterStream = TwitterUtils.createStream(jssc, new String[]{"en"});
-        JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
-            ArrayList<String> list = new ArrayList<>();
-            for (HashtagEntity hashtagEntity : status.getHashtagEntities()) {
-                list.add(hashtagEntity.getText());
-            }
-            return list.iterator();
-        });
-        JavaPairDStream<String, Integer> numbering = statuses.mapToPair((PairFunction<String, String, Integer>)
-                s -> new Tuple2<>(s, 1));
-        JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
-                (integer, integer2) -> integer + integer2);
+        twitterStream.flatMap(s -> Arrays.asList(s.getHashtagEntities()).iterator())
+                .mapToPair(hsdhtsg -> new Tuple2<>(hsdhtsg.getText(), 1))
+                .reduceByKey((v1, v2) -> v1 + v2)
+                .map(pair -> pair._1)
+                .dstream()
+                .saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
+
+//        JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
+//            ArrayList<String> list = new ArrayList<>();
+//            for (HashtagEntity hashtagEntity : status.getHashtagEntities()) {
+//                list.add(hashtagEntity.getText());
+//            }
+//            return list.iterator();
+//        });
+//        JavaPairDStream<String, Integer> numbering = statuses.mapToPair((PairFunction<String, String, Integer>)
+//                s -> new Tuple2<>(s, 1));
+//        JavaPairDStream<String, Integer> counting = numbering.reduceByKey((Function2<Integer, Integer, Integer>)
+//                (integer, integer2) -> integer + integer2);
+        //counting.dstream().saveAsTextFiles();
+//        counting.saveAsHadoopFiles("hdfs://nimbo1:9000/spark/","ans", Text.class,
+//                IntWritable.class, TextOutputFormat.class);
         //counting.dstream().saveAsTextFiles("nimac",".rawFile");
-        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
-            @Override
-            public void call(JavaPairRDD<String, Integer> stringIntegerJavaPairRDD) throws Exception {
-                for(Map.Entry<String, Integer> entry : stringIntegerJavaPairRDD.collectAsMap().entrySet()){
-                    System.out.println(entry.getKey() + " " + entry.getValue());
-                }
-            }
-        });
+//        counting.foreachRDD(new VoidFunction<JavaPairRDD<String, Integer>>() {
+//            @Override
+//            public void call(JavaPairRDD<String, Integer> stringIntegerJavaPairRDD) throws Exception {
+//                for(Map.Entry<String, Integer> entry : stringIntegerJavaPairRDD.collectAsMap().entrySet()){
+//                    System.out.println(entry.getKey() + " " + entry.getValue());
+//                }
+//            }
+//        });
         //counting.print();
         jssc.start();
         try {

@@ -1,8 +1,6 @@
 package ir.sahab.nimbo.jimbo.shuffler;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaConfig;
 import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
-import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -23,7 +21,7 @@ public class ShufflerTest {
 
     private String kafkaTopic = "ShuffleTopicTest";
 
-    private int maxPollSize = KafkaConfig.MAX_POLL_RECORDS;
+    private int maxPollSize = Shuffler.MAX_POLL_RECORDS;
 
     private int linksQueueSize = 10000;
 

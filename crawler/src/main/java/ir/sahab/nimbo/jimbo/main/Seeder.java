@@ -24,12 +24,12 @@ class Seeder {
         return seeder;
     }
 
-    void initializeKafka() {
-        final Producer<Long, String> producer = new KafkaProducer<>(
+    void initializeKafka() {	
+        final Producer<String, String> producer = new KafkaProducer<>(
                 KafkaPropertyFactory.getProducerProperties());
         while (inp.hasNext()) {
             String url = "https://www." + inp.next();
-            ProducerRecord<Long, String> record = new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null,
+            ProducerRecord<String, String> record = new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null,
                     url);
             producer.send(record);
         }

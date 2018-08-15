@@ -41,7 +41,7 @@ public class ValidateTest {
     @Test
     public void banInitialListTest() {
         Validate.isValidBody(goodSite);
-        assertEquals(Validate.banWords.size(), 5);
+        assertEquals(Validate.banWords.size(), 9);
     }
 
     @Test

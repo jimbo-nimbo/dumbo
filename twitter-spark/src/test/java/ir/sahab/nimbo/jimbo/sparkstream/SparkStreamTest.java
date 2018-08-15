@@ -25,7 +25,5 @@ public class SparkStreamTest {
 
     @Test
     public void getTrend() throws InterruptedException{
-        sparkStream.getTrend();
-        //Thread.sleep(10000);
     }
 }

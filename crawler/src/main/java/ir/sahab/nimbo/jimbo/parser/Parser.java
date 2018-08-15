@@ -75,10 +75,10 @@ class Worker implements Runnable {
     @Override
     public void run() {
         while (running) {
-            System.out.println("parser started");
+//            System.out.println("parser started");
             try {
                 WebPageModel model = webPage.take();
-                System.out.println(model.getLink() + "=============================");
+//                System.out.println(model.getLink() + "=============================");
                 final Document document = Jsoup.parse(model.getHtml());
                 if (Validate.allValidation(document)) {
                     Parser.parsedPages.incrementAndGet();
