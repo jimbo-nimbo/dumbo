@@ -151,7 +151,7 @@ public class Worker implements Runnable {
                         try {
                             long tmp = System.currentTimeMillis();
                             String text = Jsoup.connect(shuffledLink).timeout(timout)
-                                    .validateTLSCertificates(false).get().text();
+                                    .validateTLSCertificates(false).get().html();
                             FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
                             rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
                             FETCHED_LINKS.incrementAndGet();

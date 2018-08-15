@@ -1,5 +1,8 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticCannotLoadException;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticSearchThread;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchThreadFactory;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
@@ -9,6 +12,7 @@ import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -23,6 +27,8 @@ public class Crawler {
     private final Parser parser;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
+    private ElasticSearchThread esThread;
+
     public Crawler(CrawlerSetting crawlerSetting) {
 
         shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
@@ -33,6 +39,14 @@ public class Crawler {
 
         elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
         parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting());
+
+        // TODO: what?
+        try {
+            ElasticsearchThreadFactory elasticsearchThreadFactory = new ElasticsearchThreadFactory(elasticQueue);
+            esThread = elasticsearchThreadFactory.createNewThread();
+        } catch (ElasticCannotLoadException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -48,6 +62,8 @@ public class Crawler {
 
         parser.runWorkers();
         fetcher.runWorkers();
+        // TODO: what?
+        new Thread(esThread).start();
 
         long uptime = System.currentTimeMillis();
         while(true) {

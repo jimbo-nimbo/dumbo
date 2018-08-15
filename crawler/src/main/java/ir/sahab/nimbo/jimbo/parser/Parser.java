@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.parser;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.Validator;
+import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -77,15 +78,14 @@ class Worker implements Runnable {
 //            System.out.println("parser started");
             try {
                 WebPageModel model = webPage.take();
-//                System.out.println(model.getLink() + "=============================");
                 final Document document = Jsoup.parse(model.getHtml());
                 if (Validator.allValidation(document)) {
                     Parser.parsedPages.incrementAndGet();
-//                    sendToElastic(model, document);
+                    sendToElastic(model, document);
 
                     List<Link> links = extractLinks(document);
                     sendLinksToKafka(links);
-//                    HBase.getInstance().putData(model.getLink(), links);
+                    HBase.getInstance().putData(model.getLink(), links);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -102,7 +102,7 @@ class Worker implements Runnable {
             }
         }
         elasticQueue.put(new ElasticsearchWebpageModel(model.getLink(),
-                document.text(), document.getElementsByTag("title").text(), description));
+                document.text(), document.title(), description));
     }
 
     private void sendLinksToKafka(List<Link> links) {

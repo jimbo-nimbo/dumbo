@@ -14,7 +14,6 @@ import org.apache.hadoop.hbase.client.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -33,7 +32,6 @@ public class HBase {
     private Configuration config;
     private Admin admin = null;
     Table table = null;
-    private ExecutorService executorService;
     ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
 
     private HBase() {
@@ -61,7 +59,7 @@ public class HBase {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        executorService = new ThreadPoolExecutor(HBASE_MIN_THREAD, HBASE_MAX_THREAD, 0L, TimeUnit.MILLISECONDS,
+        ExecutorService executorService = new ThreadPoolExecutor(HBASE_MIN_THREAD, HBASE_MAX_THREAD, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<Runnable>(HBASE_EXECUROR_BLOCK_Q_SIZE));
     }
 
