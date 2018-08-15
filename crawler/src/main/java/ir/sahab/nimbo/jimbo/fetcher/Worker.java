@@ -89,7 +89,7 @@ public class Worker implements Runnable {
                 LRU_GET_REQUEST_TIME.doubleValue()/(LRU_HIT.doubleValue() - LRU_MISS.doubleValue());
         final double averageTimeForAddRequest =
                 LRU_ADD_REQUEST_TIME.doubleValue()/LRU_MISS.doubleValue();
-        stringBuilder.append("\n Total of " + (LRU_HIT.get() + LRU_MISS.get())
+        stringBuilder.append("\nTotal of " + (LRU_HIT.get() + LRU_MISS.get())
                 + "(+" + (newLruHit + newLruMiss) + ") request to lru cache, Miss:"
                 + LRU_MISS.get() + "(+" + newLruMiss + "), Hit:" + LRU_HIT.get() + "(+" + newLruHit + ")" +
                 ", average time per request: " + df.format(averageTimePerRequest) +
@@ -101,7 +101,7 @@ public class Worker implements Runnable {
         final int newFetchedLink = FETCHED_LINKS.get() - fetchedLinks;
         final double averageTimePerFetch = FETCHING_TIME.doubleValue()/FETCHED_LINKS.doubleValue();
         final double averageTimePerPut = PUTTING_TIME.doubleValue()/FETCHED_LINKS.doubleValue();
-        stringBuilder.append("\n Time to produce a kafka record: " + kafkaRecordTime
+        stringBuilder.append("\nTime to produce a kafka record: " + df.format(kafkaRecordTime)
                 + ", fetched links: " + FETCHED_LINKS.get() + "(+" + newFetchedLink +
                 "), average fetch time: " + df.format(averageTimePerFetch) +
                 "), average put time: " + df.format(averageTimePerPut));
