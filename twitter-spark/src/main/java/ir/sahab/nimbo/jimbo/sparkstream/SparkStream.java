@@ -21,8 +21,6 @@ import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class SparkStream implements Serializable {
 
-    private JavaStreamingContexSerializable jssc;
-
     public SparkStream() {
         initialize();
     }
@@ -33,37 +31,39 @@ public class SparkStream implements Serializable {
         System.setProperty("twitter4j.oauth.consumerSecret", TWITTER_CONSUMER_SECRET);
         System.setProperty("twitter4j.oauth.accessToken", TWITTER_ACCESS_TOKEN);
         System.setProperty("twitter4j.oauth.accessTokenSecret", TWITTER_ACCESS_TOKEN_SECRET);
-        SparkConf sparkConf = new SparkConf().setAppName("twitterApp");
-        //sparkConf.setMaster("spark://nimbo1:7077");
-        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
-        sparkContext.setLogLevel("ERROR");
-        jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(10000));
-        //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
     }
 
     void wordCount() {
         //JavaReceiverInputDStream<String> lines = TwitterUtils.createStream(jssc);
-        JavaReceiverInputDStream<String> lines = jssc.socketTextStream("localhost", 9999);
-        JavaDStream<String> words = lines.flatMap(x -> Arrays.asList(x.split(" ")).iterator());
-        JavaPairDStream<String, Integer> pairs = words.mapToPair(s -> new Tuple2<>(s, 1));
-        JavaPairDStream<String, Integer> wordCounts = pairs.reduceByKey((i1, i2) -> i1 + i2);
-        wordCounts.print();
-        jssc.start();
-        try {
-            jssc.awaitTermination();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        JavaReceiverInputDStream<String> lines = jssc.socketTextStream("localhost", 9999);
+//        JavaDStream<String> words = lines.flatMap(x -> Arrays.asList(x.split(" ")).iterator());
+//        JavaPairDStream<String, Integer> pairs = words.mapToPair(s -> new Tuple2<>(s, 1));
+//        JavaPairDStream<String, Integer> wordCounts = pairs.reduceByKey((i1, i2) -> i1 + i2);
+//        wordCounts.print();
+//        jssc.start();
+//        try {
+//            jssc.awaitTermination();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void getTrend(){
+        SparkConf sparkConf = new SparkConf().setAppName("twitterApp");
+        //sparkConf.setMaster("spark://nimbo1:7077");
+        JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
+        sparkContext.setLogLevel("ERROR");
+        JavaStreamingContexSerializable jssc = new JavaStreamingContexSerializable(sparkContext, new Duration(10000));
+        //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
         JavaReceiverInputDStream<Status> twitterStream = TwitterUtils.createStream(jssc, new String[]{"en"});
-        twitterStream.flatMap(s -> Arrays.asList(s.getHashtagEntities()).iterator())
-                .mapToPair(hsdhtsg -> new Tuple2<>(hsdhtsg.getText(), 1))
-                .reduceByKey((v1, v2) -> v1 + v2)
-                .map(pair -> pair._1)
-                .dstream()
-                .saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
+
+
+//        twitterStream.flatMap(s -> Arrays.asList(s.getHashtagEntities()).iterator())
+//                .mapToPair(hsdhtsg -> new Tuple2<>(hsdhtsg.getText(), 1))
+//                .reduceByKey((v1, v2) -> v1 + v2)
+//                .map(pair -> pair._1)
+//                .dstream()
+//                .saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
 
 //        JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
 //            ArrayList<String> list = new ArrayList<>();
