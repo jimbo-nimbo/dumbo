@@ -24,27 +24,23 @@ public  class Shuffler implements Runnable{
     /**
      * constructor for testing
      */
-    Shuffler(String kafkaTopic, ArrayBlockingQueue<List<String>> linksQueue)
-    {
+    Shuffler(String kafkaTopic, ArrayBlockingQueue<List<String>> linksQueue) {
         this.linksQueue = linksQueue;
         consumer.subscribe(Collections.singletonList(kafkaTopic));
     }
 
-    public Shuffler(ArrayBlockingQueue<List<String>> linksQueue)
-    {
+    public Shuffler(ArrayBlockingQueue<List<String>> linksQueue) {
         this.linksQueue = linksQueue;
 //        consumer.subscribe(Collections.singletonList(Config.URL_FRONTIER_TOPIC));;
     }
 
-    ConsumerRecords<String, String> consume()
-    {
+    ConsumerRecords<String, String> consume() {
         ConsumerRecords<String, String> consumerRecords = consumer.poll(5000);
         consumer.commitAsync();
         return consumerRecords;
     }
 
-    List<String> consumeAndShuffle()
-    {
+    List<String> consumeAndShuffle() {
         final List<String> list = new ArrayList<>();
         ConsumerRecords<String, String> consumerRecords = consume();
 
@@ -56,8 +52,7 @@ public  class Shuffler implements Runnable{
         return list;
     }
 
-    void closeConsumer()
-    {
+    void closeConsumer() {
         running = false;
         consumer.close();
     }

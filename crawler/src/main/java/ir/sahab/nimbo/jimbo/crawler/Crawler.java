@@ -23,7 +23,7 @@ public class Crawler {
     private final Parser parser;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
-    public Crawler(CrawlerSetting crawlerSetting){
+    public Crawler(CrawlerSetting crawlerSetting) {
 
         shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
         shuffler = new Shuffler(shuffledLinksQueue);
@@ -38,7 +38,7 @@ public class Crawler {
     /**
      * constructor for testing
      */
-    Crawler(){
+    Crawler() {
         this(new CrawlerSetting(10000, 10000, 10000));
     }
 
