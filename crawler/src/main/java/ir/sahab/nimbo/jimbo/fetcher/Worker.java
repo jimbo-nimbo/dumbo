@@ -106,6 +106,7 @@ public class Worker implements Runnable {
                 "), average fetch time: " + df.format(averageTimePerFetch) +
                 "), average put time: " + df.format(averageTimePerPut));
 
+        fetchedLinks = FETCHED_LINKS.get();
         return stringBuilder.toString();
     }
 
