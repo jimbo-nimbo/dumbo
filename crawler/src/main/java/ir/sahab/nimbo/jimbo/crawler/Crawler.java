@@ -22,7 +22,7 @@ public class Crawler {
     private final Parser parser;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
-    public Crawler(CrawlerSetting crawlerSetting){
+    public Crawler(CrawlerSetting crawlerSetting) {
 
         shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
         shuffler = new Shuffler(shuffledLinksQueue);
@@ -37,7 +37,7 @@ public class Crawler {
     /**
      * constructor for testing
      */
-    Crawler(){
+    Crawler() {
         this(new CrawlerSetting(10000, 10000, 10000));
     }
 
@@ -49,8 +49,8 @@ public class Crawler {
         fetcher.runWorkers();
 
         int tmp = 0;
-        int p = 0;
-        while(true) {
+        int p;
+        while (true) {
 
             p = NewFetcher.fetchedPages.get();
             System.out.println("shuffled links: " + shuffledLinksQueue.size()

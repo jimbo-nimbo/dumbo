@@ -43,7 +43,8 @@ public class Worker implements Runnable {
     private final NewFetcher newFetcher;
     private final int workerId;
 
-    Worker(NewFetcher newFetcher, int workerId) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    Worker(NewFetcher newFetcher, int workerId) throws
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         this.shuffledLinksQueue = newFetcher.getShuffledLinksQueue();
         this.rawWebPagesQueue = newFetcher.getRawPagesQueue();
         this.newFetcher = newFetcher;
@@ -54,8 +55,7 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        while(running)
-        {
+        while (running) {
             List<Future<HttpResponse>> futures = new ArrayList<>();
             List<String> urls = new ArrayList<>();
             int i = 0;
@@ -118,7 +118,8 @@ public class Worker implements Runnable {
         return true;
     }
 
-    private CloseableHttpAsyncClient createNewClient() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    private CloseableHttpAsyncClient createNewClient() throws
+            KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null,
                 (certificate, authType) -> true).build();
 

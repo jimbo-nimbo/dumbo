@@ -3,8 +3,7 @@ package ir.sahab.nimbo.jimbo.main;
 import ir.sahab.nimbo.jimbo.crawler.CrawlerSetting;
 import ir.sahab.nimbo.jimbo.crawler.Crawler;
 
-public class Main
-{
+public class Main {
     public static void main(String[] args) {
 
         if (args.length == 1 && args[0].equals("seeder")) {

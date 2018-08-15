@@ -22,12 +22,12 @@ public class NewFetcher {
 
     private final Worker[] workers;
 
-    public NewFetcher(ArrayBlockingQueue<List<String>> shuffledLinksQueue
-            , ArrayBlockingQueue<WebPageModel> rawPagesQueue, FetcherSetting fetcherSetting){
+    public NewFetcher(ArrayBlockingQueue<List<String>> shuffledLinksQueue,
+                      ArrayBlockingQueue<WebPageModel> rawPagesQueue, FetcherSetting fetcherSetting) {
         this.shuffledLinksQueue = shuffledLinksQueue;
         this.rawPagesQueue = rawPagesQueue;
 
-        workers =  new Worker[fetcherSetting.getFetcherThreadCount()];
+        workers = new Worker[fetcherSetting.getFetcherThreadCount()];
     }
 
     public void runWorkers() {
