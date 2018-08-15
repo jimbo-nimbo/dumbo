@@ -118,6 +118,8 @@ public class Worker implements Runnable {
     private boolean running = true;
     private static final LruCache lruCache = LruCache.getInstance();
 
+    private static final int timout = new FetcherSetting().getTimout();
+
     private final CloseableHttpAsyncClient client;
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawWebPagesQueue;
@@ -148,7 +150,7 @@ public class Worker implements Runnable {
 
                         try {
                             long tmp = System.currentTimeMillis();
-                            String text = Jsoup.connect(shuffledLink).timeout(500)
+                            String text = Jsoup.connect(shuffledLink).timeout(timout)
                                     .validateTLSCertificates(false).get().text();
                             FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
                             rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
