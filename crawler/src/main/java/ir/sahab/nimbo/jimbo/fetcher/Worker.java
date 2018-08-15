@@ -28,8 +28,89 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import com.google.common.base.Stopwatch;
 
 public class Worker implements Runnable {
+
+    public static final AtomicInteger TOOK_LINKS = new AtomicInteger(0);
+    private static int tookLinks;
+    public static final AtomicInteger SHUFFLED_PACK_COUNT = new AtomicInteger(0);
+    private static int shuffledPackCount;
+
+    public static final AtomicInteger BAD_LINKS = new AtomicInteger(0);
+    private static int badLinks;
+
+    public static final AtomicLong LRU_GET_REQUEST_TIME =new AtomicLong(0);
+    private static long lruGetRequestTime;
+    final Stopwatch lruGetWatch = Stopwatch.createStarted();
+    public static final AtomicInteger LRU_HIT = new AtomicInteger(1);
+    private static int lruHit;
+    public static final AtomicInteger LRU_MISS = new AtomicInteger(1);
+    private static int lruMiss;
+
+    public static final AtomicLong LRU_ADD_REQUEST_TIME = new AtomicLong(0L);
+    private static long lruAddRequestTime;
+    final Stopwatch lruAddWatch = Stopwatch.createUnstarted();
+
+    public static final AtomicLong PRODUCE_KAFKA_TIME = new AtomicLong(0L);
+    private static long produceKafkaTime;
+    final Stopwatch produceKafkaWatch = Stopwatch.createUnstarted();
+
+    public static final AtomicInteger FETCHED_LINKS = new AtomicInteger(1);
+    private static int fetchedLinks;
+    public static final AtomicLong FETCHING_TIME = new AtomicLong();
+    private static long fetchingTime;
+
+    final Stopwatch fetchTimeWatch = Stopwatch.createUnstarted();
+    public static final AtomicLong PUTTING_TIME = new AtomicLong(0L);
+    private static long puttingTime;
+    final Stopwatch putWatch = Stopwatch.createUnstarted();
+
+    public static String log() {
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        final int newPacks = SHUFFLED_PACK_COUNT.get() - shuffledPackCount;
+        final int newLinks = TOOK_LINKS.get() - tookLinks;
+        stringBuilder.append("shuffled packs: " + SHUFFLED_PACK_COUNT.get() + "(+" + newPacks + ")");
+        stringBuilder.append(", shuffled packs average size: " +
+                (newPacks == 0 ? "-" : newLinks/newPacks));
+        stringBuilder.append(", link received: " + TOOK_LINKS.get() + "(+" + newLinks + ")");
+        tookLinks = TOOK_LINKS.get();
+        shuffledPackCount = SHUFFLED_PACK_COUNT.get();
+
+        final int newBadLinks = BAD_LINKS.get() - badLinks;
+        stringBuilder.append(", bad links: " + BAD_LINKS.get() + "(+" + newBadLinks + ")");
+        badLinks = BAD_LINKS.get();
+
+        final int newLruHit = LRU_HIT.get() - lruHit;
+        final int newLruMiss = LRU_MISS.get() - lruMiss;
+        final double averageTimePerRequest =
+                LRU_GET_REQUEST_TIME.doubleValue()/(LRU_HIT.doubleValue() - LRU_MISS.doubleValue());
+        final double averageTimeForAddRequest =
+                LRU_ADD_REQUEST_TIME.doubleValue()/LRU_MISS.doubleValue();
+        stringBuilder.append("\n Total of " + (LRU_HIT.get() + LRU_MISS.get())
+                + "(+" + (newLruHit + newLruMiss) + ") request to lru cache, Miss:"
+                + LRU_MISS.get() + "(+" + newLruMiss + "), Hit:" + LRU_HIT.get() + "(+" + newLruHit + ")" +
+                ", average time per request: " + averageTimePerRequest +
+                ", and for add request: " + averageTimeForAddRequest);
+        lruHit = LRU_HIT.get();
+        lruMiss = LRU_MISS.get();
+
+        final double kafkaRecordTime = PRODUCE_KAFKA_TIME.doubleValue()/LRU_HIT.doubleValue();
+        final int newFetchedLink = FETCHED_LINKS.get() - fetchedLinks;
+        final double averageTimePerFetch = FETCHING_TIME.doubleValue()/FETCHED_LINKS.doubleValue();
+        final double averageTimePerPut = PUTTING_TIME.doubleValue()/FETCHED_LINKS.doubleValue();
+        stringBuilder.append("\n Time to produce a kafka record: " + kafkaRecordTime
+                + ", fetched links: " + FETCHED_LINKS.get() + "(+" + newFetchedLink +
+                "), average fetch time: " + averageTimePerFetch +
+                "), average put time: " + averageTimePerPut);
+
+        return stringBuilder.toString();
+    }
 
     private static final Producer<String, String> producer = new KafkaProducer<>(
             KafkaPropertyFactory.getProducerProperties());
@@ -40,13 +121,11 @@ public class Worker implements Runnable {
     private final CloseableHttpAsyncClient client;
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawWebPagesQueue;
-    private final NewFetcher newFetcher;
     private final int workerId;
 
-    Worker(NewFetcher newFetcher, int workerId) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        this.shuffledLinksQueue = newFetcher.getShuffledLinksQueue();
-        this.rawWebPagesQueue = newFetcher.getRawPagesQueue();
-        this.newFetcher = newFetcher;
+    Worker(Fetcher fetcher, int workerId) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        this.shuffledLinksQueue = fetcher.getShuffledLinksQueue();
+        this.rawWebPagesQueue = fetcher.getRawPagesQueue();
         this.workerId = workerId;
 
         client = createNewClient();
@@ -58,63 +137,90 @@ public class Worker implements Runnable {
         {
             List<Future<HttpResponse>> futures = new ArrayList<>();
             List<String> urls = new ArrayList<>();
-            int i = 0;
             try {
                 final List<String> shuffledLinks = shuffledLinksQueue.take();
-                for (int i1 = 0; i1 < shuffledLinks.size(); i1++) {
-                    String link = shuffledLinks.get(i1);
+
+                TOOK_LINKS.addAndGet(shuffledLinks.size());
+                SHUFFLED_PACK_COUNT.incrementAndGet();
+
+                for (String link : shuffledLinks) {
                     if (checkLink(link)) {
-//                        System.out.println(i1 + "<---" + link);
                         futures.add(client.execute(new HttpGet(link), null));
                         urls.add(link);
                     }
                 }
-                for (; i < futures.size(); i++) {
+
+                for (int i= 0; i < futures.size(); i++) {
+
+                    long tmp = fetchTimeWatch.elapsed(TimeUnit.MILLISECONDS);
+                    fetchTimeWatch.start();
                     HttpEntity entity = futures.get(i).get().getEntity();
+                    fetchTimeWatch.stop();
+                    FETCHING_TIME.addAndGet(fetchTimeWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+                    FETCHED_LINKS.incrementAndGet();
+
                     if (entity != null) {
                         final String text = EntityUtils.toString(entity);
+                        tmp = putWatch.elapsed(TimeUnit.MILLISECONDS);
+                        putWatch.start();
                         rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
+                        putWatch.stop();
+                        PUTTING_TIME.addAndGet(putWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
                     }
                 }
 
-            } catch (InterruptedException e) {
-                System.out.println("interupt exeption" + urls.get(i));
-            } catch (ExecutionException e) {
-//                System.out.println("execution exeption" + urls.get(i));
-                //todo: handle
-            } catch (IOException e) {
-                System.out.println("ioException exeption" + urls.get(i));
+            } catch (InterruptedException | IOException | ExecutionException e) {
+                //todo
             }
         }
     }
 
-    static boolean checkLink(String link) {
+    private boolean checkLink(String link) {
 
         URL url;
         try {
             url = new URL(link);
             url.toURI();
         } catch (URISyntaxException | MalformedURLException e) {
+            BAD_LINKS.incrementAndGet();
             return false;
         }
 
         String host = url.getHost();
-        if (lruCache.exist(host)) {
-            producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link));
 
-            NewFetcher.linkNotPassed.incrementAndGet();
+        long tmp = lruGetWatch.elapsed(TimeUnit.MILLISECONDS);
+        lruGetWatch.start();
+        boolean exist = lruCache.exist(host);
+        lruGetWatch.stop();
+        LRU_GET_REQUEST_TIME.addAndGet(lruGetWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+
+        if (exist) {
+            LRU_HIT.incrementAndGet();
+
+            tmp = produceKafkaWatch.elapsed(TimeUnit.MILLISECONDS);
+            produceKafkaWatch.start();
+            producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link));
+            produceKafkaWatch.stop();
+            PRODUCE_KAFKA_TIME.addAndGet(produceKafkaWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+
             return false;
         }
+        LRU_MISS.incrementAndGet();
 
-        NewFetcher.linkpassed.incrementAndGet();
-
+        tmp = lruAddWatch.elapsed(TimeUnit.MILLISECONDS);
+        lruAddWatch.start();
         lruCache.add(host);
+        lruAddWatch.stop();
+        LRU_ADD_REQUEST_TIME.addAndGet(lruAddWatch.elapsed(TimeUnit.MILLISECONDS) - tmp);
+
+
 //        if (HBase.getInstance().existMark(link)){
 //            lruCache.remove(host);
 //            return false;
 //        }
 //
 //        HBase.getInstance().putMark(link, "1");
+
         return true;
     }
 

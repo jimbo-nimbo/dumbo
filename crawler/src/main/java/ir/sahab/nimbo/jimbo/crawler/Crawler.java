@@ -2,7 +2,8 @@ package ir.sahab.nimbo.jimbo.crawler;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
-import ir.sahab.nimbo.jimbo.fetcher.NewFetcher;
+import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
+import ir.sahab.nimbo.jimbo.fetcher.Worker;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -16,7 +17,7 @@ public class Crawler {
     private final Shuffler shuffler;
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
 
-    private final NewFetcher fetcher;
+    private final Fetcher fetcher;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
     private final Parser parser;
@@ -28,7 +29,7 @@ public class Crawler {
         shuffler = new Shuffler(shuffledLinksQueue);
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
-        fetcher = new NewFetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting());
+        fetcher = new Fetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting());
 
         elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
         parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting());
@@ -48,18 +49,11 @@ public class Crawler {
         parser.runWorkers();
         fetcher.runWorkers();
 
-        int tmp = 0;
-        int p = 0;
         while(true) {
 
-            p = NewFetcher.fetchedPages.get();
             System.out.println("shuffled links: " + shuffledLinksQueue.size()
-                    + ",\t webpages: " + rawPagesQueue.size() + ", " +  Parser.parsedPages.intValue()
-                    + " page parsed!\t, lru rate = "
-                    + NewFetcher.linkpassed.doubleValue()/
-                    (NewFetcher.linkpassed.doubleValue() + NewFetcher.linkNotPassed.doubleValue())
-            + " , \t>" + (p - tmp) + "page fetched <");
-            tmp = p;
+                    + ",\t webpages: " + rawPagesQueue.size() + ", " +  Parser.parsedPages.intValue());
+            System.out.println(Worker.log());
             Thread.sleep(3000);
         }
     }

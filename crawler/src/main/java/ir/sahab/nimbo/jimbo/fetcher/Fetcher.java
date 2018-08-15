@@ -10,19 +10,17 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class NewFetcher {
+public class Fetcher {
 
-    public static AtomicInteger fetchedPages = new AtomicInteger(0);
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
-    public static AtomicInteger linkpassed = new AtomicInteger(1);
-    public static AtomicInteger linkNotPassed = new AtomicInteger(1);
+
 
 
     private final Worker[] workers;
 
-    public NewFetcher(ArrayBlockingQueue<List<String>> shuffledLinksQueue
+    public Fetcher(ArrayBlockingQueue<List<String>> shuffledLinksQueue
             , ArrayBlockingQueue<WebPageModel> rawPagesQueue, FetcherSetting fetcherSetting){
         this.shuffledLinksQueue = shuffledLinksQueue;
         this.rawPagesQueue = rawPagesQueue;

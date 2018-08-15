@@ -17,7 +17,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public class NewFetcherTest {
+public class FetcherTest {
 
     private final int queueSize = 10000;
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue = new ArrayBlockingQueue<>(queueSize);
@@ -31,7 +31,7 @@ public class NewFetcherTest {
     @Test
     public void testFetch() throws InterruptedException, ExecutionException {
 
-//        NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
+//        Fetcher newFetcher = new Fetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 //        List<Future<HttpResponse>> futures = new ArrayList<>();
 //
 //        for (int i = 0; i < 2000; i++) {
@@ -52,7 +52,7 @@ public class NewFetcherTest {
     @Test
     public void testClient3() throws InterruptedException, ExecutionException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
 //        List<Future<HttpResponse>> futures = new ArrayList<>();
-//        NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
+//        Fetcher newFetcher = new Fetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 //        CloseableHttpAsyncClient client = newFetcher.getClient(0);
 //
 //        for (int i = 0; i < 200; i++) {
@@ -80,7 +80,7 @@ public class NewFetcherTest {
 
 //        final int clientsCount = threadCount;
 //        final List<Future<HttpResponse>> futures = new ArrayList<>();
-//        final NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
+//        final Fetcher newFetcher = new Fetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 //
 //        final CloseableHttpAsyncClient clients[] = new CloseableHttpAsyncClient[clientsCount];
 //        for (int i = 0; i < clients.length; i++) {
@@ -111,7 +111,7 @@ public class NewFetcherTest {
 
     @Test
     public void createClient() throws IOException {
-//        NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
+//        Fetcher newFetcher = new Fetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 //        CloseableHttpAsyncClient client = newFetcher.getClient(0);
 //
 //        client.close();
@@ -119,7 +119,7 @@ public class NewFetcherTest {
 
     @Test
     public void fetch() throws InterruptedException {
-//        NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
+//        Fetcher newFetcher = new Fetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 //
 //        List<Future<HttpResponse>> futures = new ArrayList<>();
 //        for (int i = 0; i < 200; i++) {
@@ -146,7 +146,7 @@ public class NewFetcherTest {
 
     @Test
     public void testWorkers() throws InterruptedException {
-//        NewFetcher newFetcher = new NewFetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
+//        Fetcher newFetcher = new Fetcher(shuffledLinksQueue, webPagesQueue, fetcherSetting);
 //
 //        int numberOfRecords = 1005;
 //        List<String> list = new ArrayList<>();
