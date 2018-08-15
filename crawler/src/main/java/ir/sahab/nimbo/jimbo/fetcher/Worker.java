@@ -145,13 +145,13 @@ public class Worker implements Runnable {
 
                 for (String shuffledLink : shuffledLinks) {
                     if (checkLink(shuffledLink)) {
-                        long tmp = System.currentTimeMillis();
 
                         try {
+                            long tmp = System.currentTimeMillis();
                             String text = Jsoup.connect(shuffledLink).timeout(500)
                                     .validateTLSCertificates(false).get().text();
-                            rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
                             FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
+                            rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
                             FETCHED_LINKS.incrementAndGet();
 
                         } catch (IOException e) {
