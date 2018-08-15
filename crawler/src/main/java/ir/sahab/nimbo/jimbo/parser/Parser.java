@@ -85,7 +85,7 @@ class Worker implements Runnable {
 
                     List<Link> links = extractLinks(document);
                     sendLinksToKafka(links);
-                    HBase.getInstance().putData(model.getLink(), links);
+                    HBase.getInstance().putBulkData(model.getLink(), links);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

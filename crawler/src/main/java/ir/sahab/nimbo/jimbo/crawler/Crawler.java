@@ -7,6 +7,7 @@ import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.fetcher.Worker;
+import ir.sahab.nimbo.jimbo.hbase.HbaseBulkThread;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -27,6 +28,7 @@ public class Crawler {
     private final Parser parser;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
+    private final HbaseBulkThread hbaseBulkThread;
     private ElasticSearchThread esThread;
 
     public Crawler(CrawlerSetting crawlerSetting) {
@@ -47,6 +49,8 @@ public class Crawler {
         } catch (ElasticCannotLoadException | IOException e) {
             e.printStackTrace();
         }
+
+        hbaseBulkThread = new HbaseBulkThread();
     }
 
     /**
@@ -64,9 +68,10 @@ public class Crawler {
         fetcher.runWorkers();
         // TODO: what?
         new Thread(esThread).start();
+        new Thread(hbaseBulkThread).start();
 
         long uptime = System.currentTimeMillis();
-        while(true) {
+        while (true) {
 
             System.out.println("shuffled queue: " + shuffledLinksQueue.size()
                     + ",\t fetched queue: " + rawPagesQueue.size() + ", parsedQueue" +  Parser.parsedPages.intValue()

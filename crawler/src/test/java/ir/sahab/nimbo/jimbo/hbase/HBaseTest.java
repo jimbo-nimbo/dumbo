@@ -94,16 +94,16 @@ public class HBaseTest {
         for(int i = 0; i < 100; i++){
             HBase.getInstance().putBulkData("https://www.test.com", arrayList);
         }
-        assertEquals(100, HBase.getInstance().bulkData.size());
+        assertEquals(100, HBase.getInstance().getBulkQueue().size());
     }
 
     @Test
     public void putBulkMark() throws MalformedURLException {
-        HBase.getInstance().bulkData.clear();
+        HBase.getInstance().getBulkQueue().clear();
         for(int i = 0; i < 100; i++){
             HBase.getInstance().putBulkMark("https://www.test.com", "testVal");
         }
-        assertEquals(100, HBase.getInstance().bulkData.size());
+        assertEquals(100, HBase.getInstance().getBulkQueue().size());
     }
 
 }
