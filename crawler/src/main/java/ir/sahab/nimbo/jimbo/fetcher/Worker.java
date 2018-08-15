@@ -144,10 +144,12 @@ public class Worker implements Runnable {
 
                 for (String shuffledLink : shuffledLinks) {
                     if (checkLink(shuffledLink)) {
+                        long tmp = System.currentTimeMillis();
                         rawWebPagesQueue.add(new WebPageModel(
                                 Jsoup.connect(shuffledLink).validateTLSCertificates(false).get().text(),
                                 shuffledLink
                         ));
+                        FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
                     }
                 }
 
