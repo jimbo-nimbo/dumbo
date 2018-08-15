@@ -23,6 +23,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -64,6 +65,8 @@ public class Worker implements Runnable {
     public static final AtomicLong PUTTING_TIME = new AtomicLong(0L);
     private static long puttingTime;
 
+    private static DecimalFormat df = new DecimalFormat("#.00");
+
     public static String log() {
         final StringBuilder stringBuilder = new StringBuilder();
 
@@ -71,7 +74,7 @@ public class Worker implements Runnable {
         final int newLinks = TOOK_LINKS.get() - tookLinks;
         stringBuilder.append("shuffled packs: " + SHUFFLED_PACK_COUNT.get() + "(+" + newPacks + ")");
         stringBuilder.append(", shuffled packs average size: " +
-                (newPacks == 0 ? "-" : newLinks/newPacks));
+                (newPacks == 0 ? "-" : df.format(newLinks/newPacks)));
         stringBuilder.append(", link received: " + TOOK_LINKS.get() + "(+" + newLinks + ")");
         tookLinks = TOOK_LINKS.get();
         shuffledPackCount = SHUFFLED_PACK_COUNT.get();
@@ -89,8 +92,8 @@ public class Worker implements Runnable {
         stringBuilder.append("\n Total of " + (LRU_HIT.get() + LRU_MISS.get())
                 + "(+" + (newLruHit + newLruMiss) + ") request to lru cache, Miss:"
                 + LRU_MISS.get() + "(+" + newLruMiss + "), Hit:" + LRU_HIT.get() + "(+" + newLruHit + ")" +
-                ", average time per request: " + averageTimePerRequest +
-                ", and for add request: " + averageTimeForAddRequest);
+                ", average time per request: " + df.format(averageTimePerRequest) +
+                ", and for add request: " + df.format(averageTimeForAddRequest));
         lruHit = LRU_HIT.get();
         lruMiss = LRU_MISS.get();
 
@@ -100,8 +103,8 @@ public class Worker implements Runnable {
         final double averageTimePerPut = PUTTING_TIME.doubleValue()/FETCHED_LINKS.doubleValue();
         stringBuilder.append("\n Time to produce a kafka record: " + kafkaRecordTime
                 + ", fetched links: " + FETCHED_LINKS.get() + "(+" + newFetchedLink +
-                "), average fetch time: " + averageTimePerFetch +
-                "), average put time: " + averageTimePerPut);
+                "), average fetch time: " + df.format(averageTimePerFetch) +
+                "), average put time: " + df.format(averageTimePerPut));
 
         return stringBuilder.toString();
     }

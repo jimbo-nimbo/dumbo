@@ -54,7 +54,8 @@ public class Crawler {
             System.out.println("shuffled links: " + shuffledLinksQueue.size()
                     + ",\t webpages: " + rawPagesQueue.size() + ", " +  Parser.parsedPages.intValue());
             System.out.println(Worker.log());
-            Thread.sleep(3000);
+            System.out.println("--------------------------------");
+            Thread.sleep(10000);
         }
     }
 
