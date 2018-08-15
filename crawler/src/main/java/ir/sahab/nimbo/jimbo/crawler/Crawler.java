@@ -49,10 +49,12 @@ public class Crawler {
         parser.runWorkers();
         fetcher.runWorkers();
 
+        long uptime = System.currentTimeMillis();
         while(true) {
 
-            System.out.println("shuffled links: " + shuffledLinksQueue.size()
-                    + ",\t webpages: " + rawPagesQueue.size() + ", " +  Parser.parsedPages.intValue());
+            System.out.println("shuffled queue: " + shuffledLinksQueue.size()
+                    + ",\t fetched queue: " + rawPagesQueue.size() + ", parsedQueue" +  Parser.parsedPages.intValue()
+                    + ",\t uptime: " + (System.currentTimeMillis() - uptime));
             System.out.println(Worker.log());
             System.out.println("--------------------------------");
             Thread.sleep(10000);

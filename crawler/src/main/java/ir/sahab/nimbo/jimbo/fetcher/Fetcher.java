@@ -15,9 +15,6 @@ public class Fetcher {
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
 
-
-
-
     private final Worker[] workers;
 
     public Fetcher(ArrayBlockingQueue<List<String>> shuffledLinksQueue

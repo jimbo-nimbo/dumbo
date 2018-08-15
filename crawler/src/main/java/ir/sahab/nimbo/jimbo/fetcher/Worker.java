@@ -14,6 +14,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.jsoup.Jsoup;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -133,37 +134,47 @@ public class Worker implements Runnable {
     public void run() {
         while(running)
         {
-            List<Future<HttpResponse>> futures = new ArrayList<>();
-            List<String> urls = new ArrayList<>();
+//            List<Future<HttpResponse>> futures = new ArrayList<>();
+//            List<String> urls = new ArrayList<>();
             try {
                 final List<String> shuffledLinks = shuffledLinksQueue.take();
 
                 TOOK_LINKS.addAndGet(shuffledLinks.size());
                 SHUFFLED_PACK_COUNT.incrementAndGet();
 
-                for (String link : shuffledLinks) {
-                    if (checkLink(link)) {
-                        futures.add(client.execute(new HttpGet(link), null));
-                        urls.add(link);
+                for (String shuffledLink : shuffledLinks) {
+                    if (checkLink(shuffledLink)) {
+                        rawWebPagesQueue.add(new WebPageModel(
+                                Jsoup.connect(shuffledLink).validateTLSCertificates(false).get().text(),
+                                shuffledLink
+                        ));
                     }
                 }
 
-                for (int i= 0; i < futures.size(); i++) {
+//                for (String link : shuffledLinks) {
+//                    if (checkLink(link)) {
+//                        futures.add(client.execute(new HttpGet(link), null));
+//                        urls.add(link);
+//
+//                    }
+//                }
+//
+//                for (int i= 0; i < futures.size(); i++) {
+//
+//                    long tmp = System.currentTimeMillis();
+//                    HttpEntity entity = futures.get(i).get().getEntity();
+//                    FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
+//                    FETCHED_LINKS.incrementAndGet();
+//
+//                    if (entity != null) {
+//                        final String text = EntityUtils.toString(entity);
+//                        tmp = System.currentTimeMillis();
+//                        rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
+//                        PUTTING_TIME.addAndGet(System.currentTimeMillis() - tmp);
+//                    }
+//                }
 
-                    long tmp = System.currentTimeMillis();
-                    HttpEntity entity = futures.get(i).get().getEntity();
-                    FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
-                    FETCHED_LINKS.incrementAndGet();
-
-                    if (entity != null) {
-                        final String text = EntityUtils.toString(entity);
-                        tmp = System.currentTimeMillis();
-                        rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
-                        PUTTING_TIME.addAndGet(System.currentTimeMillis() - tmp);
-                    }
-                }
-
-            } catch (InterruptedException | IOException | ExecutionException e) {
+            } catch (InterruptedException | IOException e) {
                 //todo
             }
         }
