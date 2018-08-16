@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.twitter;
 
-import ir.sahab.nimbo.jimbo.main.Logger;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 import static ir.sahab.nimbo.jimbo.main.Config.*;
@@ -38,7 +37,8 @@ public class TwitterStreamApi {
     private class JimboStatusListner implements StatusListener{
 
         public void onException(Exception e) {
-            Logger.getInstance().debugLog("twitter Exception : " + e.getMessage());
+            System.err.println("err");
+            //Logger.getInstance().debugLog("twitter Exception : " + e.getMessage());
         }
 
         public void onStatus(Status status) {
