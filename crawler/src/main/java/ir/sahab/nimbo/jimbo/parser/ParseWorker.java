@@ -2,7 +2,6 @@ package ir.sahab.nimbo.jimbo.parser;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.Validator;
-import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.producer.Producer;
@@ -48,6 +47,7 @@ class ParseWorker implements Runnable {
                     sendLinksToKafka(links);
 //                    HBase.getInstance().putBulkData(model.getLink(), links);
 //                    hbaseQueue.put(new HBaseDataModel(model.getLink()));
+
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -70,7 +70,7 @@ class ParseWorker implements Runnable {
     private void sendLinksToKafka(List<Link> links) {
         for (Link link : links) {
             producer.send(
-                    new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref().toString()));
+                    new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref()));
         }
     }
 
