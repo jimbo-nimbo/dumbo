@@ -55,7 +55,7 @@ public class NumRefers {
 
         Configuration hConf = HBaseConfiguration.create();
         String path = Objects.requireNonNull(NumRefers.class
-                .getClassLoader().getResource(Config.SPARK_SITE_XML)).getPath();
+                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
         hConf.addResource(new Path(path));
         path = Objects.requireNonNull(NumRefers.class
                 .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();

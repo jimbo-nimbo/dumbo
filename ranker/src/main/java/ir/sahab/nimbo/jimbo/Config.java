@@ -6,7 +6,7 @@ import java.util.Properties;
 
 public class Config {
     public static final String SPARK_APP_NAME;
-    public static final String SPARK_SITE_XML;
+    public static final String HBASE_SITE_XML;
     public static final String CORE_SITE_XML;
     public static final String HBASE_TABLE;
     public static final String MARK_CF_NAME;
@@ -21,7 +21,7 @@ public class Config {
             e.printStackTrace();
         }
         SPARK_APP_NAME = props.getProperty("spark_app_name");
-        SPARK_SITE_XML = props.getProperty("hbase_site_xml");
+        HBASE_SITE_XML = props.getProperty("hbase_site_xml");
         CORE_SITE_XML = props.getProperty("core_site_xml");
         HBASE_TABLE = props.getProperty("hbase_table");
         MARK_CF_NAME = props.getProperty("hbase_mark_cf_name");
