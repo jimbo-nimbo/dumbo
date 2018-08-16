@@ -7,6 +7,7 @@ import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.fetcher.Worker;
+import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.hbase.HbaseBulkThread;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
@@ -27,6 +28,7 @@ public class Crawler {
 
     private final Parser parser;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
+    private final ArrayBlockingQueue<HBaseDataModel> hbaseQueue;
 
     private final HbaseBulkThread hbaseBulkThread;
     private ElasticSearchThread esThread;
@@ -39,10 +41,10 @@ public class Crawler {
         rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
         fetcher = new Fetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting());
 
+        hbaseQueue = new ArrayBlockingQueue<>(crawlerSetting.getHbaseQueueMaxSize());
         elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
-        parser = new Parser(rawPagesQueue, elasticQueue, new ParserSetting());
+        parser = new Parser(rawPagesQueue, elasticQueue, hbaseQueue, new ParserSetting());
 
-        // TODO: what?
         try {
             ElasticsearchThreadFactory elasticsearchThreadFactory = new ElasticsearchThreadFactory(elasticQueue);
             esThread = elasticsearchThreadFactory.createNewThread();
@@ -51,13 +53,6 @@ public class Crawler {
         }
 
         hbaseBulkThread = new HbaseBulkThread();
-    }
-
-    /**
-     * constructor for testing
-     */
-    Crawler() {
-        this(new CrawlerSetting(10000, 10000, 10000));
     }
 
     public void crawl() throws InterruptedException {
