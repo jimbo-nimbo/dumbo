@@ -1,8 +1,7 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticCannotLoadException;
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticSearchThread;
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchThreadFactory;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticSearchHandler;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchSetting;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
@@ -15,6 +14,7 @@ import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -31,26 +31,27 @@ public class Crawler {
     private final ArrayBlockingQueue<HBaseDataModel> hbaseQueue;
 
     private final HbaseBulkThread hbaseBulkThread;
-    private ElasticSearchThread esThread;
+    private ElasticSearchHandler elasticSearchHandler;
 
-    public Crawler(CrawlerSetting crawlerSetting) {
+    public Crawler(CrawlerSetting crawlerSetting) throws Exception {
 
         shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
         shuffler = new Shuffler(shuffledLinksQueue);
+
+        elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
+        try {
+            elasticSearchHandler = new ElasticSearchHandler(elasticQueue, new ElasticsearchSetting());
+        } catch (UnknownHostException e) {
+            //todo
+            e.printStackTrace();
+            throw new Exception("cannot connect to elasticsearch");
+        }
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
         fetcher = new Fetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting());
 
         hbaseQueue = new ArrayBlockingQueue<>(crawlerSetting.getHbaseQueueMaxSize());
-        elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
         parser = new Parser(rawPagesQueue, elasticQueue, hbaseQueue, new ParserSetting());
-
-        try {
-            ElasticsearchThreadFactory elasticsearchThreadFactory = new ElasticsearchThreadFactory(elasticQueue);
-            esThread = elasticsearchThreadFactory.createNewThread();
-        } catch (ElasticCannotLoadException | IOException e) {
-            e.printStackTrace();
-        }
 
         hbaseBulkThread = new HbaseBulkThread();
     }
@@ -61,8 +62,7 @@ public class Crawler {
 
         parser.runWorkers();
         fetcher.runWorkers();
-        // TODO: what?
-        new Thread(esThread).start();
+        new Thread(elasticSearchHandler).start();
         new Thread(hbaseBulkThread).start();
 
         long uptime = System.currentTimeMillis();
@@ -71,6 +71,7 @@ public class Crawler {
             System.out.println("shuffled queue: " + shuffledLinksQueue.size()
                     + ",\t fetched queue: " + rawPagesQueue.size() + ", parsedQueue" +  Parser.parsedPages.intValue()
                     + ",\t uptime: " + (System.currentTimeMillis() - uptime));
+            System.out.println("elasticsearch(fail, success): " + ElasticSearchHandler.failureSubmit + ", " +  ElasticSearchHandler.successfulSubmit);
             System.out.println(Worker.log());
             System.out.println("--------------------------------");
             Thread.sleep(10000);

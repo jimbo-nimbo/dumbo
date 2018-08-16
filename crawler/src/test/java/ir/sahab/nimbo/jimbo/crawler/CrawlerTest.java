@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
-import ir.sahab.nimbo.jimbo.oldClasses.Crawler;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -10,7 +9,11 @@ public class CrawlerTest {
     @BeforeClass
     public void createInstance()
     {
-        crawler = new Crawler();
+        try {
+            crawler = new Crawler(new CrawlerSetting());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

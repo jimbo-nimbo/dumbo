@@ -11,7 +11,7 @@ public class Main {
         } else if (args.length == 0) {
             try {
                 new Crawler(new CrawlerSetting()).crawl();
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {

@@ -1,14 +1,12 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher {
 
