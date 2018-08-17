@@ -1,13 +1,10 @@
 package ir.sahab.nimbo.jimbo.sparkstream;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.Duration;
-import org.apache.spark.streaming.api.java.JavaDStream;
-import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.twitter.TwitterUtils;
 import scala.Serializable;
@@ -57,7 +54,7 @@ public class SparkStream implements Serializable {
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         sparkContext.setLogLevel("INFO");
         JavaStreamingContexSerializable jssc =
-                new JavaStreamingContexSerializable(sparkContext, new Duration(3000));
+                new JavaStreamingContexSerializable(sparkContext, new Duration(30000));
         //jssc = new JavaStreamingContext(conf, Durations.seconds(1L));
         try {
             jssc.awaitTerminationOrTimeout(10000L);
@@ -71,9 +68,11 @@ public class SparkStream implements Serializable {
         twitterStream.flatMap(s -> Arrays.asList(s.getHashtagEntities()).iterator())
                 .mapToPair(hsdhtsg -> new Tuple2<>(hsdhtsg.getText(), 1))
                 .reduceByKey((v1, v2) -> v1 + v2)
-                .map(pair -> pair._1)
-                .dstream()
-                .saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
+                //.map(pair -> pair._1)
+                //.dstream()
+                .saveAsHadoopFiles("hdfs://nimbo1:9000/nimac/","ans", Text.class,
+              IntWritable.class, TextOutputFormat.class);
+                //.saveAsTextFiles("hdfs://nimbo1:9000/spark/", "ans");
 
 //        JavaDStream<String> statuses = twitterStream.flatMap((FlatMapFunction<Status, String>) status -> {
 //            ArrayList<String> list = new ArrayList<>();
