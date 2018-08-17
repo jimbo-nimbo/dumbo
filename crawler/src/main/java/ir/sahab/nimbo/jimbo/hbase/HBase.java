@@ -14,7 +14,6 @@ import org.apache.hadoop.hbase.client.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -28,22 +27,19 @@ import static ir.sahab.nimbo.jimbo.main.Config.*;
 public class HBase {
 
     private static HBase hbase = new HBase();
-    TableName tableName;
-    private Connection connection = null;
-    private Configuration config;
-    private Admin admin = null;
+    private TableName tableName;
     Table table = null;
-    private ExecutorService executorService;
-    ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
+    private ArrayBlockingQueue<Put> bulkData = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
 
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
-        config = HBaseConfiguration.create();
+        Configuration config = HBaseConfiguration.create();
         String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_SITE_DIR)).getPath();
         config.addResource(new Path(path));
         path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_CORE_DIR)).getPath();
         config.addResource(new Path(path));
         boolean conn = true;
+        Connection connection = null;
         while (conn) {
             try {
                 connection = ConnectionFactory.createConnection(config);
@@ -53,7 +49,7 @@ public class HBase {
             }
         }
         try {
-            admin = connection.getAdmin();
+            Admin admin = connection.getAdmin();
             if (!admin.tableExists(tableName)) {
                 initialize(admin);
             }
@@ -61,12 +57,14 @@ public class HBase {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        executorService = new ThreadPoolExecutor(HBASE_MIN_THREAD, HBASE_MAX_THREAD, 0L, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<Runnable>(HBASE_EXECUROR_BLOCK_Q_SIZE));
     }
 
     public static HBase getInstance() {
         return hbase;
+    }
+
+    ArrayBlockingQueue<Put> getBulkQueue() {
+        return bulkData;
     }
 
     /**
@@ -75,32 +73,13 @@ public class HBase {
      * @param
      */
 
-    public void putBulkData(String sourceUrl, List<Link> links) {
-        Put p = null;
+    private Put getPutData(String sourceUrl, List<Link> links) {
+        Put p;
         try {
             p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
         } catch (MalformedURLException e) {
             e.printStackTrace();
-        }
-        Link link;
-        for (int i = 0; i < links.size(); i++) {
-            link = links.get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "link").getBytes(), link.getHref().toString().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(), (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
-        }
-        try {
-            bulkData.put(p);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void putData(String sourceUrl, List<Link> links) {
-        Put p = null;
-        try {
-            p = new Put(reverseUrl(new URL(sourceUrl)).getBytes());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            return null;
         }
         Link link;
         for (int i = 0; i < links.size(); i++) {
@@ -110,10 +89,24 @@ public class HBase {
             p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
                     (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
+        return p;
+    }
+
+    public void putBulkData(String sourceUrl, List<Link> links) {
+        Put p = getPutData(sourceUrl, links);
         try {
-            if (links.size() > 0) {
+            if (links.size() > 0)
+            bulkData.put(p);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void putData(String sourceUrl, List<Link> links) {
+        Put p = getPutData(sourceUrl, links);
+        try {
+            if (links.size() > 0)
                 table.put(p);
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -185,8 +178,7 @@ public class HBase {
 
     }
 
-
-    public boolean existData(String sourceUrl) {
+    boolean existData(String sourceUrl) {
         Get get = null;
         try {
             get = new Get(reverseUrl(new URL(sourceUrl)).getBytes());
@@ -236,7 +228,7 @@ public class HBase {
         return reverseDomain(url.getHost()) + getHash(url.getPath());
     }
 
-    String reverseDomain(String domain) {
+    private String reverseDomain(String domain) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] res = domain.split("\\.");
         try {
@@ -253,7 +245,6 @@ public class HBase {
     private static String getHash(String inp) {
         return DigestUtils.md5Hex(inp);
     }
-
 
     private void initialize(Admin admin) {
         try {
@@ -308,5 +299,9 @@ public class HBase {
 
 
 
+    }
+
+    Table getTable() {
+        return table;
     }
 }

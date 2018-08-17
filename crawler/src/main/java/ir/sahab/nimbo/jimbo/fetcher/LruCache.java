@@ -52,7 +52,7 @@ public class LruCache {
      * @param url domain of site
      * @throws CloneNotSupportedException if domain is in cache throw exception, else add it
      */
-    public synchronized boolean add(String url) {
+    public boolean add(String url) {
 
         if (exist(url)) {
             return false;
@@ -61,7 +61,7 @@ public class LruCache {
         return true;
     }
 
-    synchronized void remove(String url) {
+    void remove(String url) {
         cache.invalidate(url);
     }
 

@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.shuffler;
 
-import ir.sahab.nimbo.jimbo.kafaconfig.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -25,27 +24,23 @@ public  class Shuffler implements Runnable{
     /**
      * constructor for testing
      */
-    Shuffler(String kafkaTopic, ArrayBlockingQueue<List<String>> linksQueue)
-    {
+    Shuffler(String kafkaTopic, ArrayBlockingQueue<List<String>> linksQueue) {
         this.linksQueue = linksQueue;
         consumer.subscribe(Collections.singletonList(kafkaTopic));
     }
 
-    public Shuffler(ArrayBlockingQueue<List<String>> linksQueue)
-    {
+    public Shuffler(ArrayBlockingQueue<List<String>> linksQueue) {
         this.linksQueue = linksQueue;
 //        consumer.subscribe(Collections.singletonList(Config.URL_FRONTIER_TOPIC));;
     }
 
-    ConsumerRecords<String, String> consume()
-    {
+    ConsumerRecords<String, String> consume() {
         ConsumerRecords<String, String> consumerRecords = consumer.poll(5000);
         consumer.commitAsync();
         return consumerRecords;
     }
 
-    List<String> consumeAndShuffle()
-    {
+    List<String> consumeAndShuffle() {
         final List<String> list = new ArrayList<>();
         ConsumerRecords<String, String> consumerRecords = consume();
 
@@ -57,8 +52,7 @@ public  class Shuffler implements Runnable{
         return list;
     }
 
-    void closeConsumer()
-    {
+    void closeConsumer() {
         running = false;
         consumer.close();
     }
@@ -97,7 +91,7 @@ public  class Shuffler implements Runnable{
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG,
-                "KafkaExampleConsumer");
+                "KafkaShuffleConsumer");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
