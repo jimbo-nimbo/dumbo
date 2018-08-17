@@ -33,25 +33,22 @@ public class Main {
 
     @Command
     private void search() throws IOException {
-
         System.out.println("Enter your search text:\n");
-
         scanner.nextLine();
-
         String searchText = scanner.nextLine();
-
         ArrayList<String> ans = ElasticClient.getInstance().simpleSearchInElasticForWebPage(searchText);
-
         for (String tmp : ans) {
-
             System.out.println(tmp);
-
         }
     }
 
     @Command
     private void advancedSearch() throws IOException {
 
+        //TODO this is copy
+        //TODO this copy
+        //TODO this
+        //TODO
         ArrayList<String> must = new ArrayList<>();
         ArrayList<String> mustNot = new ArrayList<>();
         ArrayList<String> should = new ArrayList<>();
