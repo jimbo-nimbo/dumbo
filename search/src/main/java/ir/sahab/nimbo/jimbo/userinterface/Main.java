@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.userinterface;
 
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
+import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +12,12 @@ import java.util.Scanner;
 public class Main {
 
     Scanner scanner;
+
+    private static ElasticSearchSettings elasticSearchSettings;
+
+    static {
+        elasticSearchSettings = new ElasticSearchSettings();
+    }
 
     public Main() {
         scanner = new Scanner(System.in);
@@ -25,11 +32,6 @@ public class Main {
     }
 
     @Command
-    public String getWebSites() {
-        return "hi";
-    }
-
-    @Command
     private void search() throws IOException {
 
         System.out.println("Enter your search text:\n");
@@ -38,15 +40,13 @@ public class Main {
 
         String searchText = scanner.nextLine();
 
-//        ArrayList<String> ans =
-//
-//                elasticClient.simpleSearchInElasticForWebPage(searchText, Config.elasticsearchIndexName);
-//
-//        for (String tmp : ans) {
-//
-//            System.out.println(tmp);
-//
-//        }
+        ArrayList<String> ans = ElasticClient.getInstance().simpleSearchInElasticForWebPage(searchText);
+
+        for (String tmp : ans) {
+
+            System.out.println(tmp);
+
+        }
     }
 
     @Command
@@ -77,12 +77,10 @@ public class Main {
                     should.add(scanner.nextLine());
                     break;
                 case "done":
-//                    ArrayList<String> ans =
-//                            elasticClient.advancedSearchInElasticForWebPage(
-//                                    must, mustNot, should, Config.elasticsearchIndexName);
-//                    for (String tmp : ans) {
-//                        System.out.println(tmp);
-//                    }
+                    ArrayList<String> ans = ElasticClient.getInstance().advancedSearchInElasticForWebPage(must, mustNot, should);
+                    for (String tmp : ans) {
+                        System.out.println(tmp);
+                    }
                     return;
                 default:
                     System.out.println("input is not valid.\nplease try again.\n");
