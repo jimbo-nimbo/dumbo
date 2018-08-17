@@ -91,8 +91,8 @@ public class HBaseTest {
         assertEquals("com.google.dev.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
     }
 
-    @Test
-    public void putBulkData() throws MalformedURLException {
+//    @Test
+//    public void putBulkData() throws MalformedURLException {
 //        ArrayList<Link> arrayList = new ArrayList<>();
 //        Link link = new Link(new URL("https://www.href.com"), "anchor");
 //        arrayList.add(link);
@@ -100,16 +100,16 @@ public class HBaseTest {
 //            HBase.getInstance().putBulkData("https://www.test.com", arrayList);
 //        }
 //        assertEquals(100, HBase.getInstance().getBulkQueue().size());
-    }
+//    }
 
-    @Test
-    public void putBulkMark() throws MalformedURLException {
-        HBase.getInstance().getBulkQueue().clear();
-        for(int i = 0; i < 100; i++){
-            HBase.getInstance().putBulkMark("https://www.test.com", "testVal");
-        }
-        assertEquals(100, HBase.getInstance().getBulkQueue().size());
-    }
+//    @Test
+//    public void putBulkMark() throws MalformedURLException {
+//        HBase.getInstance().getBulkQueue().clear();
+//        for(int i = 0; i < 100; i++){
+//            HBase.getInstance().putBulkMark("https://www.test.com", "testVal");
+//        }
+//        assertEquals(100, HBase.getInstance().getBulkQueue().size());
+//    }
 
     @Test
     public void processAllTest() throws IOException {
