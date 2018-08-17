@@ -7,10 +7,9 @@ import java.util.Properties;
 public class ElasticSearchSettings {
 
     protected final Properties properties;
-    private final String bootstrapServers;
-    private final String producerClientId;
-    private final String consumerGroupId;
-    private final int maxPollRecords;
+    private final String clusterName;
+    private final String hosts;
+    private final String indexName;
 
     ElasticSearchSettings() {
         String resourceName = "elasticsearch.properties";
@@ -21,27 +20,20 @@ public class ElasticSearchSettings {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        bootstrapServers = properties.getProperty("bootstrap_servers");
-        producerClientId = properties.getProperty("producer_client_id");
-        consumerGroupId = properties.getProperty("consumer_group_id");
-        maxPollRecords = Integer.parseInt(properties.getProperty("max_poll_records"));
+        clusterName = properties.getProperty("cluster.name");
+        hosts = properties.getProperty("hosts");
+        indexName = properties.getProperty("index.name");
     }
 
-    public String getBootstrapServers() {
-        return bootstrapServers;
+    public String getClusterName() {
+        return clusterName;
     }
 
-    public String getProducerClientId() {
-        return producerClientId;
+    public String getHosts() {
+        return hosts;
     }
 
-    public String getConsumerGroupId() {
-        return consumerGroupId;
+    public String getIndexName() {
+        return indexName;
     }
-
-    public int getMaxPollRecords() {
-        return maxPollRecords;
-    }
-
-
 }
