@@ -1,11 +1,17 @@
-package ir.sahab.nimbo.jimbo.userinterface;
+package ir.sahab.nimbo.jimbo.elastic;
 
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class ElasticSearchSettings {
 
+    private RestHighLevelClient client;
     protected final Properties properties;
     private final String clusterName;
     private final String hosts;
@@ -23,17 +29,54 @@ public class ElasticSearchSettings {
         clusterName = properties.getProperty("cluster.name");
         hosts = properties.getProperty("hosts");
         indexName = properties.getProperty("index.name");
+        client =
+                new RestHighLevelClient(
+                        RestClient.builder(new HttpHost(getHosts().get(0).getHostName(), 9300, "http"))
+                                .setRequestConfigCallback(
+                                        requestConfigBuilder ->
+                                                requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(600000))
+                                .setMaxRetryTimeoutMillis(600000));
     }
 
     public String getClusterName() {
         return clusterName;
     }
 
-    public String getHosts() {
+    public RestHighLevelClient getClient() {
+        return client;
+    }
+
+    public List<Host> getHosts() {
+        String hostsString = this.hosts;
+        List<Host> hosts = new ArrayList<>();
+        for (String hostString : hostsString.split("#")) {
+            Host host = new Host(hostString.split(":")[0],
+                    Integer.parseInt(hostString.split(":")[1]));
+            hosts.add(host);
+        }
+
         return hosts;
     }
 
     public String getIndexName() {
         return indexName;
+    }
+
+    class Host {
+        private String hostName;
+        private int port;
+
+        Host(String hostName, int port) {
+            this.hostName = hostName;
+            this.port = port;
+        }
+
+        String getHostName() {
+            return hostName;
+        }
+
+        int getPort() {
+            return port;
+        }
     }
 }

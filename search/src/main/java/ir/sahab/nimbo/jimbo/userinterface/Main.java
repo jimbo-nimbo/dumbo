@@ -11,13 +11,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    Scanner scanner;
-
-    private static ElasticSearchSettings elasticSearchSettings;
-
-    static {
-        elasticSearchSettings = new ElasticSearchSettings();
-    }
+    private final Scanner scanner;
 
     public Main() {
         scanner = new Scanner(System.in);
@@ -32,7 +26,7 @@ public class Main {
     }
 
     @Command
-    private void search() throws IOException {
+    private void search() {
 
         System.out.println("Enter your search text:\n");
 
@@ -50,7 +44,7 @@ public class Main {
     }
 
     @Command
-    private void advancedSearch() throws IOException {
+    private void advancedSearch() {
 
         ArrayList<String> must = new ArrayList<>();
         ArrayList<String> mustNot = new ArrayList<>();
