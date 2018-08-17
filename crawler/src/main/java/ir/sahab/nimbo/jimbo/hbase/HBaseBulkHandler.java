@@ -23,8 +23,11 @@ public class HBaseBulkHandler implements Runnable {
     public void run() {
         while (true) {
             try {
-                for (int i = 0; i < HBASE_BULK_LIMIT; i++) {
-                    puts.add(HBase.getInstance().getPutData(bulkQueue.take()));
+                while (puts.size() < HBASE_BULK_LIMIT) {
+                    HBaseDataModel data = bulkQueue.take();
+                    if (data.getLinks().size() > 0) {
+                        puts.add(HBase.getInstance().getPutData(data));
+                    }
                 }
                 HBase.getInstance().getTable().put(puts);
                 puts.clear();
