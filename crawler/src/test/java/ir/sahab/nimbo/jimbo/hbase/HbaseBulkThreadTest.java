@@ -25,7 +25,7 @@ public class HbaseBulkThreadTest {
     @Test
     public void run() throws MalformedURLException, InterruptedException {
 //        HBase hBase = HBase.getInstance();
-//        Thread myThread = new Thread(new HbaseBulkThread(hBase.getTable(), hBase.getBulkQueue()));
+//        Thread myThread = new Thread(new HbaseBulkThread());
 //        myThread.start();
 //        ArrayList<Link> arrayList = new ArrayList<>();
 //        Link link = new Link(new URL("https://www.href.com"), "anchor");
