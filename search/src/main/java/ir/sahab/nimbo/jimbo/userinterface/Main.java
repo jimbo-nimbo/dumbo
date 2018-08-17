@@ -11,71 +11,70 @@ import java.util.Scanner;
 
 
 public class Main {
-
-    private final Scanner scanner;
-
-    public Main() {
-        scanner = new Scanner(System.in);
-    }
+    private static Scanner inp;
 
     public static void main(String[] args) {
         try {
-            ShellFactory.createConsoleShell("RssProject-Jimbo", "", new Main()).commandLoop();
+            inp = new Scanner(System.in);
+            ShellFactory.createConsoleShell("Jimbo", "", new Main()).commandLoop();
         } catch (IOException e) {
             System.err.println("WTF??");
         }
     }
 
-    @Command
-    private void search() {
-        System.out.println("Enter your search text:\n");
-        scanner.nextLine();
-        String searchText = scanner.nextLine();
-        ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleSearchInElasticForWebPage(searchText);
-        for (SearchHit tmp : ans) {
-            System.out.println(tmp.getSourceAsMap().get("url"));
+    private void printAns(ArrayList<SearchHit> searchHits){
+        final int LIMIT = 10;
+        int count = 0;
+
+        for(SearchHit searchHit : searchHits){
+            if(count <= LIMIT){
+                //System.out.println(searchHit.getSourceAsMap().get());
+                count++;
+            }
         }
     }
 
     @Command
-    private void advancedSearch() {
+    public void search() throws IOException {
+        System.out.println("enter search text");
+        inp.nextLine();
+        String searchText = inp.nextLine();
+        ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleElasticSearch(searchText);
+        printAns(ans);
+    }
 
-        //TODO this is copy
-        //TODO this copy
-        //TODO this
-        //TODO
+    @Command
+    public void jimboSearch() throws IOException {
         ArrayList<String> must = new ArrayList<>();
         ArrayList<String> mustNot = new ArrayList<>();
         ArrayList<String> should = new ArrayList<>();
         while (true) {
             System.out.println(
-                    "Write \"must\" to add a phrase you absolutely want it to be in the page.\n"
-                            + "write \"mustnot\" to add a phrase you don't want to see in the page.\n"
-                            + "write \"should\" to add a phrase you prefer to see in the page.\n"
-                            + "write \"done\" to get 10 best result.\n");
-            String input = scanner.next().toLowerCase();
-            scanner.nextLine();
+                    "\"must\" : phrase absolutely in the page.\n"
+                            + "\"mustnot\" phrase that don't want to see in the page.\n"
+                            + "\"should\" phrases prefer to see in the page.\n"
+                            + "\"done\" get result.\n");
+            String input = inp.next().toLowerCase();
+            inp.nextLine();
             switch (input) {
                 case "must":
-                    System.out.println("Enter your phrase:\n");
-                    must.add(scanner.nextLine());
+                    System.out.println("must phrase:\n");
+                    must.add(inp.nextLine());
                     break;
                 case "mustnot":
-                    System.out.println("Enter your phrase:\n");
-                    mustNot.add(scanner.nextLine());
+                    System.out.println("mustnot phrase:\n");
+                    mustNot.add(inp.nextLine());
                     break;
                 case "should":
-                    System.out.println("Enter your phrase:\n");
-                    should.add(scanner.nextLine());
+                    System.out.println("should phrase:\n");
+                    should.add(inp.nextLine());
                     break;
                 case "done":
-                    ArrayList<SearchHit> ans = ElasticClient.getInstance().advancedSearchInElasticForWebPage(must, mustNot, should);
-                    for (SearchHit tmp : ans) {
-                        System.out.println(tmp.getSourceAsMap().get("url"));
-                    }
+                    ArrayList<SearchHit> ans = ElasticClient.getInstance().jimboElasticSearch(must, mustNot, should);
+                    printAns(ans);
                     return;
                 default:
-                    System.out.println("input is not valid.\nplease try again.\n");
+                    System.out.println("wrong keyWord");
                     break;
             }
         }

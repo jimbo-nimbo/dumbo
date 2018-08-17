@@ -33,14 +33,14 @@ public class ElasticClient {
         client = elasticSearchSettings.getClient();
     }
 
-    public ArrayList<SearchHit> simpleSearchInElasticForWebPage(String mustFind) {
+    public ArrayList<SearchHit> simpleElasticSearch(String mustFind) {
         ArrayList<String> simpleQuery = new ArrayList<>();
         simpleQuery.add(mustFind);
-        return advancedSearchInElasticForWebPage(simpleQuery, new ArrayList<>(), new ArrayList<>());
+        return jimboElasticSearch(simpleQuery, new ArrayList<>(), new ArrayList<>());
     }
 
 
-    public ArrayList<SearchHit> advancedSearchInElasticForWebPage(
+    public ArrayList<SearchHit> jimboElasticSearch(
             ArrayList<String> mustFind,
             ArrayList<String> mustNotFind,
             ArrayList<String> shouldFind) {

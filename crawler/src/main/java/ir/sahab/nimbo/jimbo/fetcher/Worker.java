@@ -123,7 +123,6 @@ public class Worker implements Runnable {
         this.shuffledLinksQueue = fetcher.getShuffledLinksQueue();
         this.rawWebPagesQueue = fetcher.getRawPagesQueue();
         this.workerId = workerId;
-
         client = createNewClient();
     }
 
