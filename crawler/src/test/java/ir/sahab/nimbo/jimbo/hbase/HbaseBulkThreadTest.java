@@ -23,17 +23,20 @@ public class HbaseBulkThreadTest {
     }
 
     @Test
-    public void run() throws MalformedURLException, InterruptedException {
-//        HBase hBase = HBase.getInstance();
-//        Thread myThread = new Thread(new HbaseBulkThread());
-//        myThread.start();
-//        ArrayList<Link> arrayList = new ArrayList<>();
-//        Link link = new Link("https://www.href.com", "anchor");
-//        arrayList.add(link);
-//        for (int i = 0; i < 900; i++) {
-//            hBase.putBulkData("https://www.test.com", arrayList);
-//        }
-//        Thread.sleep(10000);
-//        assertTrue(hBase.existData("https://www.test.com"));
+    public void run() throws InterruptedException {
+        HBase hBase = HBase.getInstance();
+        Thread myThread = new Thread(new HbaseBulkThread());
+        myThread.start();
+        ArrayList<Link> arrayList = new ArrayList<>();
+        Link link = new Link("https://www.href.com", "anchor");
+        arrayList.add(link);
+        for (int i = 0; i < 900; i++) {
+            hBase.putBulkData(new HBaseDataModel("https://www.test.com" + String.valueOf(i), arrayList));
+        }
+        //Thread.sleep(10000);
+        for(int i = 0; i < 900; i++) {
+            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
+                System.err.println(i);
+        }
     }
 }
