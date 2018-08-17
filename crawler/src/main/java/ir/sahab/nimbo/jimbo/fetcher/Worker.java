@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.fetcher;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
+import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -129,8 +130,6 @@ public class Worker implements Runnable {
     public void run() {
         while(running)
         {
-//            List<Future<HttpResponse>> futures = new ArrayList<>();
-//            List<String> urls = new ArrayList<>();
             try {
                 final List<String> shuffledLinks = shuffledLinksQueue.take();
 
@@ -149,36 +148,13 @@ public class Worker implements Runnable {
                             FETCHED_LINKS.incrementAndGet();
 
                         } catch (IOException e) {
-                            //todo
+                            Logger.getInstance().errorLog(e.getMessage());
                         }
                     }
                 }
 
-//                for (String link : shuffledLinks) {
-//                    if (checkLink(link)) {
-//                        futures.add(client.execute(new HttpGet(link), null));
-//                        urls.add(link);
-//
-//                    }
-//                }
-//
-//                for (int i= 0; i < futures.size(); i++) {
-//
-//                    long tmp = System.currentTimeMillis();
-//                    HttpEntity entity = futures.get(i).get().getEntity();
-//                    FETCHING_TIME.addAndGet(System.currentTimeMillis() - tmp);
-//                    FETCHED_LINKS.incrementAndGet();
-//
-//                    if (entity != null) {
-//                        final String text = EntityUtils.toString(entity);
-//                        tmp = System.currentTimeMillis();
-//                        rawWebPagesQueue.put(new WebPageModel(text, urls.get(i)));
-//                        PUTTING_TIME.addAndGet(System.currentTimeMillis() - tmp);
-//                    }
-//                }
-
-            } catch (InterruptedException exception) {
-                //todo
+            } catch (InterruptedException e) {
+                Logger.getInstance().errorLog(e.getMessage());
             }
         }
     }
