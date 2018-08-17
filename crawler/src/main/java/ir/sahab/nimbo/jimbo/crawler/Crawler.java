@@ -68,7 +68,10 @@ public class Crawler {
         while (true) {
 
             System.out.println("shuffled queue: " + shuffledLinksQueue.size()
-                    + ",\t fetched queue: " + rawPagesQueue.size() + ", parsedQueue" +  Parser.parsedPages.intValue()
+                    + ",\t fetched queue: " + rawPagesQueue.size()
+                    + ", parsedPages" +  Parser.parsedPages.intValue()
+                    + ", hbaseQueue: " + hbaseQueue.size()
+                    + ", elasticQueue: " + elasticQueue.size()
                     + ",\t uptime: " + (System.currentTimeMillis() - uptime));
             System.out.println("elasticsearch(fail, success): " + ElasticSearchHandler.failureSubmit + ", " +  ElasticSearchHandler.successfulSubmit);
             System.out.println(Worker.log());
