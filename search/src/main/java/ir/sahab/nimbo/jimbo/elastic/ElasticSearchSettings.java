@@ -12,7 +12,7 @@ import java.util.Properties;
 class ElasticSearchSettings {
 
     private RestHighLevelClient client;
-    protected final Properties properties;
+    private final Properties properties;
     private final String clusterName;
     private final String hosts;
     private final String indexName;
@@ -42,11 +42,15 @@ class ElasticSearchSettings {
         return clusterName;
     }
 
-    public RestHighLevelClient getClient() {
+    int getScore(String field) {
+        return Integer.valueOf(properties.getProperty(field + ".score"));
+    }
+
+    RestHighLevelClient getClient() {
         return client;
     }
 
-    public List<Host> getHosts() {
+    List<Host> getHosts() {
         String hostsString = this.hosts;
         List<Host> hosts = new ArrayList<>();
         for (String hostString : hostsString.split("#")) {
@@ -58,7 +62,7 @@ class ElasticSearchSettings {
         return hosts;
     }
 
-    public String getIndexName() {
+    String getIndexName() {
         return indexName;
     }
 

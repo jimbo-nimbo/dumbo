@@ -47,15 +47,14 @@ public class ElasticClient {
         SearchRequest searchRequest = new SearchRequest(elasticSearchSettings.getIndexName());
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        String fields[] = {"url", "content", "title", "description"};
         for (String phrase : mustFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
                             phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
-            multiMatchQueryBuilder.field("url", 1);
-            multiMatchQueryBuilder.field("content", 5);
-            multiMatchQueryBuilder.field("title", 2);
-            multiMatchQueryBuilder.field("description", 1);
+            for(String field: fields)
+                multiMatchQueryBuilder.field(field, elasticSearchSettings.getScore(field));
             boolQuery.must(multiMatchQueryBuilder);
         }
         for (String phrase : mustNotFind) {
@@ -69,10 +68,8 @@ public class ElasticClient {
                     QueryBuilders.multiMatchQuery(
                             phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
-            multiMatchQueryBuilder.field("url", 1);
-            multiMatchQueryBuilder.field("content", 2);
-            multiMatchQueryBuilder.field("title", 5);
-            multiMatchQueryBuilder.field("description", 1);
+            for(String field: fields)
+                multiMatchQueryBuilder.field(field, elasticSearchSettings.getScore(field));
             boolQuery.should(multiMatchQueryBuilder);
         }
         searchSourceBuilder.query(boolQuery);
