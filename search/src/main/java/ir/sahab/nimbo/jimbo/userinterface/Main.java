@@ -7,6 +7,7 @@ import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
 
 
@@ -28,8 +29,15 @@ public class Main {
 
         for(SearchHit searchHit : searchHits){
             if(count <= LIMIT){
-                System.out.println(searchHit.getScore() + " " + searchHit.getSourceAsMap().get("url")
-                        + " " + searchHit.getSourceAsMap().get("title"));
+                Map<String, Object> map = searchHit.getSourceAsMap();
+                System.out.print("Title: " + map.get("title") + "\n" +
+                        map.get("url") + "\n");
+                String content = map.get("content").toString();
+                if(content.length() <= 500)
+                    System.out.println(content);
+                else {
+                    System.out.println(content.substring(0, 499) + "...");
+                }
                 count++;
             }
         }
