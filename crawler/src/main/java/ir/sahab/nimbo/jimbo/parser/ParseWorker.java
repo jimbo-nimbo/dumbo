@@ -45,9 +45,7 @@ class ParseWorker implements Runnable {
                     sendToElastic(model, document);
                     List<Link> links = extractLinks(document);
                     sendLinksToKafka(links);
-//                    HBase.getInstance().putBulkData(model.getLink(), links);
-//                    hbaseQueue.put(new HBaseDataModel(model.getLink()));
-
+                    hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

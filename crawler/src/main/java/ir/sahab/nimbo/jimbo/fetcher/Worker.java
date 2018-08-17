@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
+import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -215,12 +216,12 @@ public class Worker implements Runnable {
         LRU_ADD_REQUEST_TIME.addAndGet(System.currentTimeMillis() - tmp);
 
 
-//        if (HBase.getInstance().existMark(link)){
-//            lruCache.remove(host);
-//            return false;
-//        }
-//
-//        HBase.getInstance().putMark(link, "1");
+        if (HBase.getInstance().existMark(link)){
+            lruCache.remove(host);
+            return false;
+        }
+
+        HBase.getInstance().putMark(link, "1");
 
         return true;
     }
