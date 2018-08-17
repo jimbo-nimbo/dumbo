@@ -65,17 +65,20 @@ public class Crawler {
         new Thread(hbaseBulkHandler).start();
 
         long uptime = System.currentTimeMillis();
+        int oldParsedPages = 0;
         while (true) {
 
             System.out.println("shuffled queue: " + shuffledLinksQueue.size()
                     + ",\t fetched queue: " + rawPagesQueue.size()
-                    + ", parsedPages" +  Parser.parsedPages.intValue()
+                    + ", parsedPages" +  Parser.parsedPages.intValue() + "(+" +
+            String.valueOf(Parser.parsedPages.intValue() - oldParsedPages) + ")"
                     + ", hbaseQueue: " + hbaseQueue.size()
                     + ", elasticQueue: " + elasticQueue.size()
                     + ",\t uptime: " + (System.currentTimeMillis() - uptime));
             System.out.println("elasticsearch(fail, success): " + ElasticSearchHandler.failureSubmit + ", " +  ElasticSearchHandler.successfulSubmit);
             System.out.println(Worker.log());
             System.out.println("--------------------------------");
+            oldParsedPages = Parser.parsedPages.intValue();
             Thread.sleep(10000);
         }
     }
