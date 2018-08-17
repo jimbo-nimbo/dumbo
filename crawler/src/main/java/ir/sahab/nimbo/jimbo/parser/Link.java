@@ -1,18 +1,17 @@
 package ir.sahab.nimbo.jimbo.parser;
 
-import java.net.URL;
 import java.util.Objects;
 
 public class Link {
-    private URL href;
+    private String href;
     private String text;
 
-    public Link(URL href, String text) {
+    public Link(String href, String text) {
         this.href = href;
         this.text = text;
     }
 
-    public URL getHref() {
+    public String getHref() {
         return href;
     }
 

@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.parser;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
+import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import org.jsoup.Jsoup;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +16,8 @@ public class ParserTest {
     private int arraySize = 10000;
     private ArrayBlockingQueue<WebPageModel> webPages;
     private ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
+    private ArrayBlockingQueue<HBaseDataModel> hbaseQueue;
 
-    private int ThreadCount = 4;
     private ParserSetting parserSetting;
     private Parser parser;
 
@@ -25,7 +26,8 @@ public class ParserTest {
         webPages = new ArrayBlockingQueue<>(arraySize);
         elasticQueue = new ArrayBlockingQueue<>(arraySize);
         parserSetting = new ParserSetting(4);
-        parser = new Parser(webPages, elasticQueue, parserSetting);
+        hbaseQueue = new ArrayBlockingQueue<>(arraySize);
+        parser = new Parser(webPages, elasticQueue, hbaseQueue, parserSetting);
     }
 
     @Test

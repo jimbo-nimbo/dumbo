@@ -13,32 +13,30 @@ import java.util.concurrent.ArrayBlockingQueue;
 import static ir.sahab.nimbo.jimbo.main.Config.HBASE_BULK_LIMIT;
 
 /**
- * why? to controll the rate of reading fom BlockQueue and put to hbase and also seperate read/write from hbase
+ * why? to control the rate of reading fom BlockQueue and put to hbase and also separate read/write from hbase
  * task from other task
  */
 public class HbaseBulkThread implements Runnable {
 
-    boolean isRun = true;
-    ArrayBlockingQueue<Put> arrayBlockingQueue;
-    ArrayList<Row> rowArrayList = new ArrayList<>();
-    ArrayList<Put> putArrayList = new ArrayList<>();
-    Table table;
+    private boolean isRun = true;
+    private ArrayBlockingQueue<Put> bulkQueue;
+    private ArrayList<Row> rowArrayList = new ArrayList<>();
+    private ArrayList<Put> putArrayList = new ArrayList<>();
+    private Table table;
 
-    HbaseBulkThread(Table table, ArrayBlockingQueue<Put> arrayBlockingQueue){
-        this.arrayBlockingQueue = arrayBlockingQueue;
-        this.table = table;
+    public HbaseBulkThread() {
+        this.bulkQueue = HBase.getInstance().getBulkQueue();
+        this.table = HBase.getInstance().getTable();
     }
 
-
-
-    void runInPutMode(){
-        if(putArrayList.size() < HBASE_BULK_LIMIT){
+    void runInPutMode() {
+        if (putArrayList.size() < HBASE_BULK_LIMIT) {
             try {
-                putArrayList.add(arrayBlockingQueue.take());
+                putArrayList.add(bulkQueue.take());
             } catch (InterruptedException e) {
                 Logger.getInstance().debugLog(e.getMessage());
             }
-        }else {
+        } else {
             try {
                 table.put(putArrayList);
                 putArrayList.clear();
@@ -51,7 +49,7 @@ public class HbaseBulkThread implements Runnable {
     void runInBatchMode(){
         if(rowArrayList.size() < HBASE_BULK_LIMIT){
             try {
-                rowArrayList.add(new RowMutations(arrayBlockingQueue.take().getRow()));
+                rowArrayList.add(new RowMutations(bulkQueue.take().getRow()));
             } catch (InterruptedException e) {
                 Logger.getInstance().debugLog(e.getMessage());
             }
