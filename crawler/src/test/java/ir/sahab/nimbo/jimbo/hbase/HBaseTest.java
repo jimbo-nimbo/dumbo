@@ -127,8 +127,49 @@ public class HBaseTest {
                 }
             }
         }
-
     }
+
+    @Test
+    public void singlePutHugeDataTest(){
+        HBase hBase = HBase.getInstance();
+        ArrayList<Link> arrayList = new ArrayList<>();
+        Link link = new Link("https://www.href.com", "anchor");
+        arrayList.add(link);
+        for (int i = 0; i < 900; i++) {
+            hBase.putData(new HBaseDataModel("https://www.test.com" + String.valueOf(i), arrayList));
+        }
+        //Thread.sleep(10000);
+        for(int i = 0; i < 900; i++) {
+            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
+                System.err.println(i);
+        }
+    }
+
+    @Test
+    public void singlePutHugeMarkTest(){
+        HBase hBase = HBase.getInstance();
+        for (int i = 0; i < 900; i++) {
+            hBase.putMark("https://www.test.com" + String.valueOf(i), "true");
+        }
+        //Thread.sleep(10000);
+        for(int i = 0; i < 900; i++) {
+            if(!hBase.existMark("https://www.test.com" + String.valueOf(i)))
+                System.err.println(i);
+        }
+    }
+
+    @Test
+    public void singlePutHugeMarkImmediateTest(){
+        HBase hBase = HBase.getInstance();
+        for (int i = 0; i < 900; i++) {
+            hBase.putMark("https://www.nimac.com" + String.valueOf(i), "false");
+            if(!hBase.existMark("https://www.nimac.com" + String.valueOf(i)))
+                System.err.println(i);
+        }
+        //Thread.sleep(10000);
+    }
+
+
 
 
 }
