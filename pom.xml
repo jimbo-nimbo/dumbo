@@ -9,6 +9,7 @@
         <module>crawler</module>
         <module>ranker</module>
         <module>search</module>
+        <module>anchor</module>
     </modules>
     <dependencies>
         <!--<dependency>-->

@@ -5,6 +5,7 @@ import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
+import org.apache.hadoop.hbase.exceptions.IllegalArgumentIOException;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -147,7 +148,7 @@ public class Worker implements Runnable {
                             rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
                             FETCHED_LINKS.incrementAndGet();
 
-                        } catch (IOException e) {
+                        } catch (IOException | IllegalArgumentException e) {
                             Logger.getInstance().errorLog(e.getMessage());
                         }
                     }
