@@ -1,7 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -9,9 +8,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
 
 public class ElasticSearchHandlerTest {
     private ElasticSearchHandler elasticSearchHandler;

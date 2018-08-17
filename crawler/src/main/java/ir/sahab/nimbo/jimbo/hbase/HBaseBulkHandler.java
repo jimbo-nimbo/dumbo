@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.hadoop.hbase.client.Put;
+import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,17 +21,14 @@ public class HBaseBulkHandler implements Runnable {
 
     @Override
     public void run() {
-        if (puts.size() < HBASE_BULK_LIMIT) {
+        while (true) {
             try {
-                puts.add(HBase.getInstance().getPutData(bulkQueue.take()));
-            } catch (InterruptedException e) {
-                Logger.getInstance().debugLog(e.getMessage());
-            }
-        } else {
-            try {
+                for (int i = 0; i < HBASE_BULK_LIMIT; i++) {
+                    puts.add(HBase.getInstance().getPutData(bulkQueue.take()));
+                }
                 HBase.getInstance().getTable().put(puts);
                 puts.clear();
-            } catch (IOException e) {
+            } catch (InterruptedException | IOException e) {
                 Logger.getInstance().debugLog(e.getMessage());
             }
         }
