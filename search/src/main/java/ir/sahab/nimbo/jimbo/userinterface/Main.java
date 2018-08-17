@@ -28,7 +28,8 @@ public class Main {
 
         for(SearchHit searchHit : searchHits){
             if(count <= LIMIT){
-                //System.out.println(searchHit.getSourceAsMap().get());
+                System.out.println(searchHit.getScore() + " " + searchHit.getSourceAsMap().get("url")
+                        + " " + searchHit.getSourceAsMap().get("title"));
                 count++;
             }
         }
