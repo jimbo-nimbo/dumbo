@@ -1,6 +1,16 @@
-# dumbo
-dumbo is an international search engine :)
+# Dumbo
+Dumbo is an international search engine :)
 
-our first phase is to crawl 100M sites and build our database
+Our first phase is to crawl sites and build our database
+
+
+Checkout our WIKI for more detail info
+
+# Requirements:
+Servers with hdfs, hbase, kafka, elastic search which their config should also put in our resources folder
+
+
+# How to use:
+    
 
   

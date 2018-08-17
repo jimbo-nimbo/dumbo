@@ -28,7 +28,7 @@ public class HbaseBulkThreadTest {
 //        Thread myThread = new Thread(new HbaseBulkThread());
 //        myThread.start();
 //        ArrayList<Link> arrayList = new ArrayList<>();
-//        Link link = new Link(new URL("https://www.href.com"), "anchor");
+//        Link link = new Link("https://www.href.com", "anchor");
 //        arrayList.add(link);
 //        for (int i = 0; i < 900; i++) {
 //            hBase.putBulkData("https://www.test.com", arrayList);
