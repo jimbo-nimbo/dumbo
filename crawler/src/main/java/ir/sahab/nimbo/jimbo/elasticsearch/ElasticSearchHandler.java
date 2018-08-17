@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -110,8 +111,11 @@ public class ElasticSearchHandler implements Runnable {
             }
 
             try {
-                submit(models, indexName);
-                successfulSubmit++;
+                if (submit(models, indexName)) {
+                    successfulSubmit++;
+                } else {
+                    failureSubmit++;
+                }
             } catch (IOException e) {
                 //todo
                 failureSubmit++;
@@ -140,8 +144,8 @@ public class ElasticSearchHandler implements Runnable {
         return !bulkRequestBuilder.get().hasFailures();
     }
 
-    String getId(String url) {
-        return Integer.toString(url.hashCode());
+    private String getId(String url) {
+        return DigestUtils.md5Hex(url);
     }
 
     @Override
