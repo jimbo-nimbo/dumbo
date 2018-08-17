@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class ElasticSearchSettings {
+class ElasticSearchSettings {
 
     private RestHighLevelClient client;
     protected final Properties properties;
@@ -31,7 +31,7 @@ public class ElasticSearchSettings {
         indexName = properties.getProperty("index.name");
         client =
                 new RestHighLevelClient(
-                        RestClient.builder(new HttpHost(getHosts().get(0).getHostName(), 9300, "http"))
+                        RestClient.builder(new HttpHost(getHosts().get(0).getHostName(), getHosts().get(0).getPort(), "http"), new HttpHost(getHosts().get(1).getHostName(), getHosts().get(1).getPort(), "http"))
                                 .setRequestConfigCallback(
                                         requestConfigBuilder ->
                                                 requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(600000))

@@ -6,14 +6,13 @@ import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.fetcher.Worker;
+import ir.sahab.nimbo.jimbo.hbase.HBaseBulkHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
-import ir.sahab.nimbo.jimbo.hbase.HbaseBulkThread;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -30,7 +29,7 @@ public class Crawler {
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
     private final ArrayBlockingQueue<HBaseDataModel> hbaseQueue;
 
-    private final HbaseBulkThread hbaseBulkThread;
+    private final HBaseBulkHandler hbaseBulkHandler;
     private ElasticSearchHandler elasticSearchHandler;
 
     public Crawler(CrawlerSetting crawlerSetting) throws Exception {
@@ -44,7 +43,7 @@ public class Crawler {
         } catch (UnknownHostException e) {
             //todo
             e.printStackTrace();
-            throw new Exception("cannot connect to elasticsearch");
+            throw new Exception("Cannot connect to elasticsearch");
         }
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
@@ -53,7 +52,7 @@ public class Crawler {
         hbaseQueue = new ArrayBlockingQueue<>(crawlerSetting.getHbaseQueueMaxSize());
         parser = new Parser(rawPagesQueue, elasticQueue, hbaseQueue, new ParserSetting());
 
-        hbaseBulkThread = new HbaseBulkThread();
+        hbaseBulkHandler = new HBaseBulkHandler(hbaseQueue);
     }
 
     public void crawl() throws InterruptedException {
@@ -63,13 +62,16 @@ public class Crawler {
         parser.runWorkers();
         fetcher.runWorkers();
         new Thread(elasticSearchHandler).start();
-        new Thread(hbaseBulkThread).start();
+        new Thread(hbaseBulkHandler).start();
 
         long uptime = System.currentTimeMillis();
         while (true) {
 
             System.out.println("shuffled queue: " + shuffledLinksQueue.size()
-                    + ",\t fetched queue: " + rawPagesQueue.size() + ", parsedQueue" +  Parser.parsedPages.intValue()
+                    + ",\t fetched queue: " + rawPagesQueue.size()
+                    + ", parsedPages" +  Parser.parsedPages.intValue()
+                    + ", hbaseQueue: " + hbaseQueue.size()
+                    + ", elasticQueue: " + elasticQueue.size()
                     + ",\t uptime: " + (System.currentTimeMillis() - uptime));
             System.out.println("elasticsearch(fail, success): " + ElasticSearchHandler.failureSubmit + ", " +  ElasticSearchHandler.successfulSubmit);
             System.out.println(Worker.log());

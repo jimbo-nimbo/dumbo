@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.userinterface;
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
+import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,25 +28,22 @@ public class Main {
 
     @Command
     private void search() {
-
         System.out.println("Enter your search text:\n");
-
         scanner.nextLine();
-
         String searchText = scanner.nextLine();
-
-        ArrayList<String> ans = ElasticClient.getInstance().simpleSearchInElasticForWebPage(searchText);
-
-        for (String tmp : ans) {
-
-            System.out.println(tmp);
-
+        ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleSearchInElasticForWebPage(searchText);
+        for (SearchHit tmp : ans) {
+            System.out.println(tmp.getSourceAsMap().get("url"));
         }
     }
 
     @Command
     private void advancedSearch() {
 
+        //TODO this is copy
+        //TODO this copy
+        //TODO this
+        //TODO
         ArrayList<String> must = new ArrayList<>();
         ArrayList<String> mustNot = new ArrayList<>();
         ArrayList<String> should = new ArrayList<>();
@@ -71,9 +69,9 @@ public class Main {
                     should.add(scanner.nextLine());
                     break;
                 case "done":
-                    ArrayList<String> ans = ElasticClient.getInstance().advancedSearchInElasticForWebPage(must, mustNot, should);
-                    for (String tmp : ans) {
-                        System.out.println(tmp);
+                    ArrayList<SearchHit> ans = ElasticClient.getInstance().advancedSearchInElasticForWebPage(must, mustNot, should);
+                    for (SearchHit tmp : ans) {
+                        System.out.println(tmp.getSourceAsMap().get("url"));
                     }
                     return;
                 default:

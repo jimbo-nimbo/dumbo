@@ -91,8 +91,8 @@ public class HBaseTest {
         assertEquals("com.google.dev.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
     }
 
-    @Test
-    public void putBulkData() throws MalformedURLException {
+//    @Test
+//    public void putBulkData() throws MalformedURLException {
 //        ArrayList<Link> arrayList = new ArrayList<>();
 //        Link link = new Link(new URL("https://www.href.com"), "anchor");
 //        arrayList.add(link);
@@ -100,19 +100,19 @@ public class HBaseTest {
 //            HBase.getInstance().putBulkData("https://www.test.com", arrayList);
 //        }
 //        assertEquals(100, HBase.getInstance().getBulkQueue().size());
-    }
+//    }
 
-    @Test
-    public void putBulkMark() throws MalformedURLException {
-        HBase.getInstance().getBulkQueue().clear();
-        for(int i = 0; i < 100; i++){
-            HBase.getInstance().putBulkMark("https://www.test.com", "testVal");
-        }
-        assertEquals(100, HBase.getInstance().getBulkQueue().size());
-    }
+//    @Test
+//    public void putBulkMark() throws MalformedURLException {
+//        HBase.getInstance().getBulkQueue().clear();
+//        for(int i = 0; i < 100; i++){
+//            HBase.getInstance().putBulkMark("https://www.test.com", "testVal");
+//        }
+//        assertEquals(100, HBase.getInstance().getBulkQueue().size());
+//    }
 
-    @Test
-    public void processAllTest() throws IOException {
+    //@Test
+    public void processAllNotTest() throws IOException {
         ResultScanner results = HBase.getInstance()
                 .scanColumnFamily(Arrays.asList(HBASE_DATA_CF_NAME.getBytes()));
         for (Result result = results.next(); result != null; result = results.next()){
@@ -140,8 +140,9 @@ public class HBaseTest {
         }
         //Thread.sleep(10000);
         for(int i = 0; i < 900; i++) {
-            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
-                System.err.println(i);
+            assertTrue(hBase.existData("https://www.nimac.com" + String.valueOf(i)));
+//            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
+//                System.err.println(i);
         }
     }
 
@@ -153,18 +154,20 @@ public class HBaseTest {
         }
         //Thread.sleep(10000);
         for(int i = 0; i < 900; i++) {
-            if(!hBase.existMark("https://www.test.com" + String.valueOf(i)))
-                System.err.println(i);
+            assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
+//            if(!hBase.existMark("https://www.test.com" + String.valueOf(i)))
+//                System.err.println(i);
         }
     }
 
-    @Test
-    public void singlePutHugeMarkImmediateTest(){
+    //@Test
+    public void singlePutHugeMarkImmediateNotTest(){
         HBase hBase = HBase.getInstance();
         for (int i = 0; i < 900; i++) {
             hBase.putMark("https://www.nimac.com" + String.valueOf(i), "false");
-            if(!hBase.existMark("https://www.nimac.com" + String.valueOf(i)))
-                System.err.println(i);
+            assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
+//            if(!hBase.existMark("https://www.nimac.com" + String.valueOf(i)))
+//                System.err.println(i);
         }
         //Thread.sleep(10000);
     }

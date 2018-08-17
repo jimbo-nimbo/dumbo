@@ -12,6 +12,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ElasticClient {
 
@@ -32,14 +33,14 @@ public class ElasticClient {
         client = elasticSearchSettings.getClient();
     }
 
-    public ArrayList<String> simpleSearchInElasticForWebPage(String mustFind) {
+    public ArrayList<SearchHit> simpleSearchInElasticForWebPage(String mustFind) {
         ArrayList<String> simpleQuery = new ArrayList<>();
         simpleQuery.add(mustFind);
         return advancedSearchInElasticForWebPage(simpleQuery, new ArrayList<>(), new ArrayList<>());
     }
 
 
-    public ArrayList<String> advancedSearchInElasticForWebPage(
+    public ArrayList<SearchHit> advancedSearchInElasticForWebPage(
             ArrayList<String> mustFind,
             ArrayList<String> mustNotFind,
             ArrayList<String> shouldFind) {
@@ -49,9 +50,10 @@ public class ElasticClient {
         for (String phrase : mustFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
-                            phrase, "text", "title", "description")
+                            phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
-            multiMatchQueryBuilder.field("text", 5);
+            multiMatchQueryBuilder.field("url", 1);
+            multiMatchQueryBuilder.field("content", 5);
             multiMatchQueryBuilder.field("title", 2);
             multiMatchQueryBuilder.field("description", 1);
             boolQuery.must(multiMatchQueryBuilder);
@@ -59,34 +61,33 @@ public class ElasticClient {
         for (String phrase : mustNotFind) {
             boolQuery.mustNot(
                     QueryBuilders.multiMatchQuery(
-                            phrase, "text", "title", "description")
+                            phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE));
         }
         for (String phrase : shouldFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
-                            phrase, "text", "title", "description")
+                            phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
-            multiMatchQueryBuilder.field("text", 5);
-            multiMatchQueryBuilder.field("title", 2);
+            multiMatchQueryBuilder.field("url", 1);
+            multiMatchQueryBuilder.field("content", 2);
+            multiMatchQueryBuilder.field("title", 5);
             multiMatchQueryBuilder.field("description", 1);
             boolQuery.should(multiMatchQueryBuilder);
         }
         searchSourceBuilder.query(boolQuery);
-        searchSourceBuilder.storedField("url");
         searchRequest.source(searchSourceBuilder);
         try {
             SearchResponse searchResponse = client.search(searchRequest);
             SearchHits hits = searchResponse.getHits();
             SearchHit[] searchHits = hits.getHits();
-            ArrayList<String> answer = new ArrayList<>();
-            for (SearchHit hit : searchHits) {
-                answer.add(hit.field("url").getValue().toString());
-            }
-            return answer;
+            return new ArrayList<SearchHit>(Arrays.asList(searchHits));
         } catch (IOException e) {
             e.printStackTrace();
             return new ArrayList<>();
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return null;
         }
     }
 
