@@ -10,30 +10,10 @@
         <module>ranker</module>
         <module>search</module>
         <module>anchor</module>
+        <module>commons</module>
+        <module>newsfetcher</module>
     </modules>
-    <dependencies>
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-log4j12</artifactId>-->
-            <!--<version>1.8.0-beta2</version>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-        <!--<dependency>-->
-            <!--<groupId>log4j</groupId>-->
-            <!--<artifactId>log4j</artifactId>-->
-            <!--<version>1.2.17</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-api</artifactId>-->
-            <!--<version>1.8.0-beta2</version>-->
-            <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-    </dependencies>
+
 
     <groupId>ir.sahab.nimbo.jimbo</groupId>
     <artifactId>dumbo</artifactId>
@@ -43,6 +23,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <spark.version>2.2.1</spark.version>
+        <log4j.version>1.2.17</log4j.version>
+        <slf4j.version>1.8.0-beta2</slf4j.version>
     </properties>
 
     <dependencyManagement>
@@ -51,6 +33,16 @@
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_2.11</artifactId>
                 <version>${spark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
