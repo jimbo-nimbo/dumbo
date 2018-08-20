@@ -1,7 +1,9 @@
 package ir.sahab.nimbo.jimbo.elastic;
 
+import org.apache.http.HttpHost;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
@@ -16,21 +18,28 @@ import java.util.Arrays;
 
 public class ElasticClient {
 
-    private static ElasticClient ourInstance;
-    private static RestHighLevelClient client;
-    private static ElasticSearchSettings elasticSearchSettings;
-
+    private static ElasticClient ourInstance = new ElasticClient();
+    private RestHighLevelClient client;
 
     public static ElasticClient getInstance() {
-        if(ourInstance == null)
-            ourInstance = new ElasticClient();
         return ourInstance;
     }
 
 
     private ElasticClient() {
-        elasticSearchSettings = new ElasticSearchSettings();
-        client = elasticSearchSettings.getClient();
+        client = new RestHighLevelClient(
+                RestClient.builder(new HttpHost(Config.ES_HOSTS.get(0).getHostName(),
+                                Config.ES_HOSTS.get(0).getPort(),
+                                Config.ES_SCHEME),
+                        new HttpHost(Config.ES_HOSTS.get(1).getHostName(),
+                                Config.ES_HOSTS.get(1).getPort(),
+                                Config.ES_SCHEME))
+                        .setRequestConfigCallback(
+                                requestConfigBuilder ->
+                                        requestConfigBuilder
+                                                .setConnectTimeout(Config.ES_CONNECTION_TIMEOUT)
+                                                .setSocketTimeout(Config.ES_SOCKET_TIMEOUT))
+                        .setMaxRetryTimeoutMillis(Config.ES_MAXRETRY_TIMEOUT));
     }
 
     public ArrayList<SearchHit> simpleElasticSearch(String mustFind) {
@@ -44,7 +53,7 @@ public class ElasticClient {
             ArrayList<String> mustFind,
             ArrayList<String> mustNotFind,
             ArrayList<String> shouldFind) {
-        SearchRequest searchRequest = new SearchRequest(elasticSearchSettings.getIndexName());
+        SearchRequest searchRequest = new SearchRequest(Config.ES_INDEX_NAME);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         String fields[] = {"url", "content", "title", "description"};
@@ -53,8 +62,8 @@ public class ElasticClient {
                     QueryBuilders.multiMatchQuery(
                             phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
-            for(String field: fields)
-                multiMatchQueryBuilder.field(field, elasticSearchSettings.getScore(field));
+            for (String field : fields)
+                multiMatchQueryBuilder.field(field, Config.getScoreField(field));
             boolQuery.must(multiMatchQueryBuilder);
         }
         for (String phrase : mustNotFind) {
@@ -68,8 +77,8 @@ public class ElasticClient {
                     QueryBuilders.multiMatchQuery(
                             phrase, "url", "content", "title", "description")
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
-            for(String field: fields)
-                multiMatchQueryBuilder.field(field, elasticSearchSettings.getScore(field));
+            for (String field : fields)
+                multiMatchQueryBuilder.field(field, Config.getScoreField(field));
             boolQuery.should(multiMatchQueryBuilder);
         }
         searchSourceBuilder.query(boolQuery);

@@ -17,6 +17,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             inp = new Scanner(System.in);
+            ElasticClient.getInstance();
             ShellFactory.createConsoleShell("Jimbo", "", new Main()).commandLoop();
         } catch (IOException e) {
             System.err.println("WTF??");
@@ -38,6 +39,8 @@ public class Main {
                 else {
                     System.out.println(content.substring(0, 499) + "...");
                 }
+                System.out.println("-------------------------------------------------------------");
+
                 count++;
             }
         }
@@ -46,7 +49,6 @@ public class Main {
     @Command
     public void search() throws IOException {
         System.out.println("enter search text");
-        inp.nextLine();
         String searchText = inp.nextLine();
         ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleElasticSearch(searchText);
         printAns(ans);
