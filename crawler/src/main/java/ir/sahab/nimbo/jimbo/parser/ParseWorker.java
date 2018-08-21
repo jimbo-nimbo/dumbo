@@ -10,12 +10,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 class ParseWorker implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ParseWorker.class);
 
     private final Producer<String, String> producer;
     private final ArrayBlockingQueue<WebPageModel> webPage;
@@ -48,7 +52,7 @@ class ParseWorker implements Runnable {
                     hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
     }

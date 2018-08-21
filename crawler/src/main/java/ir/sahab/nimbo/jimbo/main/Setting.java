@@ -1,10 +1,15 @@
 package ir.sahab.nimbo.jimbo.main;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 public class Setting {
+
+    private static final Logger logger = LoggerFactory.getLogger(Setting.class);
 
     protected final Properties properties;
 
@@ -15,7 +20,7 @@ public class Setting {
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
             properties.load(resourceStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 }

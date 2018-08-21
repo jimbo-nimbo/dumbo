@@ -1,8 +1,8 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import ir.sahab.nimbo.jimbo.main.Logger;
 import org.apache.hadoop.hbase.client.Put;
-import sun.rmi.runtime.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +12,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import static ir.sahab.nimbo.jimbo.main.Config.HBASE_BULK_LIMIT;
 
 public class HBaseBulkHandler implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(HBaseBulkHandler.class);
+
     private final ArrayBlockingQueue<HBaseDataModel> bulkQueue;
     private final List<Put> puts = new ArrayList<>();
 
@@ -32,7 +35,7 @@ public class HBaseBulkHandler implements Runnable {
                 HBase.getInstance().getTable().put(puts);
                 puts.clear();
             } catch (InterruptedException | IOException e) {
-                Logger.getInstance().debugLog(e.getMessage());
+                logger.error(e.getMessage());
             }
         }
     }

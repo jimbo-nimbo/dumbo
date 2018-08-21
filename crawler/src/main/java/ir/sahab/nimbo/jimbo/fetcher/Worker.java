@@ -3,9 +3,7 @@ package ir.sahab.nimbo.jimbo.fetcher;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
-import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
-import org.apache.hadoop.hbase.exceptions.IllegalArgumentIOException;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -14,6 +12,8 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.Jsoup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 public class Worker implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     public static final AtomicInteger TOOK_LINKS = new AtomicInteger(0);
     private static int tookLinks;
@@ -128,8 +130,7 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        while(running)
-        {
+        while (running) {
             try {
                 final List<String> shuffledLinks = shuffledLinksQueue.take();
 
@@ -148,13 +149,13 @@ public class Worker implements Runnable {
                             FETCHED_LINKS.incrementAndGet();
 
                         } catch (IOException | IllegalArgumentException e) {
-                            Logger.getInstance().errorLog(e.getMessage());
+                            logger.error(e.getMessage());
                         }
                     }
                 }
 
             } catch (InterruptedException e) {
-                Logger.getInstance().errorLog(e.getMessage());
+                logger.error(e.getMessage());
             }
         }
     }
@@ -202,7 +203,8 @@ public class Worker implements Runnable {
         return true;
     }
 
-    private CloseableHttpAsyncClient createNewClient() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    private CloseableHttpAsyncClient createNewClient() throws KeyStoreException, NoSuchAlgorithmException,
+            KeyManagementException {
         SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null,
                 (certificate, authType) -> true).build();
 

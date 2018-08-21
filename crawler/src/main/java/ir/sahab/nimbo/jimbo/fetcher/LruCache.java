@@ -2,6 +2,8 @@ package ir.sahab.nimbo.jimbo.fetcher;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -10,9 +12,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * singleton pattern
  * cache the domains
- * //TODO: handle exception
  */
 public class LruCache {
+
+    private static final Logger logger = LoggerFactory.getLogger(LruCache.class);
+
     private static final String PROP_NAME = "lru.properties";
     private static LruCache lruCache = null;
     private int maxCacheSize;
@@ -27,7 +31,7 @@ public class LruCache {
             maxCacheSize = Integer.parseInt(properties.getProperty("max_cache"));
             duration = Integer.parseInt(properties.getProperty("duration"));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         cache = Caffeine.newBuilder()
@@ -50,7 +54,6 @@ public class LruCache {
      * if it goes more than capacity, it remove element in a strange way to optimum itself
      *
      * @param url domain of site
-     * @throws CloneNotSupportedException if domain is in cache throw exception, else add it
      */
     public boolean add(String url) {
 

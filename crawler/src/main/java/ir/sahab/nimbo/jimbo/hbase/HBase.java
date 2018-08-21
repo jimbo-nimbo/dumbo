@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import ir.sahab.nimbo.jimbo.main.Logger;
 import ir.sahab.nimbo.jimbo.parser.Link;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -10,6 +9,8 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -19,7 +20,9 @@ import java.util.Objects;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
-public class HBase implements DuplicateChecker{
+public class HBase implements DuplicateChecker {
+
+    private static final Logger logger = LoggerFactory.getLogger(HBase.class);
 
     private static HBase hbase = new HBase();
     private TableName tableName;
@@ -39,7 +42,7 @@ public class HBase implements DuplicateChecker{
                 connection = ConnectionFactory.createConnection(config);
                 conn = false;
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
         try {
@@ -49,7 +52,7 @@ public class HBase implements DuplicateChecker{
             }
             table = connection.getTable(tableName);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -82,29 +85,17 @@ public class HBase implements DuplicateChecker{
                 table.put(p);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
-
-//    public void putBulkMark(String sourceUrl, String value) {
-//        Put p = new Put(makeRowKey(sourceUrl).getBytes());
-//        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
-//        //TODO
-//        try {
-//            bulkData.put(p);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public void putMark(String sourceUrl, String value) {
         Put p = new Put(makeRowKey(sourceUrl).getBytes());
         p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
-        //TODO
         try {
             table.put(p);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -113,7 +104,7 @@ public class HBase implements DuplicateChecker{
         try {
             return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return null;
         }
 
@@ -124,7 +115,7 @@ public class HBase implements DuplicateChecker{
         try {
             return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return null;
         }
 
@@ -142,7 +133,7 @@ public class HBase implements DuplicateChecker{
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return false;
     }
@@ -159,7 +150,7 @@ public class HBase implements DuplicateChecker{
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return false;
     }
@@ -178,8 +169,8 @@ public class HBase implements DuplicateChecker{
             for (int i = 1; i < res.length; i++) {
                 stringBuilder.append("." + res[res.length - 1 - i]);
             }
-        } catch (IndexOutOfBoundsException e1) {
-            Logger.getInstance().debugLog(e1.getMessage());
+        } catch (IndexOutOfBoundsException e) {
+            logger.error(e.getMessage());
         }
         return stringBuilder.toString();
     }
@@ -207,7 +198,7 @@ public class HBase implements DuplicateChecker{
 //            tableDescriptorBuilder.setColumnFamilies(columnFamilyDescriptors);
 //            admin.createTable(tableDescriptorBuilder.build());
         } catch (IOException e) {
-            Logger.getInstance().debugLog(e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 
@@ -221,7 +212,7 @@ public class HBase implements DuplicateChecker{
         try {
             results = table.getScanner(scan);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return results;
     }
@@ -235,7 +226,7 @@ public class HBase implements DuplicateChecker{
         try {
             results = table.getScanner(scan);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return results;
     }

@@ -1,19 +1,21 @@
 package ir.sahab.nimbo.jimbo.shuffler;
 
+import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public  class Shuffler implements Runnable{
+public  class Shuffler implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(Shuffler.class);
 
     private final static String TOPIC = Config.URL_FRONTIER_TOPIC;
-    private final static String BOOTSTRAP_SERVERS = "localhost:9092";
     final static int MAX_POLL_RECORDS = 200000;
 
     private final Consumer<String, String> consumer = createConsumer();
@@ -31,7 +33,6 @@ public  class Shuffler implements Runnable{
 
     public Shuffler(ArrayBlockingQueue<List<String>> linksQueue) {
         this.linksQueue = linksQueue;
-//        consumer.subscribe(Collections.singletonList(Config.URL_FRONTIER_TOPIC));;
     }
 
     ConsumerRecords<String, String> consume() {
@@ -59,9 +60,6 @@ public  class Shuffler implements Runnable{
 
     @Override
     public void run() {
-//	System.out.println("shuffler started!");
-//            runConsumer();
-
         List<String> list;
         List<String> putList = new ArrayList<>();
 
@@ -82,55 +80,18 @@ public  class Shuffler implements Runnable{
 
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
     }
 
     private Consumer<String, String> createConsumer() {
-        final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG,
-                "KafkaShuffleConsumer1");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, MAX_POLL_RECORDS);
         // Create the consumer using props.
         final Consumer<String, String> consumer =
-                new KafkaConsumer<>(props);
+                new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties());
         // Subscribe to the topic.
         consumer.subscribe(Collections.singletonList(TOPIC));
         return consumer;
-
-    }
-
-    public void runConsumer() {
-        System.out.println("example! ");
-        final Consumer<String, String> consumer = createConsumer();
-        final int giveUp = 1000;
-        int noRecordsCount = 0;
-
-        while (true) {
-            final ConsumerRecords<String, String> consumerRecords =
-                    consumer.poll(1000);
-            if (consumerRecords.count()==0) {
-                noRecordsCount++;
-                if (noRecordsCount > giveUp)
-                    break;
-                else
-                    continue;
-            }
-            consumerRecords.forEach(record -> {
-                System.out.printf("Consumer Record:(%s, %s, %d, %d)\n",
-                        record.key(), record.value(),
-                        record.partition(), record.offset());
-            });
-            consumer.commitAsync();
-        }
-        consumer.close();
-        System.out.println("DONE");
     }
 }
 

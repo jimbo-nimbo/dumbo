@@ -12,12 +12,17 @@ import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import ir.sahab.nimbo.jimbo.shuffler.Shuffler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Crawler {
+
+    private static final Logger logger = LoggerFactory.getLogger(Crawler.class);
 
     private final Shuffler shuffler;
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
@@ -32,7 +37,7 @@ public class Crawler {
     private final HBaseBulkHandler hbaseBulkHandler;
     private ElasticSearchHandler elasticSearchHandler;
 
-    public Crawler(CrawlerSetting crawlerSetting) throws Exception {
+    public Crawler(CrawlerSetting crawlerSetting) throws ConnectException {
 
         shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
         shuffler = new Shuffler(shuffledLinksQueue);
@@ -41,9 +46,8 @@ public class Crawler {
         try {
             elasticSearchHandler = new ElasticSearchHandler(elasticQueue, new ElasticsearchSetting());
         } catch (UnknownHostException e) {
-            //todo
-            e.printStackTrace();
-            throw new Exception("Cannot connect to elasticsearch");
+            logger.error("Could not connect to ElasticSearch");
+            throw new ConnectException("Could not connect to ElasticSearch");
         }
 
         rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
@@ -67,7 +71,7 @@ public class Crawler {
         long uptime = System.currentTimeMillis();
         int oldParsedPages = 0;
         while (true) {
-
+            // TODO: Use JMX for monitoring
             System.out.println("shuffled queue: " + shuffledLinksQueue.size()
                     + ",\t fetched queue: " + rawPagesQueue.size()
                     + ", parsedPages" +  Parser.parsedPages.intValue() + "(+" +

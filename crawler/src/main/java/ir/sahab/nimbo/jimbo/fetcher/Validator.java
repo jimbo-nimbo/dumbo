@@ -12,6 +12,8 @@ import com.optimaize.langdetect.text.CommonTextObjectFactories;
 import com.optimaize.langdetect.text.TextObject;
 import com.optimaize.langdetect.text.TextObjectFactory;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Validator {
+
+    private static final Logger logger = LoggerFactory.getLogger(Validator.class);
 
     static List<String> banWords = null;
     private static TextObjectFactory textObjectFactory = null;
@@ -32,7 +36,6 @@ public class Validator {
     }
 
     public static boolean isValidBody(Document document) {
-        //return isEnglish(document.text().substring(0, 200));
         return isEnglish(document.text()) && isNotBan(document);
     }
 
@@ -85,7 +88,7 @@ public class Validator {
         return true;
     }
 
-    //TODO can add body check if our speed is ok
+    // TODO: can add body check if our speed is ok
     static boolean isNotBanBody(String article){
         for (String word : banWords) {
             if ((article != null && article.contains(word))) {
@@ -102,7 +105,7 @@ public class Validator {
         try {
             languageProfiles = new LanguageProfileReader().readAllBuiltIn();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard())
                 .withProfiles(languageProfiles)

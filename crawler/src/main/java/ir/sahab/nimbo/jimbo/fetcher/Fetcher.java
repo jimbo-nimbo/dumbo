@@ -1,6 +1,8 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher {
+
+    private static final Logger logger = LoggerFactory.getLogger(Fetcher.class);
 
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
     private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
@@ -28,7 +32,7 @@ public class Fetcher {
             try {
                 workers[i] = new Worker(this, i);
             } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
             new Thread(workers[i]).start();
         }

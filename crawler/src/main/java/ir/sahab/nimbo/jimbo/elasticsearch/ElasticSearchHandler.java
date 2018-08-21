@@ -8,6 +8,8 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class ElasticSearchHandler implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchHandler.class);
 
     private final ElasticsearchSetting elasticsearchSetting;
 
@@ -105,8 +109,7 @@ public class ElasticSearchHandler implements Runnable {
                 try {
                     models.add(elasticQueue.take());
                 } catch (InterruptedException e) {
-                    //todo
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             }
 
@@ -117,9 +120,8 @@ public class ElasticSearchHandler implements Runnable {
                     failureSubmit++;
                 }
             } catch (IOException e) {
-                //todo
                 failureSubmit++;
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
 

@@ -1,10 +1,16 @@
 package ir.sahab.nimbo.jimbo.main;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 public class Config {
+
+    private static final Logger logger = LoggerFactory.getLogger(Config.class);
+
     public static final String URL_FRONTIER_TOPIC;
     public static final int FETCHER_THREAD_NUM;
     public static final int PARSER_THREAD_NUM;
@@ -36,7 +42,7 @@ public class Config {
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
             props.load(resourceStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         URL_FRONTIER_TOPIC = props.getProperty("url_frontier_topic");
         FETCHER_THREAD_NUM = Integer.valueOf(props.getProperty("fetcher_thread_num"));

@@ -129,6 +129,12 @@
             <artifactId>language-detector</artifactId>
             <version>0.6</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+
         <!--<dependency>-->
             <!--<groupId>com.detectlanguage</groupId>-->
             <!--<artifactId>detectlanguage</artifactId>-->
