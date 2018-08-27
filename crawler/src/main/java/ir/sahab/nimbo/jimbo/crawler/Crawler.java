@@ -1,11 +1,10 @@
 package ir.sahab.nimbo.jimbo.crawler;
 
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticSearchHandler;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchHandler;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchSetting;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
-import ir.sahab.nimbo.jimbo.fetcher.Worker;
 import ir.sahab.nimbo.jimbo.hbase.HBaseBulkHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
@@ -29,7 +28,7 @@ public class Crawler {
     private final Fetcher fetcher;
     private final Parser parser;
     private final HBaseBulkHandler hbaseBulkHandler;
-    private ElasticSearchHandler elasticSearchHandler;
+    private ElasticsearchHandler elasticSearchHandler;
 
     // TODO: what to do with settings?
     public Crawler(CrawlerSetting crawlerSetting) throws ConnectException {
@@ -48,7 +47,7 @@ public class Crawler {
 
         hbaseBulkHandler = new HBaseBulkHandler(hbaseQueue);
         try {
-            elasticSearchHandler = new ElasticSearchHandler(elasticQueue, new ElasticsearchSetting());
+            elasticSearchHandler = new ElasticsearchHandler(elasticQueue, new ElasticsearchSetting());
         } catch (UnknownHostException e) {
             logger.error("Could not connect to ElasticSearch");
             throw new ConnectException("Could not connect to ElasticSearch");

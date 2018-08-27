@@ -1,7 +1,8 @@
 package ir.sahab.nimbo.jimbo.main;
 
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticCannotLoadException;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchSetting;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchHandler;
 import ir.sahab.nimbo.jimbo.rss.RssFeed;
 import ir.sahab.nimbo.jimbo.rss.RssFeedMessage;
 import ir.sahab.nimbo.jimbo.rss.RssFeedParser;
@@ -18,11 +19,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Exec {
+public class Main {
     static ArrayBlockingQueue<ElasticsearchWebpageModel> blockingQueue = new ArrayBlockingQueue<>(1000);
     static String fetch(String url, NewsSite site) {
         try {
-            Document doc = Jsoup.connect(url).validateTLSCertificates(false).timeout(3000).get();
+            System.out.println(url);
+            Document doc = Jsoup.connect(url).validateTLSCertificates(false).timeout(10000).get();
             Elements divs = doc.select(site.getTag() + "[" + site.getAttribute() + "]");
             for (Element div : divs) {
                 if (div.attr(site.getAttribute()).contains(site.getAttributeValue())){
@@ -34,9 +36,8 @@ public class Exec {
         }
         return null;
     }
-    public static void main(String[] args) throws ElasticCannotLoadException, IOException {
-//        final ElasticsearchThreadFactory elasticsearchThreadFactory = new ElasticsearchThreadFactory(blockingQueue);
-//        elasticsearchThreadFactory.createNewThread();
+    public static void main(String[] args) throws IOException {
+        final ElasticsearchHandler elasticsearchHandler = new ElasticsearchHandler(blockingQueue, new ElasticsearchSetting());
         final List<NewsSite> urls = Seeder.getInstance().getUrls();
         int rssNumber = urls.size();
         ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
@@ -46,14 +47,12 @@ public class Exec {
             @Override
             public void run() {
                 new Thread(() -> {
-                    NewsSite url = null;
+                    NewsSite url;
                     try {
                         url = urls.get(i);
                     } catch (IndexOutOfBoundsException e) {
                         i = 0;
                         url = urls.get(i);
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                     RssFeedParser parser = new RssFeedParser(url.getUrl());
                     RssFeed rssFeed = parser.readFeed();
@@ -61,6 +60,7 @@ public class Exec {
                         if(rssMessages.add(message.getLink())) {
                             String text = fetch(message.getLink(), url);
                             if(text != null) {
+                                System.out.println(message.getLink());
                                 blockingQueue.add(new ElasticsearchWebpageModel(message.getLink(), text, message.getTitle(), message.getDescription()));
                             }
                         }
@@ -69,13 +69,6 @@ public class Exec {
                 ).run();
             }
         }, 0, 60/rssNumber, TimeUnit.SECONDS);
-        while(true)
-        {
-            try{
-            System.out.println(blockingQueue.take().getArticle());}
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        elasticsearchHandler.run();
     }
 }

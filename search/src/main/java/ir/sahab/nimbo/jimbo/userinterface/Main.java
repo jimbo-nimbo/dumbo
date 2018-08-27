@@ -17,7 +17,6 @@ public class Main {
     public static void main(String[] args) {
         try {
             inp = new Scanner(System.in);
-            ElasticClient.getInstance();
             ShellFactory.createConsoleShell("Jimbo", "", new Main()).commandLoop();
         } catch (IOException e) {
             System.err.println("WTF??");
