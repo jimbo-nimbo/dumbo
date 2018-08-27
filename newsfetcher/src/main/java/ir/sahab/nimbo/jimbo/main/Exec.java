@@ -12,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -38,11 +39,17 @@ public class Exec extends Thread {
         }
         return null;
     }
-        
+
 
     @Override
     public void run() {
-    final List<NewsSite> urls = Seeder.getInstance().getUrls();
+        ElasticsearchHandler elasticsearchHandler = null;
+        try {
+            elasticsearchHandler = new ElasticsearchHandler(blockingQueue, new ElasticsearchSetting());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        final List<NewsSite> urls = Seeder.getInstance().getUrls();
         int rssNumber = urls.size();
         ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
         HashSet<String> rssMessages = new HashSet<>();
@@ -64,12 +71,7 @@ public class Exec extends Thread {
                     for (RssFeedMessage message : rssFeed.getMessages()) {
                         if (rssMessages.add(message.getLink())) {
                             String text = fetch(message.getLink(), url);
-<<<<<<< HEAD:newsfetcher/src/main/java/ir/sahab/nimbo/jimbo/main/Main.java
-                            if(text != null) {
-                                System.out.println(message.getLink());
-=======
                             if (text != null) {
->>>>>>> e8a7c6e7bfef0d257e875ec8732638b47e24ee80:newsfetcher/src/main/java/ir/sahab/nimbo/jimbo/main/Exec.java
                                 blockingQueue.add(new ElasticsearchWebpageModel(message.getLink(), text, message.getTitle(), message.getDescription()));
                             }
                         }
@@ -78,18 +80,7 @@ public class Exec extends Thread {
                 }
                 ).run();
             }
-<<<<<<< HEAD:newsfetcher/src/main/java/ir/sahab/nimbo/jimbo/main/Main.java
         }, 0, 60/rssNumber, TimeUnit.SECONDS);
         elasticsearchHandler.run();
-=======
-        }, 0, 60 / rssNumber, TimeUnit.SECONDS);
-        while (true) {
-            try {
-                System.out.println(blockingQueue.take().getArticle());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
->>>>>>> e8a7c6e7bfef0d257e875ec8732638b47e24ee80:newsfetcher/src/main/java/ir/sahab/nimbo/jimbo/main/Exec.java
     }
 }
