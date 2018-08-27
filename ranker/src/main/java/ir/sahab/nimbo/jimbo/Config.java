@@ -10,11 +10,12 @@ import java.util.Properties;
 public class Config {
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
-    public static final String SPARK_APP_NAME;
-    public static final String HBASE_SITE_XML;
-    public static final String CORE_SITE_XML;
-    public static final String HBASE_TABLE;
-    public static final String MARK_CF_NAME;
+    static final String SPARK_APP_NAME;
+    static final String HBASE_SITE_XML;
+    static final String CORE_SITE_XML;
+    static final String HBASE_TABLE;
+    static final String MARK_CF_NAME;
+    static final String DATA_CF_NAME;
 
     static {
         String resourceName = "conf.properties";
@@ -30,5 +31,6 @@ public class Config {
         CORE_SITE_XML = props.getProperty("core_site_xml");
         HBASE_TABLE = props.getProperty("hbase_table");
         MARK_CF_NAME = props.getProperty("hbase_mark_cf_name");
+        DATA_CF_NAME = props.getProperty("hbase_data_cf_name");
     }
 }

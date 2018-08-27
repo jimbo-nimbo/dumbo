@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
@@ -26,37 +27,7 @@ import java.util.Objects;
 
 public class NumRefers {
 
-    static String reverseUrl(URL url) {
-        // TODO: some strings will exceed the limit (3000 bytes)
-        return reverseDomain(url.getHost()) + url.getPath();
-    }
-
-    static String reverseDomain(String domain) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] res = domain.split("\\.");
-        try {
-            stringBuilder.append(res[res.length - 1]);
-            for (int i = 1; i < res.length; i++) {
-                stringBuilder.append(".").append(res[res.length - 1 - i]);
-            }
-        } catch (IndexOutOfBoundsException e1) {
-            //Mostafa: !!??!!
-            // TODO: log
-            //Logger.getInstance().debugLog(e1.getMessage());
-        }
-        // TODO: some string builders are empty
-        // Mostafa:stringBuilder has length method
-        if (stringBuilder.toString().equals(""))
-            return "bad.site";
-        //Mostafa: What kind of return is this? "bad.site"? Really? Shouldn't this be an exception?
-        return stringBuilder.toString();
-    }
-
     public static void extractNumRefers() throws IOException {
-        SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
-        //Mostafa: You have used this jsc instance way below. Declare it when it's needed.
-        JavaSparkContext jsc = new JavaSparkContext(conf);
-
         Configuration hConf = HBaseConfiguration.create();
         String path = Objects.requireNonNull(NumRefers.class
                 .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
@@ -65,24 +36,24 @@ public class NumRefers {
                 .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
         hConf.addResource(new Path(path));
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
 
+        SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
+        JavaSparkContext jsc = new JavaSparkContext(conf);
 
         JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD = jsc
                 .newAPIHadoopRDD(hConf, TableInputFormat.class,
                         ImmutableBytesWritable.class, Result.class);
         JavaRDD<Result> resultRDD = hbaseRDD.map(tuple -> tuple._2);
-        JavaPairRDD<String, String> keyValueRDD = resultRDD.flatMapToPair(result -> {
-            List<Tuple2<String, String>> list = new ArrayList<>();
+        JavaPairRDD<String, Integer> oneRDD = resultRDD.flatMapToPair(result -> {
+            List<Tuple2<String, Integer>> list = new ArrayList<>();
             for (Cell cell : result.listCells()) {
                 String qualifier = Bytes.toString(CellUtil.cloneQualifier(cell));
                 if (qualifier.endsWith("link"))
-                    list.add(new Tuple2<>(Bytes.toString(result.getRow()).split(" ")[0],
-                            Bytes.toString(CellUtil.cloneValue(cell))));
+                    list.add(new Tuple2<>(Bytes.toString(CellUtil.cloneValue(cell)), 1));
             }
             return list.iterator();
         });
-
-        JavaPairRDD<String, Integer> oneRDD = keyValueRDD.mapToPair(pair -> new Tuple2<>(pair._2, 1));
         JavaPairRDD<String, Integer> countRDD = oneRDD.reduceByKey((v1, v2) -> v1 + v2);
 
         Job job = Job.getInstance(hConf);
@@ -90,12 +61,8 @@ public class NumRefers {
         job.setOutputFormatClass(TableOutputFormat.class);
         JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = countRDD.mapToPair(row -> {
             String rowKey = row._1;
-            //Mostafa: Why dont you filter  bad sites?
-            if (rowKey.length() == 0)
-                rowKey = "http://bad.site/";
-            Put put = new Put(reverseUrl(new URL(rowKey)).getBytes());
-            //Put put = new Put(Bytes.toBytes(row._1));
-            put.addColumn(Bytes.toBytes(Config.MARK_CF_NAME), Bytes.toBytes("Ref"), Bytes.toBytes(row._2));
+            Put put = new Put(DigestUtils.md5Hex(rowKey).getBytes());
+            put.addColumn(Bytes.toBytes(Config.MARK_CF_NAME), Bytes.toBytes("Refers"), Bytes.toBytes(row._2));
             return new Tuple2<>(new ImmutableBytesWritable(), put);
         });
         hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
