@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
+import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
@@ -27,9 +28,6 @@ public class ElasticSearchHandler implements Runnable {
     private static ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
     private final TransportClient client;
-
-    public static int successfulSubmit = 0;
-    public static int failureSubmit = 0;
 
     public ElasticSearchHandler(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
                                 ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
@@ -115,12 +113,12 @@ public class ElasticSearchHandler implements Runnable {
 
             try {
                 if (submit(models, indexName)) {
-                    successfulSubmit++;
+                    Metrics.getInstance().markElasticSubmitSuccess();
                 } else {
-                    failureSubmit++;
+                    Metrics.getInstance().markElasticSubmitFailure();
                 }
             } catch (IOException e) {
-                failureSubmit++;
+                Metrics.getInstance().markElasticSubmitFailure();
                 logger.error(e.getMessage());
             }
         }

@@ -1,5 +1,7 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
+import com.codahale.metrics.Timer;
+import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.hadoop.hbase.client.Put;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +29,25 @@ public class HBaseBulkHandler implements Runnable {
         while (true) {
             try {
                 while (puts.size() < HBASE_BULK_LIMIT) {
-                    HBaseDataModel data = bulkQueue.take();
-                    if (data.getLinks().size() > 0) {
-                        puts.add(HBase.getInstance().getPutData(data));
-                    }
+                        HBaseDataModel data = bulkQueue.take();
+                        if (data.getLinks().size() > 0) {
+                            puts.add(HBase.getInstance().getPutData(data));
+                        }
                 }
-                HBase.getInstance().getTable().put(puts);
-                puts.clear();
-            } catch (InterruptedException | IOException e) {
+            } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
+
+            Timer.Context hbasePutBulkTimeContext = Metrics.getInstance().hbasePutBulkRequestsTime();
+            try {
+                HBase.getInstance().getTable().put(puts);
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+            } finally {
+                hbasePutBulkTimeContext.stop();
+            }
+
+            puts.clear();
         }
     }
 }

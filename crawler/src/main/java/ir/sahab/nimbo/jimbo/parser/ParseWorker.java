@@ -1,9 +1,11 @@
 package ir.sahab.nimbo.jimbo.parser;
 
+import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.Validator;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.main.Config;
+import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.Jsoup;
@@ -44,12 +46,16 @@ class ParseWorker implements Runnable {
             try {
                 WebPageModel model = webPage.take();
                 final Document document = Jsoup.parse(model.getHtml());
+                Metrics.getInstance().markParsedPages();
                 if (Validator.allValidation(document)) {
-                    Parser.parsedPages.incrementAndGet();
                     sendToElastic(model, document);
                     List<Link> links = extractLinks(document);
                     sendLinksToKafka(links);
                     hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
+
+                    Metrics.getInstance().markExtractedLinks(links.size());
+                } else {
+                    Metrics.getInstance().markInvalidDocuments();
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
@@ -71,8 +77,9 @@ class ParseWorker implements Runnable {
 
     private void sendLinksToKafka(List<Link> links) {
         for (Link link : links) {
-            producer.send(
-                    new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref()));
+            Timer.Context kafkaProduceTimeContext = Metrics.getInstance().kafkaProduceRequestsTime();
+            producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref()));
+            kafkaProduceTimeContext.stop();
         }
     }
 

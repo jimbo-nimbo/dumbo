@@ -56,10 +56,6 @@ public class LruCache {
      * @param url domain of site
      */
     public boolean add(String url) {
-
-        if (exist(url)) {
-            return false;
-        }
         cache.put(url, 1);
         return true;
     }

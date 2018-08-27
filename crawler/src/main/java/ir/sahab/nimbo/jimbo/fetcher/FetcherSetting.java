@@ -20,7 +20,7 @@ public class FetcherSetting extends Setting{
         timout = 30000;
     }
 
-    public int getTimout() {
+    public int getTimeout() {
         return timout;
     }
 

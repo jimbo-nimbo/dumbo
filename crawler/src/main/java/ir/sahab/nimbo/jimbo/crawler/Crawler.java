@@ -8,6 +8,7 @@ import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.fetcher.Worker;
 import ir.sahab.nimbo.jimbo.hbase.HBaseBulkHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
+import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -18,31 +19,34 @@ import org.slf4j.LoggerFactory;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Crawler {
-
     private static final Logger logger = LoggerFactory.getLogger(Crawler.class);
 
     private final Shuffler shuffler;
-    private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
-
     private final Fetcher fetcher;
-    private final ArrayBlockingQueue<WebPageModel> rawPagesQueue;
-
     private final Parser parser;
-    private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
-    private final ArrayBlockingQueue<HBaseDataModel> hbaseQueue;
-
     private final HBaseBulkHandler hbaseBulkHandler;
     private ElasticSearchHandler elasticSearchHandler;
 
+    // TODO: what to do with settings?
     public Crawler(CrawlerSetting crawlerSetting) throws ConnectException {
+        ArrayBlockingQueue<List<String>> shuffleQueue = new
+                ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
+        ArrayBlockingQueue<WebPageModel> fetchedQueue = new
+                ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
+        ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue = new
+                ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
+        ArrayBlockingQueue<HBaseDataModel> hbaseQueue = new
+                ArrayBlockingQueue<>(crawlerSetting.getHbaseQueueMaxSize());
 
-        shuffledLinksQueue = new ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
-        shuffler = new Shuffler(shuffledLinksQueue);
+        shuffler = new Shuffler(shuffleQueue);
+        fetcher = new Fetcher(shuffleQueue, fetchedQueue, new FetcherSetting());
+        parser = new Parser(fetchedQueue, elasticQueue, hbaseQueue, new ParserSetting());
 
-        elasticQueue = new ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
+        hbaseBulkHandler = new HBaseBulkHandler(hbaseQueue);
         try {
             elasticSearchHandler = new ElasticSearchHandler(elasticQueue, new ElasticsearchSetting());
         } catch (UnknownHostException e) {
@@ -50,41 +54,27 @@ public class Crawler {
             throw new ConnectException("Could not connect to ElasticSearch");
         }
 
-        rawPagesQueue = new ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
-        fetcher = new Fetcher(shuffledLinksQueue, rawPagesQueue, new FetcherSetting());
-
-        hbaseQueue = new ArrayBlockingQueue<>(crawlerSetting.getHbaseQueueMaxSize());
-        parser = new Parser(rawPagesQueue, elasticQueue, hbaseQueue, new ParserSetting());
-
-        hbaseBulkHandler = new HBaseBulkHandler(hbaseQueue);
+        // TODO: isn't it better to use static queues?
+        // TODO: static methods? or singleton?
+        // TODO: why not use singleton for crawler, as well as parser and fetcher?
+        Metrics.getInstance().initialize(shuffleQueue, fetchedQueue, elasticQueue, hbaseQueue);
     }
 
-    public void crawl() throws InterruptedException {
-
+    public void crawl() {
         new Thread(shuffler).start();
-
         parser.runWorkers();
         fetcher.runWorkers();
         new Thread(elasticSearchHandler).start();
         new Thread(hbaseBulkHandler).start();
 
-        long uptime = System.currentTimeMillis();
-        int oldParsedPages = 0;
-        while (true) {
-            // TODO: Use JMX for monitoring
-            System.out.println("shuffled queue: " + shuffledLinksQueue.size()
-                    + ",\t fetched queue: " + rawPagesQueue.size()
-                    + ", parsedPages" +  Parser.parsedPages.intValue() + "(+" +
-            String.valueOf(Parser.parsedPages.intValue() - oldParsedPages) + ")"
-                    + ", hbaseQueue: " + hbaseQueue.size()
-                    + ", elasticQueue: " + elasticQueue.size()
-                    + ",\t uptime: " + (System.currentTimeMillis() - uptime));
-            System.out.println("elasticsearch(fail, success): " + ElasticSearchHandler.failureSubmit + ", " +  ElasticSearchHandler.successfulSubmit);
-            System.out.println(Worker.log());
-            System.out.println("--------------------------------");
-            oldParsedPages = Parser.parsedPages.intValue();
-            Thread.sleep(10000);
-        }
+        Metrics.getInstance().startJmxReport();
+
+        Scanner scanner = new Scanner(System.in);
+        String cmd;
+        do {
+            System.out.print("Type 'quit' to exit: ");
+            cmd = scanner.next();
+        } while (!cmd.equals("quit"));
     }
 
 }

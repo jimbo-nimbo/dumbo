@@ -1,7 +1,9 @@
 package ir.sahab.nimbo.jimbo.shuffler;
 
+import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
+import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.kafka.clients.consumer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +38,10 @@ public  class Shuffler implements Runnable {
     }
 
     ConsumerRecords<String, String> consume() {
+        Timer.Context kafkaConsumeTimeContext = Metrics.getInstance().kafkaConsumeRequestsTime();
         ConsumerRecords<String, String> consumerRecords = consumer.poll(5000);
         consumer.commitAsync();
+        kafkaConsumeTimeContext.stop();
         return consumerRecords;
     }
 
@@ -63,16 +67,18 @@ public  class Shuffler implements Runnable {
         List<String> list;
         List<String> putList = new ArrayList<>();
 
-        while(running) {
+        while (running) {
             list = consumeAndShuffle();
 
             try {
                 for (int i = 0; i < list.size(); i++) {
+                    // TODO: ask Alireza why this is here?
                     if (linksQueue.remainingCapacity() == 0) {
                         Thread.sleep(10000);
                     }
 
-                    if (i % 100 == 99 || i == list.size() -1 ) {
+                    if (i % 100 == 99 || i == list.size() - 1) {
+                        Metrics.getInstance().markShuffledPacks();
                         linksQueue.put(putList);
                         putList = new ArrayList<>();
                     }

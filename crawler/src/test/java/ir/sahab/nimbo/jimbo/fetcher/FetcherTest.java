@@ -26,7 +26,7 @@ public class FetcherTest {
     public void testFetch() throws ExecutionException, InterruptedException {
 //        AsyncHttpClient client = Dsl.asyncHttpClient(Dsl.config()
 //                .setFollowRedirect(true)
-//                .setConnectTimeout(fetcherSetting.getTimout()));
+//                .setConnectTimeout(fetcherSetting.getTimeout()));
 //
 //        List<CompletableFuture<Response>> listenableFutures = new ArrayList<>();
 //        for (int i = 0; i < 200; i++) {
