@@ -67,8 +67,10 @@ public class NumRefers {
                 .newAPIHadoopRDD(hConf, TableInputFormat.class,
                         ImmutableBytesWritable.class, Result.class);
         JavaRDD<Result> resultRDD = hbaseRDD.map(tuple -> tuple._2);
+
         JavaPairRDD<String, String> keyValueRDD = resultRDD.flatMapToPair(result -> {
             List<Tuple2<String, String>> list = new ArrayList<>();
+
             for (Cell cell : result.listCells()) {
                 String qualifier = Bytes.toString(CellUtil.cloneQualifier(cell));
                 if (qualifier.endsWith("link"))
