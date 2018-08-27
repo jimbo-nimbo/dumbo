@@ -29,11 +29,7 @@ public class Fetcher {
 
     public void runWorkers() {
         for (int i = 0; i < workers.length; i++) {
-            try {
                 workers[i] = new Worker(this, i);
-            } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-                logger.error(e.getMessage());
-            }
             new Thread(workers[i]).start();
         }
     }

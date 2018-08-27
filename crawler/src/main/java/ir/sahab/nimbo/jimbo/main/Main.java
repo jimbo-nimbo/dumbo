@@ -14,12 +14,7 @@ public class Main {
         if (args.length == 1 && args[0].equals("seeder")) {
             Seeder.getInstance().initializeKafka();
         } else if (args.length == 0) {
-            try {
-                new Crawler(new CrawlerSetting()).crawl();
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
+            new Crawler(new CrawlerSetting()).crawl();
         } else {
             System.err.println("ERROR: Bad arguments!");
             System.exit(1);
