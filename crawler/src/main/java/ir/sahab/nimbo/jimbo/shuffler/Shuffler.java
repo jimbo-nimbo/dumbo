@@ -10,14 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public  class Shuffler implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(Shuffler.class);
-
-    private final static String TOPIC = Config.URL_FRONTIER_TOPIC;
     final static int MAX_POLL_RECORDS = 200000;
 
     private final Consumer<String, String> consumer = createConsumer();
@@ -64,26 +63,23 @@ public  class Shuffler implements Runnable {
 
     @Override
     public void run() {
-        List<String> list;
-        List<String> putList = new ArrayList<>();
 
         while (running) {
-            list = consumeAndShuffle();
+            List<String> putList = new ArrayList<>(100);
+            List<String> list = consumeAndShuffle();
 
             try {
-                for (int i = 0; i < list.size(); i++) {
-                    // TODO: ask Alireza why this is here?
-                    if (linksQueue.remainingCapacity() == 0) {
-                        Thread.sleep(10000);
-                    }
-
-                    if (i % 100 == 99 || i == list.size() - 1) {
+                for (String link: list) {
+                    if (putList.size()>=100) {
                         Metrics.getInstance().markShuffledPacks();
                         linksQueue.put(putList);
-                        putList = new ArrayList<>();
+                        putList = new ArrayList<>(100);
                     }
-                    putList.add(list.get(i));
-
+                    putList.add(link);
+                }
+                if (putList.size()>0){
+                    Metrics.getInstance().markShuffledPacks();
+                    linksQueue.put(putList);
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
@@ -96,7 +92,7 @@ public  class Shuffler implements Runnable {
         final Consumer<String, String> consumer =
                 new KafkaConsumer<>(KafkaPropertyFactory.getConsumerProperties());
         // Subscribe to the topic.
-        consumer.subscribe(Collections.singletonList(TOPIC));
+        consumer.subscribe(Collections.singletonList(Config.URL_FRONTIER_TOPIC));
         return consumer;
     }
 }

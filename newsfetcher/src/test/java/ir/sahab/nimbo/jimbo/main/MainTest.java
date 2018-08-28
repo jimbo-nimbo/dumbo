@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class ExecTest {
+public class MainTest {
     @Test
     public void fetchTest() {
         NewsSite newsSite = new NewsSite("https://www.yahoo.com/news/rss/", "article", "itemprop", "articleBody");
