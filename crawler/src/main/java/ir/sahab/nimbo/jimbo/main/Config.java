@@ -32,8 +32,7 @@ public class Config {
     public static final String TWITTER_CONSUMER_SECRET;
     public static final String TWITTER_ACCESS_TOKEN;
     public static final String TWITTER_ACCESS_TOKEN_SECRET;
-
-
+    public static final String METRICS_DIR;
 
     static {
         String resourceName = "conf.properties";
@@ -65,5 +64,6 @@ public class Config {
         TWITTER_CONSUMER_KEY = props.getProperty("consumer_key");
         TWITTER_ACCESS_TOKEN_SECRET = props.getProperty("access_token_secret");
         TWITTER_CONSUMER_SECRET = props.getProperty("consumer_secret");
+        METRICS_DIR = props.getProperty("metrics_dir");
     }
 }
