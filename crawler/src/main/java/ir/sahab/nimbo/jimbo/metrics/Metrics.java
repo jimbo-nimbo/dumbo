@@ -40,6 +40,7 @@ public class Metrics {
     private Timer hbaseExistRequests;
     private Timer hbasePutMarkRequests;
     private Timer hbasePutBulkRequests;
+    private Timer urlFetchRequests;
 
     private Metrics() {
         metricRegistry = new MetricRegistry();
@@ -94,6 +95,7 @@ public class Metrics {
         hbaseExistRequests = metricRegistry.timer("hbase.exist.requests");
         hbasePutMarkRequests = metricRegistry.timer("hbase.put.mark.requests");
         hbasePutBulkRequests = metricRegistry.timer("hbase.put.bulk.requests");
+        urlFetchRequests = metricRegistry.timer("url.fetch.requests");
     }
 
     public void startJmxReport() {
@@ -175,6 +177,10 @@ public class Metrics {
 
     public Timer.Context hbasePutBulkRequestsTime() {
         return hbasePutBulkRequests.time();
+    }
+
+    public Timer.Context urlFetchRequestsTime() {
+        return urlFetchRequests.time();
     }
 
     public void markNewLinks() {
