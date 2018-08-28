@@ -12,6 +12,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher {
 
+    // Mostafa: not used?
     private static final Logger logger = LoggerFactory.getLogger(Fetcher.class);
 
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;

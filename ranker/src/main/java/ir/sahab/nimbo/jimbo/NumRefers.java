@@ -40,17 +40,21 @@ public class NumRefers {
                 stringBuilder.append(".").append(res[res.length - 1 - i]);
             }
         } catch (IndexOutOfBoundsException e1) {
+            //Mostafa: !!??!!
             // TODO: log
             //Logger.getInstance().debugLog(e1.getMessage());
         }
         // TODO: some string builders are empty
+        // Mostafa:stringBuilder has length method
         if (stringBuilder.toString().equals(""))
             return "bad.site";
+        //Mostafa: What kind of return is this? "bad.site"? Really? Shouldn't this be an exception?
         return stringBuilder.toString();
     }
 
     public static void extractNumRefers() throws IOException {
         SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
+        //Mostafa: You have used this jsc instance way below. Declare it when it's needed.
         JavaSparkContext jsc = new JavaSparkContext(conf);
 
         Configuration hConf = HBaseConfiguration.create();
@@ -86,6 +90,7 @@ public class NumRefers {
         job.setOutputFormatClass(TableOutputFormat.class);
         JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = countRDD.mapToPair(row -> {
             String rowKey = row._1;
+            //Mostafa: Why dont you filter  bad sites?
             if (rowKey.length() == 0)
                 rowKey = "http://bad.site/";
             Put put = new Put(reverseUrl(new URL(rowKey)).getBytes());

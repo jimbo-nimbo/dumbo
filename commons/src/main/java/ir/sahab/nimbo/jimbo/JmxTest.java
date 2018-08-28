@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo;
 import javax.management.*;
 import java.lang.management.ManagementFactory;
 
+// Mostafa: If it is test Why it doesnt have the suitable design for testing?
 public class JmxTest {
     public static void main(String[] args) {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();

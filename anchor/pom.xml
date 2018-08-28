@@ -11,6 +11,7 @@
 
     <artifactId>anchor</artifactId>
 
+    <!-- Mostafa: You needed these dependencies to do nothing?!-->
     <dependencies>
         <dependency>
             <groupId>ir.sahab.nimbo.jimbo</groupId>
