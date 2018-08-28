@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class ElasticSearchHandlerTest {
-    private ElasticSearchHandler elasticSearchHandler;
+public class ElasticsearchHandlerTest {
+    private ElasticsearchHandler elasticSearchHandler;
     private ArrayBlockingQueue<ElasticsearchWebpageModel> models;
 
     @Before
     public void init() throws UnknownHostException {
         models = new ArrayBlockingQueue<>(10000);
-        elasticSearchHandler = new ElasticSearchHandler(models, new ElasticsearchSetting());
+        elasticSearchHandler = new ElasticsearchHandler(models, new ElasticsearchSetting());
     }
 
     @Test

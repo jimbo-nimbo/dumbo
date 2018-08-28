@@ -173,6 +173,27 @@ public class HBaseTest {
     }
 
 
+    @Test
+    public void benchmarkExistMarkNotTest(){
+        HBase hBase = HBase.getInstance();
+        long b = System.currentTimeMillis();
+        for (int i = 0; i < 300; i++) {
+            hBase.existMark("https://www.test.com" + String.valueOf(i));
+        }
+        System.err.println(System.currentTimeMillis() - b);
+    }
+
+    @Test
+    public void benchmarkPutMarkNotTest(){
+        HBase hBase = HBase.getInstance();
+        long b = System.currentTimeMillis();
+        for (int i = 0; i < 300; i++) {
+            hBase.putMark("https://www.test.com" + String.valueOf(i), String.valueOf(i));
+        }
+        System.err.println(System.currentTimeMillis() - b);
+    }
+
+
 
 
 }

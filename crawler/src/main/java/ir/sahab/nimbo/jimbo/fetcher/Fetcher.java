@@ -12,6 +12,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class Fetcher {
 
+    // Mostafa: not used?
     private static final Logger logger = LoggerFactory.getLogger(Fetcher.class);
 
     private final ArrayBlockingQueue<List<String>> shuffledLinksQueue;
@@ -29,11 +30,7 @@ public class Fetcher {
 
     public void runWorkers() {
         for (int i = 0; i < workers.length; i++) {
-            try {
                 workers[i] = new Worker(this, i);
-            } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-                logger.error(e.getMessage());
-            }
             new Thread(workers[i]).start();
         }
     }

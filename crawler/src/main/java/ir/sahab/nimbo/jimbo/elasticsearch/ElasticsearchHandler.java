@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class ElasticSearchHandler implements Runnable {
+public class ElasticsearchHandler implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ElasticsearchHandler.class);
 
     private final ElasticsearchSetting elasticsearchSetting;
 
@@ -29,12 +29,12 @@ public class ElasticSearchHandler implements Runnable {
 
     private final TransportClient client;
 
-    public ElasticSearchHandler(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
+    public ElasticsearchHandler(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
                                 ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
 
         this.elasticsearchSetting = elasticsearchSetting;
         client = createClient();
-        ElasticSearchHandler.elasticQueue = elasticQueue;
+        ElasticsearchHandler.elasticQueue = elasticQueue;
     }
 
     /**

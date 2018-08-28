@@ -21,6 +21,7 @@ public class CrawlerSetting extends Setting{
     /**
      * constructor for testing
      */
+    // Mostafa: Have you ever used this?
     public CrawlerSetting(int shuffledQueueMaxSize, int rawPagesQueueMaxSize,
                           int elasticQueueMaxSize, int hbaseQueueMaxSize){
         super("crawler");
