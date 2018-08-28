@@ -4,8 +4,12 @@ import asg.cliche.Command;
 import asg.cliche.ShellFactory;
 import org.elasticsearch.search.SearchHit;
 
+import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 
@@ -30,11 +34,35 @@ public class Main {
         }
     }
 
+    private void printAns(ArrayList<SearchHit> searchHits){
+        final int LIMIT = 10;
+        int count = 0;
+
+        for(SearchHit searchHit : searchHits){
+            if(count <= LIMIT){
+                Map<String, Object> map = searchHit.getSourceAsMap();
+                System.out.print("Title: " + map.get("title") + "\n" +
+                        map.get("url") + "\n");
+                String content = map.get("content").toString();
+                if(content.length() <= 500)
+                    System.out.println(content);
+                else {
+                    System.out.println(content.substring(0, 499) + "...");
+                }
+                System.out.println("-------------------------------------------------------------");
+
+                count++;
+            }
+        }
+    }
+
     @Command
     public void search() throws IOException {
         //Should have time and earliers first and related tweets link
         System.out.println("enter search text");
         String searchText = inp.nextLine();
+        ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleElasticSearch(searchText);
+        printAns(ans);
     }
 
     @Command

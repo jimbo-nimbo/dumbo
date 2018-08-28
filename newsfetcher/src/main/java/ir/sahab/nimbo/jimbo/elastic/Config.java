@@ -1,12 +1,8 @@
 package ir.sahab.nimbo.jimbo.elastic;
 
-import org.elasticsearch.client.RestHighLevelClient;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 public class Config {
@@ -20,7 +16,7 @@ public class Config {
     private static Properties props;
     static {
         ES_HOSTS = new ArrayList<>();
-        String resourceName = "conf.properties";
+        String resourceName = "search-conf.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         props = new Properties();
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {

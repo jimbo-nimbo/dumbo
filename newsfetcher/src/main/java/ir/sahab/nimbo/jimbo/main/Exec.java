@@ -26,8 +26,7 @@ public class Exec extends Thread {
 
     static String fetch(String url, NewsSite site) {
         try {
-            System.out.println(url);
-            Document doc = Jsoup.connect(url).validateTLSCertificates(false).timeout(10000).get();
+            Document doc = Jsoup.connect(url).validateTLSCertificates(false).timeout(5000).get();
             Elements divs = doc.select(site.getTag() + "[" + site.getAttribute() + "]");
             for (Element div : divs) {
                 if (div.attr(site.getAttribute()).contains(site.getAttributeValue())) {
