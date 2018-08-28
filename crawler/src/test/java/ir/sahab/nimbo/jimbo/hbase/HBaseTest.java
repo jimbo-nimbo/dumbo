@@ -147,6 +147,11 @@ public class HBaseTest {
     }
 
     @Test
+    public void numberOfReferences(){
+        System.err.println(HBase.getInstance().getNumberOfRefrences("https://www.test.com100"));
+    }
+
+    @Test
     public void singlePutHugeMarkTest(){
         HBase hBase = HBase.getInstance();
         for (int i = 0; i < 900; i++) {
@@ -186,11 +191,24 @@ public class HBaseTest {
     @Test
     public void benchmarkPutMarkNotTest(){
         HBase hBase = HBase.getInstance();
+        StringBuilder bigUrl = new StringBuilder("https://www.test.com");
+        StringBuilder bigContent = new StringBuilder("https://www.test.com");
+        Random rand = new Random();
         long b = System.currentTimeMillis();
-        for (int i = 0; i < 300; i++) {
-            hBase.putMark("https://www.test.com" + String.valueOf(i), String.valueOf(i));
+        final int size = 1000;
+
+        for(int i = 0; i < 1000; i++){
+            bigUrl.append((char)(rand.nextInt() + 10));
+        }
+        for (int i = 1; i < size; i++) {
+            hBase.putMark(bigUrl.toString(), bigContent.toString());
+            hBase.existMark(bigUrl.toString());
+            bigUrl.append((char)(rand.nextInt() + 10));
+            bigContent.append((char)(rand.nextInt() + 10));
         }
         System.err.println(System.currentTimeMillis() - b);
+        System.err.println(size);
+        System.err.println((System.currentTimeMillis() - b) / size);
     }
 
 

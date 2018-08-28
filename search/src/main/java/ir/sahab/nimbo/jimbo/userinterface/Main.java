@@ -3,10 +3,12 @@ package ir.sahab.nimbo.jimbo.userinterface;
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
+import ir.sahab.nimbo.jimbo.hbase.HBase;
 import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -24,24 +26,37 @@ public class Main {
     }
 
     private void printAns(ArrayList<SearchHit> searchHits){
-        final int LIMIT = 10;
+        final int LIMIT = 30;
         int count = 0;
-
+        int[] refs = new int[LIMIT];
+        StringBuilder[] resualt = new StringBuilder[30];
+        ArrayList<Integer> index = new ArrayList<>();
         for(SearchHit searchHit : searchHits){
             if(count <= LIMIT){
+                index.add(count);
                 Map<String, Object> map = searchHit.getSourceAsMap();
-                System.out.print("Title: " + map.get("title") + "\n" +
-                        map.get("url") + "\n");
+                String url = (String) map.get("url");
+                refs[count] = HBase.getInstance().getNumberOfRefrences(url);
+                resualt[count].append("Title: ").append(map.get("title"))
+                        .append("\n").append(map.get("url")).append("\n");
                 String content = map.get("content").toString();
                 if(content.length() <= 500)
-                    System.out.println(content);
+                    resualt[count].append(content).append("\n");
                 else {
-                    System.out.println(content.substring(0, 499) + "...");
+                    resualt[count].append(content.substring(0, 499)).append("...").append("\n");
                 }
-                System.out.println("-------------------------------------------------------------");
-
+                resualt[count].append("-------------------------------------------------------------\n");
                 count++;
             }
+        }
+        index.sort(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return refs[o1] - refs[o2];
+            }
+        });
+        for(int i = 0; i < LIMIT && i < searchHits.size(); i++) {
+            System.err.println(resualt[index.get(i)]);
         }
     }
 

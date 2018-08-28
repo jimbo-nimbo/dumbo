@@ -32,6 +32,10 @@ public class Config {
     public static final String TWITTER_CONSUMER_SECRET;
     public static final String TWITTER_ACCESS_TOKEN;
     public static final String TWITTER_ACCESS_TOKEN_SECRET;
+    public static final String HBASE_MARK_Q_NAME_URL;
+    public static final String HBASE_MARK_Q_NAME_LAST_SEEN;
+    public static final String HBASE_MARK_Q_NAME_SEEN_DURATION;
+    public static final String HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES;
 
 
 
@@ -65,5 +69,9 @@ public class Config {
         TWITTER_CONSUMER_KEY = props.getProperty("consumer_key");
         TWITTER_ACCESS_TOKEN_SECRET = props.getProperty("access_token_secret");
         TWITTER_CONSUMER_SECRET = props.getProperty("consumer_secret");
+        HBASE_MARK_Q_NAME_URL = props.getProperty("hbase_mark_q_name_url");
+        HBASE_MARK_Q_NAME_LAST_SEEN = props.getProperty("hbase_mark_q_name_last_seen");
+        HBASE_MARK_Q_NAME_SEEN_DURATION = props.getProperty("hbase_mark_q_name_seen_duration");
+        HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES = props.getProperty("hbase_mark_q_name_number_of_references");
     }
 }

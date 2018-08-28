@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import ir.sahab.nimbo.jimbo.parser.Link;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -9,21 +8,19 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.filter.ByteArrayComparable;
-import org.apache.hadoop.hbase.filter.CompareFilter;
-import org.apache.hadoop.hbase.filter.FamilyFilter;
-import org.apache.hadoop.hbase.filter.QualifierFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.Objects;
 
-import static ir.sahab.nimbo.jimbo.main.Config.*;
+import static ir.sahab.nimbo.jimbo.elastic.Config.*;
 
-public class HBase implements DuplicateChecker {
+public class HBase{
 
     private static final Logger logger = LoggerFactory.getLogger(HBase.class);
 
@@ -62,101 +59,6 @@ public class HBase implements DuplicateChecker {
 
     public static HBase getInstance() {
         return hbase;
-    }
-
-    /**
-     * @param hBaseDataModel
-     */
-
-    Put getPutData(HBaseDataModel hBaseDataModel) {
-        Put p;
-        p = new Put(makeRowKey(hBaseDataModel.getUrl()).getBytes());
-        Link link;
-        for (int i = 0; i < hBaseDataModel.getLinks().size(); i++) {
-            link = hBaseDataModel.getLinks().get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
-                    (String.valueOf(i) + "link").getBytes(), link.getHref().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
-                    (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
-        }
-        return p;
-    }
-
-    public void putData(HBaseDataModel hBaseDataModel) {
-        Put p = getPutData(hBaseDataModel);
-        try {
-            if (hBaseDataModel.getLinks().size() > 0) {
-                table.put(p);
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    public void putMark(String sourceUrl, String value) {
-        Put p = new Put(makeRowKey(sourceUrl).getBytes());
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
-        try {
-            table.put(p);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    public byte[] getData(String sourceUrl, String qualifier) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        try {
-            return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
-        }
-
-    }
-
-    public byte[] getMark(String sourceUrl, String qualifier) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        try {
-            return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
-        }
-
-    }
-
-    boolean existData(String sourceUrl) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes());
-                if (navigableMap != null && !navigableMap.isEmpty()) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return false;
-    }
-
-    public boolean existMark(String sourceUrl) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes());
-                if (navigableMap != null && !navigableMap.isEmpty()) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return false;
     }
 
 

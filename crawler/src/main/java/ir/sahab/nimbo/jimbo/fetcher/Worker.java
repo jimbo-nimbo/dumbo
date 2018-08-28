@@ -115,7 +115,7 @@ public class Worker implements Runnable {
         Timer.Context hbaseExistTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
         boolean hbaseExist = HBase.getInstance().existMark(link);
         hbaseExistTimeContext.stop();
-
+        //TODO maybe an update
         if (hbaseExist) {
             Metrics.getInstance().markNewLinks();
             lruCache.remove(host);
