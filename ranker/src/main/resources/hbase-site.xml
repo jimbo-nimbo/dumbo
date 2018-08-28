@@ -1,7 +1,7 @@
 <configuration>
     <property>
         <name>hbase.zookeeper.quorum</name>
-        <value>46.105.100.63</value>
+        <value>hitler,genghis,alexander</value>
     </property>
     <property>
         <name>hbase.zookeeper.property.clientPort</name>
