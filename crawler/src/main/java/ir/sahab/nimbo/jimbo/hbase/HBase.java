@@ -28,6 +28,7 @@ public class HBase implements DuplicateChecker {
     private TableName tableName;
     Table table = null;
 
+    // TODO: remove all the unnecessary functions
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
         Configuration config = HBaseConfiguration.create();

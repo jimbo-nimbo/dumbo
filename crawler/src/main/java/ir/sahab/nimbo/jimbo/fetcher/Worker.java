@@ -57,6 +57,7 @@ public class Worker implements Runnable {
                 Metrics.getInstance().markFetcherReceivedLinks(shuffledLinks.size());
 
                 for (String shuffledLink : shuffledLinks) {
+                    Timer.Context urlFetchTimeContext = Metrics.getInstance().urlFetchRequestsTime();
                     if (checkLink(shuffledLink)) {
                         Timer.Context httpTimeContext = Metrics.getInstance().httpRequestsTime();
                         try {
@@ -70,6 +71,7 @@ public class Worker implements Runnable {
                             httpTimeContext.stop();
                         }
                     }
+                    urlFetchTimeContext.stop();
                 }
 
             } catch (InterruptedException e) {
