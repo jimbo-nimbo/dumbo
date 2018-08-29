@@ -57,7 +57,7 @@ public class Worker implements Runnable {
                         try {
                             String text = Jsoup.connect(shuffledLink).timeout(timeout)
                                     .validateTLSCertificates(false).get().html();
-                            rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
+                            rawWebPagesQueue.put(new WebPageModel(text, shuffledLink));
                             Metrics.getInstance().markSuccessfulFetches();
                         } catch (IOException | IllegalArgumentException e) {
                             logger.error(e.getMessage());

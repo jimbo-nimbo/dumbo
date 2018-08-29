@@ -71,7 +71,11 @@ public class Exec extends Thread {
                         if (rssMessages.add(message.getLink())) {
                             String text = fetch(message.getLink(), url);
                             if (text != null) {
-                                blockingQueue.add(new ElasticsearchWebpageModel(message.getLink(), text, message.getTitle(), message.getDescription()));
+                                try {
+                                    blockingQueue.put(new ElasticsearchWebpageModel(message.getLink(), text, message.getTitle(), message.getDescription()));
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
