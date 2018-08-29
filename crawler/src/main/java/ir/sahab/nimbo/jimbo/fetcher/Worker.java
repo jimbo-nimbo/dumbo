@@ -17,14 +17,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 public class Worker implements Runnable {
@@ -113,19 +107,18 @@ public class Worker implements Runnable {
         lruPutTimeContext.stop();
 
         Timer.Context hbaseExistTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
-        boolean hbaseExist = HBase.getInstance().existMark(link);
+        boolean shouldFetch = HBase.getInstance().shouldFetch(link);
         hbaseExistTimeContext.stop();
 
-        if (hbaseExist) {
-            Metrics.getInstance().markNewLinks();
+        //TODO maybe an update
+        if (!shouldFetch) {
+            Metrics.getInstance().markDuplicatedLinks();
             lruCache.remove(host);
             return false;
-        } else {
-            Metrics.getInstance().markDuplicatedLinks();
         }
-
+        Metrics.getInstance().markNewLinks();
         Timer.Context hbasePutMarkTimeContext = Metrics.getInstance().hbasePutMarkRequestsTime();
-        HBase.getInstance().putMark(link, "1");
+        HBase.getInstance().putMark(link);
         hbasePutMarkTimeContext.stop();
 
         return true;

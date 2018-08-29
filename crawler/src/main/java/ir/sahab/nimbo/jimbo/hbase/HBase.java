@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,9 +91,14 @@ public class HBase implements DuplicateChecker {
         }
     }
 
-    public void putMark(String sourceUrl, String value) {
+    public void putMark(String sourceUrl) {
+        String value = String.valueOf(System.currentTimeMillis());
         Put p = new Put(makeRowKey(sourceUrl).getBytes());
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes(), value.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes(),
+                HBASE_MARK_DEFAULT_SEEN_DURATION.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_URL.getBytes(), sourceUrl.getBytes());
+        p.addColumn(HBASE_DATA_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_URL.getBytes(), sourceUrl.getBytes());
         try {
             table.put(p);
         } catch (IOException e) {
@@ -139,8 +145,39 @@ public class HBase implements DuplicateChecker {
         return false;
     }
 
-    public boolean existMark(String sourceUrl) {
+    /**
+     *
+     * why? because there is two type: type one : those which not seen at all, two : those which should update
+     */
+    public boolean shouldFetch(String sourceUrl) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
+                byte[] resDur = result.getValue(
+                        HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+                if(res != null && resDur != null){
+                    Long lastseen = Long.valueOf(Bytes.toString(res));
+                    Long dur = Long.valueOf(Bytes.toString(resDur));
+                    if(System.currentTimeMillis() > lastseen + dur)
+                        return true;
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return true;
+    }
+
+
+    boolean existMark(String sourceUrl) {
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
         Result result;
         try {
             result = table.get(get);
@@ -180,6 +217,25 @@ public class HBase implements DuplicateChecker {
         return DigestUtils.md5Hex(inp);
     }
 
+    public int getNumberOfReferences(String sourceUrl){
+        Scan scan = new Scan(makeRowKey(sourceUrl).getBytes());
+        HBASE_MARK_CF_NAME.getBytes();
+        HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes();
+        scan.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes());
+        ResultScanner resultScanner;
+        try {
+            resultScanner = table.getScanner(scan);
+            for(Result result : resultScanner) {
+                if (result != null) {
+                    return Bytes.toInt(result.getValue(HBASE_MARK_CF_NAME.getBytes(),
+                            HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes()));
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return 0;
+    }
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);

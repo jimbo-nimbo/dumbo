@@ -3,10 +3,12 @@ package ir.sahab.nimbo.jimbo.userinterface;
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
+import ir.sahab.nimbo.jimbo.hbase.HBase;
 import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -24,24 +26,44 @@ public class Main {
     }
 
     private void printAns(ArrayList<SearchHit> searchHits){
-        final int LIMIT = 10;
+        final int SHOW_LIMIT = 10;
+        final int SEARCH_LIMIT = 50;
         int count = 0;
-
+        int[] refs = new int[SEARCH_LIMIT];
+        StringBuilder[] resualt = new StringBuilder[SEARCH_LIMIT];
+        ArrayList<Integer> index = new ArrayList<>();
+        System.err.println(searchHits.size());
         for(SearchHit searchHit : searchHits){
-            if(count <= LIMIT){
+            if(count < SEARCH_LIMIT){
+                index.add(count);
                 Map<String, Object> map = searchHit.getSourceAsMap();
-                System.out.print("Title: " + map.get("title") + "\n" +
-                        map.get("url") + "\n");
-                String content = map.get("content").toString();
-                if(content.length() <= 500)
-                    System.out.println(content);
-                else {
-                    System.out.println(content.substring(0, 499) + "...");
-                }
-                System.out.println("-------------------------------------------------------------");
+                if(map.containsKey("url") && map.containsKey("title") && map.containsKey("content")) {
 
-                count++;
+                    String url = (String) map.get("url");
+                    refs[count] = HBase.getInstance().getNumberOfReferences(url);
+                    resualt[count] = new StringBuilder();
+                    resualt[count].append("Title: ").append(map.get("title"))
+                            .append("\n").append(map.get("url")).append("\n");
+                    String content = map.get("content").toString();
+                    if (content.length() <= 500)
+                        resualt[count].append(content).append("\n");
+                    else {
+                        resualt[count].append(content.substring(0, 499)).append("...\n");
+                    }
+                    resualt[count].append("#References : ").append(refs[count]).append("\n");
+                    resualt[count].append("-------------------------------------------------------------\n");
+                    count++;
+                }
             }
+        }
+        index.sort(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return refs[o2] - refs[o1];
+            }
+        });
+        for(int i = 0; i < SHOW_LIMIT && i < searchHits.size(); i++) {
+            System.err.println(resualt[index.get(i)]);
         }
     }
 
