@@ -40,6 +40,7 @@ public class Config {
     public static final String HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES;
 
 
+    public static final String METRICS_DIR;
 
     static {
         String resourceName = "conf.properties";
@@ -71,6 +72,7 @@ public class Config {
         TWITTER_CONSUMER_KEY = props.getProperty("consumer_key");
         TWITTER_ACCESS_TOKEN_SECRET = props.getProperty("access_token_secret");
         TWITTER_CONSUMER_SECRET = props.getProperty("consumer_secret");
+        METRICS_DIR = props.getProperty("metrics_dir");
         HBASE_MARK_Q_NAME_URL = props.getProperty("hbase_mark_q_name_url");
         HBASE_MARK_Q_NAME_LAST_SEEN = props.getProperty("hbase_mark_q_name_last_seen");
         HBASE_MARK_Q_NAME_SEEN_DURATION = props.getProperty("hbase_mark_q_name_seen_duration");
