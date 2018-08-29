@@ -3,11 +3,15 @@ package ir.sahab.nimbo.jimbo.metrics;
 import com.codahale.metrics.*;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class Metrics {
     private static Metrics ourInstance = new Metrics();
@@ -40,6 +44,7 @@ public class Metrics {
     private Timer hbaseExistRequests;
     private Timer hbasePutMarkRequests;
     private Timer hbasePutBulkRequests;
+    private Timer urlFetchRequests;
 
     private Metrics() {
         metricRegistry = new MetricRegistry();
@@ -94,11 +99,21 @@ public class Metrics {
         hbaseExistRequests = metricRegistry.timer("hbase.exist.requests");
         hbasePutMarkRequests = metricRegistry.timer("hbase.put.mark.requests");
         hbasePutBulkRequests = metricRegistry.timer("hbase.put.bulk.requests");
+        urlFetchRequests = metricRegistry.timer("url.fetch.requests");
     }
 
     public void startJmxReport() {
         final JmxReporter reporter = JmxReporter.forRegistry(metricRegistry).build();
         reporter.start();
+    }
+
+    public void startCsvReport() {
+        final CsvReporter reporter = CsvReporter.forRegistry(metricRegistry)
+                .formatFor(Locale.US)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .build(new File(Config.METRICS_DIR));
+        reporter.start(10, TimeUnit.SECONDS);
     }
 
     public void markParsedPages() {
@@ -175,6 +190,10 @@ public class Metrics {
 
     public Timer.Context hbasePutBulkRequestsTime() {
         return hbasePutBulkRequests.time();
+    }
+
+    public Timer.Context urlFetchRequestsTime() {
+        return urlFetchRequests.time();
     }
 
     public void markNewLinks() {

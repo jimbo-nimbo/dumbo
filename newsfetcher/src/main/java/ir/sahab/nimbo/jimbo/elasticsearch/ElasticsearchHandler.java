@@ -141,7 +141,6 @@ public class ElasticsearchHandler implements Runnable {
             bulkRequestBuilder.add(
                     client.prepareIndex(indexName, "_doc", getId(model.getUrl())).setSource(builder));
         }
-
         return !bulkRequestBuilder.get().hasFailures();
     }
 

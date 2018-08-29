@@ -2,8 +2,10 @@ package ir.sahab.nimbo.jimbo;
 
 import com.codahale.metrics.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 // Mostafa: Test? Right in the middle of "main" package?
@@ -13,12 +15,12 @@ public class MetricsTest {
     public static void main(String args[]) {
         List<Integer> list = new ArrayList<>();
 
-        startJmxReport();
+        startConsoleReport();
+        startCsvReport();
         final Meter requests = metrics.meter("requests");
-        metrics.register(MetricRegistry.name(MetricsTest.class, "list", "size"),
-                (Gauge<Integer>) list::size);
-        final Counter counter = metrics.counter(MetricRegistry.name(MetricsTest.class, "counter"));
-        final Timer responses = metrics.timer(MetricRegistry.name(MetricsTest.class, "responses"));
+        metrics.register("list.size", (Gauge<Integer>) list::size);
+        final Counter counter = metrics.counter("counter");
+        final Timer responses = metrics.timer("responses");
 
 
         while (true) {
@@ -45,6 +47,15 @@ public class MetricsTest {
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .build();
+        reporter.start(1, TimeUnit.SECONDS);
+    }
+
+    static void startCsvReport() {
+        final CsvReporter reporter = CsvReporter.forRegistry(metrics)
+                .formatFor(Locale.US)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .build(new File("/Users/kiarash/Desktop/metrics/"));
         reporter.start(1, TimeUnit.SECONDS);
     }
 

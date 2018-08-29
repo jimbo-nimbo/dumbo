@@ -67,6 +67,7 @@ public class Crawler {
         new Thread(hbaseBulkHandler).start();
 
         Metrics.getInstance().startJmxReport();
+        Metrics.getInstance().startCsvReport();
 
         Scanner scanner = new Scanner(System.in);
         String cmd;

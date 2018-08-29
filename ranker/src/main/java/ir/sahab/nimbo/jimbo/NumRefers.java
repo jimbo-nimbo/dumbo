@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public class NumRefers {
 
-    public static void extractNumRefers() throws IOException {
+    static void extractNumRefers() throws IOException {
         Configuration hConf = HBaseConfiguration.create();
         String path = Objects.requireNonNull(NumRefers.class
                 .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
