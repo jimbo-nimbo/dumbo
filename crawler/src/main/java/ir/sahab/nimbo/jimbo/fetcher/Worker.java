@@ -59,7 +59,7 @@ public class Worker implements Runnable {
                                     .validateTLSCertificates(false).get().html();
                             rawWebPagesQueue.put(new WebPageModel(text, shuffledLink));
                             Metrics.getInstance().markSuccessfulFetches();
-                        } catch (IOException | IllegalArgumentException e) {
+                        } catch (IOException | IllegalArgumentException | StringIndexOutOfBoundsException e) {
                             logger.error(e.getMessage());
                         } finally {
                             httpTimeContext.stop();

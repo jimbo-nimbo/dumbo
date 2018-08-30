@@ -45,6 +45,12 @@ public class Metrics {
     private Timer hbasePutMarkRequests;
     private Timer hbasePutBulkRequests;
     private Timer urlFetchRequests;
+    private Timer parserJobRequests;
+    private Timer parserElasticPutDataRequests;
+    private Timer parserTakeWebPageRequests;
+    private Timer parserJsoupParseRequests;
+    private Timer parserExtractLinksRequests;
+    private Timer hbasePutDataRequests;
 
     private Metrics() {
         metricRegistry = new MetricRegistry();
@@ -100,6 +106,12 @@ public class Metrics {
         hbasePutMarkRequests = metricRegistry.timer("hbase.put.mark.requests");
         hbasePutBulkRequests = metricRegistry.timer("hbase.put.bulk.requests");
         urlFetchRequests = metricRegistry.timer("url.fetch.requests");
+        hbasePutDataRequests = metricRegistry.timer("hbase.put.data.requests");
+        parserTakeWebPageRequests = metricRegistry.timer("parser.take.webpage.requests");
+        parserJsoupParseRequests = metricRegistry.timer("parser.jsoup.parse.requests");
+        parserJobRequests = metricRegistry.timer("parser.job.requests");
+        parserExtractLinksRequests = metricRegistry.timer("parser.extract.links.requests");
+        parserElasticPutDataRequests = metricRegistry.timer("parser.elastic.put.data.reuests");
     }
 
     public void startJmxReport() {
@@ -195,6 +207,29 @@ public class Metrics {
     public Timer.Context urlFetchRequestsTime() {
         return urlFetchRequests.time();
     }
+
+    public Timer.Context hbasePutDataRequestsTime() {
+        return hbasePutDataRequests.time();
+    }
+
+    public Timer.Context parserElasticPutDataRequestsTime() {
+        return parserElasticPutDataRequests.time();
+    }
+    public Timer.Context parserExtractLinksRequestsTime() {
+        return parserExtractLinksRequests.time();
+    }
+    public Timer.Context parserJobRequestsTime() {
+        return parserJobRequests.time();
+    }
+    public Timer.Context parserJsoupParseRequestsTime() {
+        return parserJsoupParseRequests.time();
+    }
+    public Timer.Context parserTakeWebPageRequestsTime() {
+        return parserTakeWebPageRequests.time();
+    }
+
+
+
 
     public void markNewLinks() {
         newLinks.mark();

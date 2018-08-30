@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.parser.Link;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.junit.After;
@@ -201,18 +202,33 @@ public class HBaseTest {
         HBase hBase = HBase.getInstance();
         StringBuilder bigUrl = new StringBuilder("https://www.test.com");
         Random rand = new Random();
-        long b = System.currentTimeMillis();
-        final int size = 1000;
-
-        for(int i = 0; i < 1000; i++){
+        final int size = 5000;
+        ArrayList<Put> puts = new ArrayList<>();
+        String[] urls = new String[size];
+        for(int i = 0; i < 500; i++){
             bigUrl.append((char)(rand.nextInt() + 10));
         }
-        for (int i = 1; i < size; i++) {
-            hBase.putMark(bigUrl.toString());
-            hBase.existMark(bigUrl.toString());
+        for(int i = 0; i < size; i++){
+            urls[i] = bigUrl.toString();
             bigUrl.append((char)(rand.nextInt() + 10));
+        }
+        long b = System.currentTimeMillis();
+        for (int i = 0; i < size; i++) {
+            hBase.putMark(urls[i]);
         }
         System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
+        for (int i = 0; i < size; i++) {
+            puts.add(HBase.getInstance().getPutMark(urls[i]));
+        }
+        b = System.currentTimeMillis();
+        try {
+            HBase.getInstance().table.put(puts);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
     }
 
 
