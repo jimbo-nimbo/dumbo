@@ -72,9 +72,9 @@ public class HBase implements DuplicateChecker {
         Link link;
         for (int i = 0; i < hBaseDataModel.getLinks().size(); i++) {
             link = hBaseDataModel.getLinks().get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+            p.addColumn(HBASE_DATA_CF_NAME_BYTES,
                     (String.valueOf(i) + "link").getBytes(), link.getHref().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+            p.addColumn(HBASE_DATA_CF_NAME_BYTES,
                     (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
         return p;
@@ -99,8 +99,8 @@ public class HBase implements DuplicateChecker {
                 Bytes.toBytes(value));
         p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES,
                 HBASE_MARK_DEFAULT_SEEN_DURATION_BYTES);
-        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
-                sourceBytes);
+//        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
+//                sourceBytes);
         p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
                 sourceBytes);
         return p;

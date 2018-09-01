@@ -33,7 +33,7 @@ public class Config {
     public static final String HBASE_MARK_Q_NAME_LAST_SEEN;
     public static final String HBASE_MARK_Q_NAME_SEEN_DURATION;
     public static final String HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES;
-
+    public static final int ES_RESULT_SIZE;
 
     private static Properties props;
     static {
@@ -73,6 +73,7 @@ public class Config {
         HBASE_MARK_Q_NAME_LAST_SEEN = props.getProperty("hbase_mark_q_name_last_seen");
         HBASE_MARK_Q_NAME_SEEN_DURATION = props.getProperty("hbase_mark_q_name_seen_duration");
         HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES = props.getProperty("hbase_mark_q_name_number_of_references");
+        ES_RESULT_SIZE = Integer.valueOf(props.getProperty("es.result.size"));
     }
 
     public static int getScoreField(String field){

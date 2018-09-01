@@ -68,7 +68,6 @@ class ParseWorker implements Runnable {
                     sendLinksToKafka(links);
                     Timer.Context hbasePutDataTimeContext = Metrics.getInstance().hbasePutDataRequestsTime();
                     hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
-                    HBase.getInstance().updateLastSeen(model.getLink(), DigestUtils.md5Hex(document.text()));
                     hbasePutDataTimeContext.stop();
                     Metrics.getInstance().markExtractedLinks(links.size());
                 } else {
