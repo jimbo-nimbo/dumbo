@@ -62,7 +62,7 @@
     <dependencies>
         <dependency>
             <groupId>ir.sahab.nimbo.jimbo</groupId>
-            <artifactId>dumbo</artifactId>
+            <artifactId>commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
