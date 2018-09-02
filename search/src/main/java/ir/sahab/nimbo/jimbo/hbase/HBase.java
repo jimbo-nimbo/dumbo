@@ -3,11 +3,9 @@ package ir.sahab.nimbo.jimbo.hbase;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.FilterBase;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,8 +84,6 @@ public class HBase {
 
     public int getNumberOfReferences(String sourceUrl) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        HBASE_MARK_CF_NAME.getBytes();
-        HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes();
         get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes());
         Result result;
         try {

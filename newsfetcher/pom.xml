@@ -61,6 +61,11 @@
     <artifactId>newsfetcher</artifactId>
     <dependencies>
         <dependency>
+            <groupId>ir.sahab.nimbo.jimbo</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>6.3.2</version>

@@ -14,6 +14,7 @@ public class HBaseBulkHandlerTest {
 
     @Test
     public void bulkTest() throws InterruptedException {
+        ArrayBlockingQueue<HBaseDataModel> dataQueue = new ArrayBlockingQueue<>(Config.HBASE_BULK_CAPACITY);
         ArrayBlockingQueue<HBaseDataModel> queue = new ArrayBlockingQueue<>(Config.HBASE_BULK_CAPACITY);
         new Thread(new HBaseBulkHandler(queue)).start();
 

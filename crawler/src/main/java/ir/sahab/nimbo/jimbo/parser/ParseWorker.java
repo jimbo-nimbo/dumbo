@@ -68,7 +68,6 @@ class ParseWorker implements Runnable {
                     sendLinksToKafka(links);
                     Timer.Context hbasePutDataTimeContext = Metrics.getInstance().hbasePutDataRequestsTime();
                     hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
-                    HBase.getInstance().updateLastSeen(model.getLink(), DigestUtils.md5Hex(document.text()));
                     hbasePutDataTimeContext.stop();
                     Metrics.getInstance().markExtractedLinks(links.size());
                 } else {
@@ -95,8 +94,9 @@ class ParseWorker implements Runnable {
 
     private void sendLinksToKafka(List<Link> links) {
         for (Link link : links) {
+            String url = link.getHref();
             Timer.Context kafkaProduceTimeContext = Metrics.getInstance().kafkaProduceRequestsTime();
-            producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link.getHref()));
+            producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, DigestUtils.md5Hex(url), url));
             kafkaProduceTimeContext.stop();
         }
     }

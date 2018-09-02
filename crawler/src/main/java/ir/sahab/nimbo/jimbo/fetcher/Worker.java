@@ -6,6 +6,7 @@ import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -59,6 +61,10 @@ public class Worker implements Runnable {
                                     .validateTLSCertificates(false).get().html();
                             rawWebPagesQueue.put(new WebPageModel(text, shuffledLink));
                             Metrics.getInstance().markSuccessfulFetches();
+                            Timer.Context fetcherUpdateSiteHBaseRequestsTimeContext =
+                                    Metrics.getInstance().fetcherUpdateSiteHBaseRequestsTime();
+                            HBase.getInstance().updateLastSeen(shuffledLink, DigestUtils.md5Hex(text));
+                            fetcherUpdateSiteHBaseRequestsTimeContext.stop();
                         } catch (IOException | IllegalArgumentException | StringIndexOutOfBoundsException e) {
                             logger.error(e.getMessage());
                         } finally {

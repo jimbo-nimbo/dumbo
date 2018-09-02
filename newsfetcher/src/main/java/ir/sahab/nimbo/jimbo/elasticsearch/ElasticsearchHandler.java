@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
+import ir.sahab.nimbo.jimbo.ElasticClientBuilder;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
@@ -36,66 +37,8 @@ public class ElasticsearchHandler implements Runnable {
                                 ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
 
         this.elasticsearchSetting = elasticsearchSetting;
-        client = createClient();
+        client = ElasticClientBuilder.build();
         ElasticsearchHandler.elasticQueue = elasticQueue;
-    }
-
-    /**
-     * there can be multiple hosts and we don't know the number until runtime
-     * so read them from elasticsearch.properties file
-     *
-     * hosts are separated with # in properties file
-     * example:
-     * host1:port#host2:port
-     *
-     * package private for testing
-     */
-    private List<Host> readHosts() {
-        List<Host> hosts = new ArrayList<>();
-        String hostsString = elasticsearchSetting.getHosts();
-        for (String hostString : hostsString.split("#")) {
-            Host host = new Host(hostString.split(":")[0],
-                    Integer.parseInt(hostString.split(":")[1]));
-            hosts.add(host);
-        }
-
-        return hosts;
-    }
-
-    /**
-     * extract settings from properties object
-     * read name from properties file
-     *
-     * set client.transport.sniff true for sending requests to master node //TODO: check this configuration
-     * @see <a href="https://www.elastic.co/guide/en/
-     *      elasticsearch/client/java-api/current/transport-client.html#transport-client">
-     *      elasticsearch transport client</a>
-     */
-    private Settings readSettings() {
-        String clusterName = elasticsearchSetting.getClusterName();
-        return Settings.builder()
-                .put("cluster.name", clusterName)
-                .put("client.transport.sniff", true)
-                .build();
-    }
-
-    /**
-     * get hosts from readHosts() because there may be multiple hosts
-     * and it's configurable in elasticsearch.properties file in resources
-     *
-     * package private for testing
-     */
-    private TransportClient createClient() throws UnknownHostException {
-        Settings settings = readSettings();
-        TransportClient client = new PreBuiltTransportClient(settings);
-
-        List<Host> hosts = readHosts();
-
-        for (Host host : hosts) {
-            client.addTransportAddress(
-                    new TransportAddress(InetAddress.getByName(host.getHostName()), host.getPort()));
-        }
-        return client;
     }
 
     @Override
@@ -154,26 +97,5 @@ public class ElasticsearchHandler implements Runnable {
     protected void finalize() throws Throwable {
         super.finalize();
         client.close();
-    }
-
-    /**
-     * class for encapsulate hosts
-     */
-    class Host {
-        private String hostName;
-        private int port;
-
-        Host(String hostName, int port) {
-            this.hostName = hostName;
-            this.port = port;
-        }
-
-        String getHostName() {
-            return hostName;
-        }
-
-        int getPort() {
-            return port;
-        }
     }
 }

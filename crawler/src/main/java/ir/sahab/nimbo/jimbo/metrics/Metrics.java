@@ -50,6 +50,7 @@ public class Metrics {
     private Timer parserTakeWebPageRequests;
     private Timer parserJsoupParseRequests;
     private Timer parserExtractLinksRequests;
+    private Timer fetcherUpdateSiteHBase;
     private Timer hbasePutDataRequests;
 
     private Metrics() {
@@ -112,6 +113,7 @@ public class Metrics {
         parserJobRequests = metricRegistry.timer("parser.job.requests");
         parserExtractLinksRequests = metricRegistry.timer("parser.extract.links.requests");
         parserElasticPutDataRequests = metricRegistry.timer("parser.elastic.put.data.reuests");
+        fetcherUpdateSiteHBase = metricRegistry.timer("fetcher.update.site.hbase.requests");
     }
 
     public void startJmxReport() {
@@ -227,7 +229,9 @@ public class Metrics {
     public Timer.Context parserTakeWebPageRequestsTime() {
         return parserTakeWebPageRequests.time();
     }
-
+    public Timer.Context fetcherUpdateSiteHBaseRequestsTime() {
+        return fetcherUpdateSiteHBase.time();
+    }
 
 
 
