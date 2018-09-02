@@ -201,19 +201,10 @@ public class HBaseTest {
             Put put = new Put(bigUrl.toString().getBytes());
             put.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES, bigUrl.toString().getBytes());
             puts.add(put);
-            puts2.add(HBase.getInstance().getPutMark(bigUrl.toString()));
         }
         long b = System.currentTimeMillis();
         try {
             HBase.getInstance().table.put(puts);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
-        b = System.currentTimeMillis();
-        try {
-            HBase.getInstance().table.put(puts2);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -257,17 +248,6 @@ public class HBaseTest {
         long b = System.currentTimeMillis();
         for (int i = 0; i < size; i++) {
             hBase.putMark(urls[i]);
-        }
-        System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
-        for (int i = 0; i < size; i++) {
-            puts.add(HBase.getInstance().getPutMark(urls[i]));
-        }
-        b = System.currentTimeMillis();
-        try {
-            HBase.getInstance().table.put(puts);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         System.err.println(System.currentTimeMillis() - b);
         System.err.println((System.currentTimeMillis() - b) / size);

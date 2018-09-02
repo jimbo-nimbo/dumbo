@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import ir.sahab.nimbo.jimbo.ElasticClientBuilder;
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -14,86 +15,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class ElasticsearchHandler implements Runnable {
+public class ElasticsearchHandler{
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticsearchHandler.class);
-
     private final ElasticsearchSetting elasticsearchSetting;
-
     private static ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
-
-    private final TransportClient client;
+    private final ElasticWorker[] elasticWorkers;
 
     public ElasticsearchHandler(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
-                                ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
-
+                                ElasticsearchSetting elasticsearchSetting){
         this.elasticsearchSetting = elasticsearchSetting;
-        client = ElasticClientBuilder.build();
         ElasticsearchHandler.elasticQueue = elasticQueue;
+        elasticWorkers = new ElasticWorker[elasticsearchSetting.getNumberOfThreads()];
     }
 
-    @Override
-    public void run() {
-
-        final int bulkSize = elasticsearchSetting.getBulkSize();
-        final String indexName = elasticsearchSetting.getIndexName();
-        List<ElasticsearchWebpageModel> models = new ArrayList<>();
-        while (true) {
-            models.clear();
-            for (int i = 0; i < bulkSize; i++) {
-                try {
-                    models.add(elasticQueue.take());
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-
+    public void runWorkers() throws ConnectException {
+        for(int i = 0; i < elasticsearchSetting.getNumberOfThreads(); i++) {
             try {
-                if (submit(models, indexName)) {
-                    Metrics.getInstance().markElasticSubmitSuccess();
-                } else {
-                    Metrics.getInstance().markElasticSubmitFailure();
-                }
-            } catch (IOException e) {
-                Metrics.getInstance().markElasticSubmitFailure();
-                logger.error(e.getMessage());
-            }
+                elasticWorkers[i] = new ElasticWorker(elasticQueue, elasticsearchSetting);
+                elasticWorkers[i].start();
+            } catch (UnknownHostException e) {
+                logger.error("Could not connect to ElasticSearch");
+                throw new ConnectException("Could not connect to ElasticSearch");            }
         }
 
     }
 
-    boolean submit(List<ElasticsearchWebpageModel> models, String indexName) throws IOException {
-        XContentBuilder builder;
-        BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
-
-        for (ElasticsearchWebpageModel model : models) {
-            builder = XContentFactory.jsonBuilder();
-            builder.startObject()
-                    .field("url", model.getUrl())
-                    .field("content", model.getArticle())
-                    .field("title", model.getTitle())
-                    .field("description", model.getDescription())
-                    .endObject();
-            bulkRequestBuilder.add(
-                    client.prepareIndex(indexName, "_doc", getId(model.getUrl())).setSource(builder));
-        }
-
-        return !bulkRequestBuilder.get().hasFailures();
-    }
-
-    private String getId(String url) {
-        return DigestUtils.md5Hex(url);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        client.close();
-    }
 }

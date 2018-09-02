@@ -46,7 +46,6 @@ public class HBaseBulkHandler implements Runnable {
             } finally {
                 hbasePutBulkTimeContext.stop();
             }
-
             puts.clear();
         }
     }

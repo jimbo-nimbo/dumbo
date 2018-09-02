@@ -13,8 +13,6 @@ public class Config {
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     public static final String URL_FRONTIER_TOPIC;
-    public static final int FETCHER_THREAD_NUM;
-    public static final int PARSER_THREAD_NUM;
     public static final int BLOCKING_QUEUE_SIZE;
     public static final int CONSUMER_NUMBER;
     public static final String HBASE_TABLE_NAME;
@@ -25,12 +23,11 @@ public class Config {
     public static final byte[] HBASE_MARK_CF_NAME_BYTES;
     public static final String HBASE_SITE_DIR;
     public static final String HBASE_CORE_DIR;
-    public static final int HBASE_MIN_THREAD;
-    public static final int HBASE_MAX_THREAD;
-    public static final int HBASE_EXECUROR_BLOCK_Q_SIZE;
     public static final int HBASE_BULK_LIMIT;
+    public static final int HBASE_NUMBER_OF_THREAD;
     public static final int HBASE_BULK_CAPACITY;
-    public static final int HBASE_BULK_THREAD_SIZE;
+    public static final Long HBASE_DURATION_MIN;
+    public static final Long HBASE_DURATION_MAX;
     public static final String LOG_PROP_DIR;
     public static final String TWITTER_CONSUMER_KEY;
     public static final String TWITTER_CONSUMER_SECRET;
@@ -41,7 +38,7 @@ public class Config {
     public static final String HBASE_MARK_Q_NAME_CONTENT_HASH;
     public static final String HBASE_MARK_Q_NAME_LAST_SEEN;
     public static final String HBASE_MARK_Q_NAME_SEEN_DURATION;
-    public static final String HBASE_MARK_DEFAULT_SEEN_DURATION;
+    public static final Long HBASE_MARK_DEFAULT_SEEN_DURATION;
     public static final String HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES;
     public static final byte[] HBASE_MARK_Q_NAME_URL_BYTES;
     public static final byte[] HBASE_MARK_Q_NAME_CONTENT_HASH_BYTES;
@@ -49,6 +46,7 @@ public class Config {
     public static final byte[] HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES;
     public static final byte[] HBASE_MARK_DEFAULT_SEEN_DURATION_BYTES;
     public static final byte[] HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES_BYTES;
+
 
     public static final String METRICS_DIR;
 
@@ -62,8 +60,6 @@ public class Config {
             logger.error(e.getMessage());
         }
         URL_FRONTIER_TOPIC = props.getProperty("url_frontier_topic");
-        FETCHER_THREAD_NUM = Integer.valueOf(props.getProperty("fetcher_thread_num"));
-        PARSER_THREAD_NUM = Integer.valueOf(props.getProperty("parser_thread_num"));
         BLOCKING_QUEUE_SIZE = Integer.valueOf(props.getProperty("blocking_queue_size"));
         CONSUMER_NUMBER = Integer.valueOf(props.getProperty("consumer_number"));
         HBASE_TABLE_NAME = props.getProperty("hbase_table_name");
@@ -71,13 +67,10 @@ public class Config {
         HBASE_DATA_CF_NAME = props.getProperty("hbase_data_cf_name");
         HBASE_SITE_DIR = props.getProperty("hbase_site_dir");
         HBASE_CORE_DIR = props.getProperty("hbase_core_dir");
-        HBASE_MIN_THREAD = Integer.valueOf(props.getProperty("hbase_min_thread"));
-        HBASE_MAX_THREAD = Integer.valueOf(props.getProperty("hbase_max_thread"));
-        HBASE_EXECUROR_BLOCK_Q_SIZE = Integer.valueOf(props.getProperty("executor_service_block_q_size"));
         LOG_PROP_DIR = props.getProperty("log_prop_dir");
         HBASE_BULK_LIMIT = Integer.valueOf(props.getProperty("hbase_bulk_limit"));
-        HBASE_BULK_CAPACITY = Integer.valueOf(props.getProperty("hbase_bulk_capacit"));
-        HBASE_BULK_THREAD_SIZE = Integer.valueOf(props.getProperty("hbase_balk_thread_size"));
+        HBASE_NUMBER_OF_THREAD = Integer.valueOf(props.getProperty("hbase_number_of_thread"));
+        HBASE_BULK_CAPACITY = Integer.valueOf(props.getProperty("hbase_bulk_capacity"));
         TWITTER_ACCESS_TOKEN = props.getProperty("access_token");
         TWITTER_CONSUMER_KEY = props.getProperty("consumer_key");
         TWITTER_ACCESS_TOKEN_SECRET = props.getProperty("access_token_secret");
@@ -86,7 +79,7 @@ public class Config {
         HBASE_MARK_Q_NAME_URL = props.getProperty("hbase_mark_q_name_url");
         HBASE_MARK_Q_NAME_LAST_SEEN = props.getProperty("hbase_mark_q_name_last_seen");
         HBASE_MARK_Q_NAME_SEEN_DURATION = props.getProperty("hbase_mark_q_name_seen_duration");
-        HBASE_MARK_DEFAULT_SEEN_DURATION = props.getProperty("hbase_mark_default_seen_duration");
+        HBASE_MARK_DEFAULT_SEEN_DURATION = Long.valueOf(props.getProperty("hbase_mark_default_seen_duration"));
         HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES = props.getProperty("hbase_mark_q_name_number_of_references");
         HBASE_MARK_Q_NAME_CONTENT_HASH = props.getProperty("hbase_mark_q_name_content_hash");
         HBASE_MARK_Q_NAME_URL_BYTES = Bytes.toBytes(HBASE_MARK_Q_NAME_URL);
@@ -98,5 +91,7 @@ public class Config {
         HBASE_TABLE_NAME_BYTES = Bytes.toBytes(HBASE_TABLE_NAME);
         HBASE_MARK_CF_NAME_BYTES = Bytes.toBytes(HBASE_MARK_CF_NAME);
         HBASE_DATA_CF_NAME_BYTES = Bytes.toBytes(HBASE_DATA_CF_NAME);
+        HBASE_DURATION_MIN = Long.valueOf(props.getProperty("hbase_duration_max"));
+        HBASE_DURATION_MAX = Long.valueOf(props.getProperty("hbase_duration_min"));
     }
 }

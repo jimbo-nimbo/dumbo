@@ -242,4 +242,8 @@ public class Metrics {
     public void markDuplicatedLinks() {
         duplicatedLinks.mark();
     }
+
+    public MetricRegistry getMetricRegistry() {
+        return metricRegistry;
+    }
 }

@@ -7,6 +7,7 @@ import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.hbase.HBaseBulkHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
+import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
@@ -31,39 +32,35 @@ public class Crawler {
     private ElasticsearchHandler elasticSearchHandler;
 
     // TODO: what to do with settings?
-    public Crawler(CrawlerSetting crawlerSetting) throws ConnectException {
+    public Crawler(CrawlerSetting crawlerSetting){
         ArrayBlockingQueue<List<String>> shuffleQueue = new
                 ArrayBlockingQueue<>(crawlerSetting.getShuffledQueueMaxSize());
         ArrayBlockingQueue<WebPageModel> fetchedQueue = new
                 ArrayBlockingQueue<>(crawlerSetting.getRawPagesQueueMaxSize());
         ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue = new
                 ArrayBlockingQueue<>(crawlerSetting.getElasticQueueMaxSize());
-        ArrayBlockingQueue<HBaseDataModel> hbaseQueue = new
+        ArrayBlockingQueue<HBaseDataModel> hbaseDataQueue = new
                 ArrayBlockingQueue<>(crawlerSetting.getHbaseQueueMaxSize());
+
 
         shuffler = new Shuffler(shuffleQueue);
         fetcher = new Fetcher(shuffleQueue, fetchedQueue, new FetcherSetting());
-        parser = new Parser(fetchedQueue, elasticQueue, hbaseQueue, new ParserSetting());
+        parser = new Parser(fetchedQueue, elasticQueue, hbaseDataQueue, new ParserSetting());
 
-        hbaseBulkHandler = new HBaseBulkHandler(hbaseQueue);
-        try {
-            elasticSearchHandler = new ElasticsearchHandler(elasticQueue, new ElasticsearchSetting());
-        } catch (UnknownHostException e) {
-            logger.error("Could not connect to ElasticSearch");
-            throw new ConnectException("Could not connect to ElasticSearch");
-        }
+        hbaseBulkHandler = new HBaseBulkHandler(hbaseDataQueue);
+        elasticSearchHandler = new ElasticsearchHandler(elasticQueue, new ElasticsearchSetting());
 
         // TODO: isn't it better to use static queues?
         // TODO: static methods? or singleton?
         // TODO: why not use singleton for crawler, as well as parser and fetcher?
-        Metrics.getInstance().initialize(shuffleQueue, fetchedQueue, elasticQueue, hbaseQueue);
+        Metrics.getInstance().initialize(shuffleQueue, fetchedQueue, elasticQueue, hbaseDataQueue);
     }
 
-    public void crawl() {
+    public void crawl() throws ConnectException {
         new Thread(shuffler).start();
         parser.runWorkers();
         fetcher.runWorkers();
-        new Thread(elasticSearchHandler).start();
+        elasticSearchHandler.runWorkers();
         new Thread(hbaseBulkHandler).start();
 
         Metrics.getInstance().startJmxReport();

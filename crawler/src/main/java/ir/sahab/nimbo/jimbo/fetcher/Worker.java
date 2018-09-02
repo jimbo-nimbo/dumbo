@@ -1,7 +1,9 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import com.codahale.metrics.Timer;
+import ir.sahab.nimbo.jimbo.hbase.DuplicateChecker;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
+import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
@@ -54,7 +56,8 @@ public class Worker implements Runnable {
 
                 for (String shuffledLink : shuffledLinks) {
                     Timer.Context urlFetchTimeContext = Metrics.getInstance().urlFetchRequestsTime();
-                    if (checkLink(shuffledLink)) {
+                    HBaseMarkModel markModel = checkLink(shuffledLink);
+                    if (markModel != null) {
                         Timer.Context httpTimeContext = Metrics.getInstance().httpRequestsTime();
                         try {
                             String text = Jsoup.connect(shuffledLink).timeout(timeout)
@@ -63,7 +66,7 @@ public class Worker implements Runnable {
                             Metrics.getInstance().markSuccessfulFetches();
                             Timer.Context fetcherUpdateSiteHBaseRequestsTimeContext =
                                     Metrics.getInstance().fetcherUpdateSiteHBaseRequestsTime();
-                            HBase.getInstance().updateLastSeen(shuffledLink, DigestUtils.md5Hex(text));
+                            DuplicateChecker.getInstance().updateLastSeen(markModel, DigestUtils.md5Hex(text));
                             fetcherUpdateSiteHBaseRequestsTimeContext.stop();
                         } catch (IOException | IllegalArgumentException | StringIndexOutOfBoundsException e) {
                             logger.error(e.getMessage());
@@ -80,7 +83,7 @@ public class Worker implements Runnable {
         }
     }
 
-    private boolean checkLink(String link) {
+    private HBaseMarkModel checkLink(String link) {
 
         URL url;
         try {
@@ -88,7 +91,7 @@ public class Worker implements Runnable {
             url.toURI();
         } catch (URISyntaxException | MalformedURLException e) {
             Metrics.getInstance().markMalformedUrls();
-            return false;
+            return null;
         }
 
         String host = url.getHost();
@@ -103,8 +106,7 @@ public class Worker implements Runnable {
             Timer.Context kafkaProduceTimeContext = Metrics.getInstance().kafkaProduceRequestsTime();
             producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link));
             kafkaProduceTimeContext.stop();
-
-            return false;
+            return null;
         }
 
         Metrics.getInstance().markLruMiss();
@@ -113,21 +115,25 @@ public class Worker implements Runnable {
         lruPutTimeContext.stop();
 
         Timer.Context hbaseExistTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
-        boolean shouldFetch = HBase.getInstance().shouldFetch(link);
+        HBaseMarkModel shouldFetchMarkModel = DuplicateChecker.getInstance().getShouldFetchMarkModel(link);
         hbaseExistTimeContext.stop();
 
         //TODO maybe an update
-        if (!shouldFetch) {
+        if (shouldFetchMarkModel != null && shouldFetchMarkModel.getDuration()
+                + shouldFetchMarkModel.getLastSeen() > System.currentTimeMillis()) {
             Metrics.getInstance().markDuplicatedLinks();
             lruCache.remove(host);
-            return false;
+            return null;
+        }
+        if(shouldFetchMarkModel == null){
+            shouldFetchMarkModel = new HBaseMarkModel(link, System.currentTimeMillis(),
+                    Config.HBASE_MARK_DEFAULT_SEEN_DURATION, "");
         }
         Metrics.getInstance().markNewLinks();
         Timer.Context hbasePutMarkTimeContext = Metrics.getInstance().hbasePutMarkRequestsTime();
-        HBase.getInstance().putMark(link);
+        DuplicateChecker.getInstance().add(shouldFetchMarkModel);
         hbasePutMarkTimeContext.stop();
-
-        return true;
+        return shouldFetchMarkModel;
     }
 
 }

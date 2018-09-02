@@ -21,7 +21,7 @@ import java.util.Objects;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
-public class HBase implements DuplicateChecker {
+public class HBase{
 
     private static final Logger logger = LoggerFactory.getLogger(HBase.class);
 
@@ -80,34 +80,48 @@ public class HBase implements DuplicateChecker {
         return p;
     }
 
-    public void putData(HBaseDataModel hBaseDataModel) {
-        Put p = getPutData(hBaseDataModel);
-        try {
-            if (hBaseDataModel.getLinks().size() > 0) {
-                table.put(p);
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    Put getPutMark(String sourceUrl){
-        String value = String.valueOf(System.currentTimeMillis());
-        byte[] sourceBytes = Bytes.toBytes(sourceUrl);
-        Put p = new Put(makeRowKey(sourceUrl).getBytes());
+    Put getPutMark(HBaseMarkModel markModel){
+        byte[] sourceBytes = Bytes.toBytes(markModel.getUrl());
+        Put p = new Put(makeRowKey(markModel.getUrl()).getBytes());
         p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES,
-                Bytes.toBytes(value));
+                Bytes.toBytes(markModel.getLastSeen()));
         p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES,
-                HBASE_MARK_DEFAULT_SEEN_DURATION_BYTES);
-//        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
-//                sourceBytes);
+                Bytes.toBytes(markModel.getDuration()));
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
+                sourceBytes);
         p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
                 sourceBytes);
         return p;
     }
 
+    public HBaseMarkModel getMark(String sourceUrl){
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addFamily(HBASE_MARK_CF_NAME_BYTES);
+        HBaseMarkModel hBaseMarkModel;
+        try {
+            Result result = table.get(get);
+            if(result != null) {
+                byte[] url = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES);
+                byte[] lseen = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES);
+                byte[] dur = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES);
+                byte[] hash = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_CONTENT_HASH_BYTES);
+                if (url == null && lseen != null && dur != null && hash != null) {
+                    hBaseMarkModel = new HBaseMarkModel(Bytes.toString(url),
+                            Bytes.toLong(lseen),
+                            Bytes.toLong(dur),
+                            Bytes.toString(hash));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+
     public void putMark(String sourceUrl) {
-        String value = String.valueOf(System.currentTimeMillis());
+        Long value = System.currentTimeMillis();
         byte[] sourceBytes = Bytes.toBytes(sourceUrl);
         Put p = new Put(makeRowKey(sourceUrl).getBytes());
         p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES,
@@ -125,35 +139,14 @@ public class HBase implements DuplicateChecker {
         }
     }
 
-    public byte[] getData(String sourceUrl, String qualifier) {
+    boolean existMark(String sourceUrl) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        try {
-            return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
-        }
-
-    }
-
-    public byte[] getMark(String sourceUrl, String qualifier) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        try {
-            return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
-        }
-
-    }
-
-    boolean existData(String sourceUrl) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
         Result result;
         try {
             result = table.get(get);
             if (result != null) {
-                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes());
+                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes());
                 if (navigableMap != null && !navigableMap.isEmpty()) {
                     return true;
                 }
@@ -193,98 +186,33 @@ public class HBase implements DuplicateChecker {
         return true;
     }
 
-    public String getContentHash(String sourceUrl){
+    public byte[] getData(String sourceUrl, String qualifier) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
-        Result result;
         try {
-            result = table.get(get);
-            if (result != null) {
-                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
-                if(res != null){
-                    return Bytes.toString(res);
-                }
-            }
+            return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
         } catch (IOException e) {
             logger.error(e.getMessage());
-        }
-        return "";
-    }
-
-    String getSeenDur(String sourceUrl){
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-                if(res != null){
-                    return Bytes.toString(res);
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
-    }
-
-    public void updateLastSeen(String sourceUrl, String newHash){
-        String value = String.valueOf(System.currentTimeMillis());
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        Put p = new Put(makeRowKey(sourceUrl).getBytes());
-        String oldDurStr = getSeenDur(sourceUrl), contentHash = "";
-        Long oldDur = null, newDur ;
-        get.addFamily(HBASE_MARK_CF_NAME.getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                byte[] durByte = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-                byte[] hash = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
-                if(hash != null){
-                    contentHash = Bytes.toString(hash);
-                }
-                if(durByte != null){
-                    oldDur = Long.valueOf(Bytes.toString(durByte));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes(), value.getBytes());
-        if(oldDurStr != null){
-            oldDur = Long.valueOf(oldDurStr);
-        } else {
-            oldDur = Long.valueOf(HBASE_MARK_DEFAULT_SEEN_DURATION) * 2;
-        }
-
-
-        if(newHash.equals(contentHash)){
-            newDur = oldDur * 2;
-        } else {
-            newDur = oldDur / 2;
-        }
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes(), newHash.getBytes());
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes(),
-                newDur.toString().getBytes());
-        try {
-
-            table.put(p);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
+            return null;
         }
     }
 
-
-    boolean existMark(String sourceUrl) {
+    public byte[] getMark(String sourceUrl, String qualifier) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
+        try {
+            return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            return null;
+        }
+    }
+
+    boolean existData(String sourceUrl) {
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
         Result result;
         try {
             result = table.get(get);
             if (result != null) {
-                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes());
+                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes());
                 if (navigableMap != null && !navigableMap.isEmpty()) {
                     return true;
                 }
@@ -293,30 +221,6 @@ public class HBase implements DuplicateChecker {
             logger.error(e.getMessage());
         }
         return false;
-    }
-
-
-    String reverseUrl(URL url) {
-        //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
-        return reverseDomain(url.getHost()) + getHash(url.getPath());
-    }
-
-    private String reverseDomain(String domain) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] res = domain.split("\\.");
-        try {
-            stringBuilder.append(res[res.length - 1]);
-            for (int i = 1; i < res.length; i++) {
-                stringBuilder.append("." + res[res.length - 1 - i]);
-            }
-        } catch (IndexOutOfBoundsException e) {
-            logger.error(e.getMessage());
-        }
-        return stringBuilder.toString();
-    }
-
-    private static String getHash(String inp) {
-        return DigestUtils.md5Hex(inp);
     }
 
     public int getNumberOfReferences(String sourceUrl){
@@ -338,6 +242,8 @@ public class HBase implements DuplicateChecker {
         }
         return 0;
     }
+
+    @SuppressWarnings("Duplicates")
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);
@@ -345,23 +251,30 @@ public class HBase implements DuplicateChecker {
             desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
             //TODO region bandy
             admin.createTable(desc);
-//            TableDescriptorBuilder tableDescriptorBuilder =
-//                    TableDescriptorBuilder.newBuilder(tableName);
-//            List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFAnchor.getBytes()).build());
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFMeta.getBytes()).build());
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFTitle.getBytes()).build());
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFText.getBytes()).build());
-//            //columnFamilyDescriptorBuilder.setValue("col1".getBytes(), "val1".getBytes());
-//            //columnFamilyDescriptorBuilder2.setValue("col2".getBytes(), "val2".getBytes());
-//            tableDescriptorBuilder.setColumnFamilies(columnFamilyDescriptors);
-//            admin.createTable(tableDescriptorBuilder.build());
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }
 
-    public ResultScanner scanData(List<byte[]> qulifiers){
+    String reverseUrl(URL url) {
+        //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
+        return reverseDomain(url.getHost()) + getHash(url.getPath());
+    }
+
+    private static String getHash(String inp) {
+        return DigestUtils.md5Hex(inp);
+    }
+
+    String makeRowKey(String row){
+        return getHash(row);
+    }
+
+    Table getTable() {
+        return table;
+    }
+
+    @SuppressWarnings("Duplicates")
+    ResultScanner scanData(List<byte[]> qulifiers){
 
         Scan scan = new Scan();
         ResultScanner results = null;
@@ -375,8 +288,9 @@ public class HBase implements DuplicateChecker {
         }
         return results;
     }
-    public ResultScanner scanColumnFamily(List<byte[]> columnFamily){
 
+    @SuppressWarnings("Duplicates")
+    ResultScanner scanColumnFamily(List<byte[]> columnFamily){
         Scan scan = new Scan();
         ResultScanner results = null;
         for(byte[] bytes : columnFamily) {
@@ -390,11 +304,64 @@ public class HBase implements DuplicateChecker {
         return results;
     }
 
-    String makeRowKey(String row){
-        return getHash(row);
+    private String reverseDomain(String domain) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] res = domain.split("\\.");
+        try {
+            stringBuilder.append(res[res.length - 1]);
+            for (int i = 1; i < res.length; i++) {
+                stringBuilder.append("." + res[res.length - 1 - i]);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            logger.error(e.getMessage());
+        }
+        return stringBuilder.toString();
     }
 
-    Table getTable() {
-        return table;
+    public String getContentHash(String sourceUrl){
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
+                if(res != null){
+                    return Bytes.toString(res);
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return "";
+    }
+
+    public void putData(HBaseDataModel hBaseDataModel) {
+        Put p = getPutData(hBaseDataModel);
+        try {
+            if (hBaseDataModel.getLinks().size() > 0) {
+                table.put(p);
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    String getSeenDur(String sourceUrl){
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+                if(res != null){
+                    return Bytes.toString(res);
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 }
