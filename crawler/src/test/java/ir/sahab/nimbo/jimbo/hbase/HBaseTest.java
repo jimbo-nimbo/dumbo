@@ -1,7 +1,7 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.Link;
-import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.junit.After;
@@ -14,7 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
-import static ir.sahab.nimbo.jimbo.main.Config.*;
+import static ir.sahab.nimbo.jimbo.main.Config.HBASE_DATA_CF_NAME;
 import static org.junit.Assert.*;
 
 public class HBaseTest {
@@ -60,9 +60,9 @@ public class HBaseTest {
     @Test
     public void putAndGetMarkTest() throws MalformedURLException {
         String url = "http://www.test.com";
-        HBase.getInstance().putMark(url);
-        byte[] res = HBase.getInstance().getMark(url, HBASE_MARK_Q_NAME_URL);
-        assertEquals(url, new String(res));
+        HBase.getInstance().putMark(url, "test");
+        byte[] res = HBase.getInstance().getMark(url, "qualif");
+        assertEquals("test", new String(res));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class HBaseTest {
 
     @Test
     public void existMark() {
-        HBase.getInstance().putMark(STACKOVERFLOW);
+        HBase.getInstance().putMark(STACKOVERFLOW, "value");
         assertTrue(HBase.getInstance().existMark(STACKOVERFLOW));
         assertFalse(HBase.getInstance().existMark(JAVA_CODE));
     }
@@ -147,23 +147,10 @@ public class HBaseTest {
     }
 
     @Test
-    public void numberOfReferences(){
-        System.err.println(HBase.getInstance().getNumberOfReferences("https://www.test.com100"));
-    }
-
-    @Test
-    public void shouldFetchTest(){
-        HBase.getInstance().putMark(STACKOVERFLOW);
-        assertFalse(HBase.getInstance().shouldFetch(STACKOVERFLOW));
-        assertTrue(HBase.getInstance().shouldFetch(JAVA_CODE));
-
-    }
-
-    @Test
     public void singlePutHugeMarkTest(){
         HBase hBase = HBase.getInstance();
         for (int i = 0; i < 900; i++) {
-            hBase.putMark("https://www.test.com" + String.valueOf(i));
+            hBase.putMark("https://www.test.com" + String.valueOf(i), "true");
         }
         //Thread.sleep(10000);
         for(int i = 0; i < 900; i++) {
@@ -177,7 +164,7 @@ public class HBaseTest {
     public void singlePutHugeMarkImmediateNotTest(){
         HBase hBase = HBase.getInstance();
         for (int i = 0; i < 900; i++) {
-            hBase.putMark("https://www.nimac.com" + String.valueOf(i));
+            hBase.putMark("https://www.nimac.com" + String.valueOf(i), "false");
             assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
 //            if(!hBase.existMark("https://www.nimac.com" + String.valueOf(i)))
 //                System.err.println(i);
@@ -185,54 +172,6 @@ public class HBaseTest {
         //Thread.sleep(10000);
     }
 
-
-    @Test
-    public void basicHbaseBenchmarkNotTest(){
-        HBase hBase = HBase.getInstance();
-        StringBuilder bigUrl = new StringBuilder("https://www.test.com");
-        Random rand = new Random();
-        final int size = 5000;
-        ArrayList<Put> puts = new ArrayList<>();
-        ArrayList<Put> puts2 = new ArrayList<>();
-        for(int i = 0; i < 20; i++){
-            bigUrl.append((char)(rand.nextInt() + 10));
-        }
-        for (int i = 0; i < size; i++) {
-            Put put = new Put(bigUrl.toString().getBytes());
-            put.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES, bigUrl.toString().getBytes());
-            puts.add(put);
-            puts2.add(HBase.getInstance().getPutMark(bigUrl.toString()));
-        }
-        long b = System.currentTimeMillis();
-        try {
-            HBase.getInstance().table.put(puts);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
-        b = System.currentTimeMillis();
-        try {
-            HBase.getInstance().table.put(puts2);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
-        b = System.currentTimeMillis();
-        for (int i = 0; i < size; i++) {
-            try {
-                Put put = new Put(bigUrl.toString().getBytes());
-                put.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES, bigUrl.toString().getBytes());
-                HBase.getInstance().table.put(put);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
-    }
 
     @Test
     public void benchmarkExistMarkNotTest(){
@@ -247,32 +186,27 @@ public class HBaseTest {
     @Test
     public void benchmarkPutMarkNotTest(){
         HBase hBase = HBase.getInstance();
-        Random rand = new Random();
-        final int size = 5000;
-        ArrayList<Put> puts = new ArrayList<>();
-        String[] urls = new String[size];
-        for(int i = 0; i < size; i++){
-            urls[i] = String.valueOf(rand.nextLong());
-        }
+
         long b = System.currentTimeMillis();
-        for (int i = 0; i < size; i++) {
-            hBase.putMark(urls[i]);
+
+        final int graphSize = 10;
+
+        for (int src = 0; src < graphSize; src++) {
+
+            final List<Link> links  = new ArrayList<>();
+
+            for (int des = 1; des <= graphSize; des++) {
+
+                for (int freq = 0; freq < graphSize - des; freq++) {
+                    links.add(new Link("https://www.test.com" + (src + des) % graphSize,
+                            "anchor from " + src + " to " + (src + des) % graphSize) );
+                }
+            }
+
+            HBaseDataModel hBaseDataModel = new HBaseDataModel("https://www.test.com" + src, links);
+            hBase.putData(hBaseDataModel);
         }
         System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
-        for (int i = 0; i < size; i++) {
-            puts.add(HBase.getInstance().getPutMark(urls[i]));
-        }
-        b = System.currentTimeMillis();
-        try {
-            HBase.getInstance().table.put(puts);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
     }
-
-
 
 }
