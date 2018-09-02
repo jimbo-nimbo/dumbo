@@ -9,6 +9,7 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +72,9 @@ public class HBase implements DuplicateChecker {
         Link link;
         for (int i = 0; i < hBaseDataModel.getLinks().size(); i++) {
             link = hBaseDataModel.getLinks().get(i);
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+            p.addColumn(HBASE_DATA_CF_NAME_BYTES,
                     (String.valueOf(i) + "link").getBytes(), link.getHref().getBytes());
-            p.addColumn(HBASE_DATA_CF_NAME.getBytes(),
+            p.addColumn(HBASE_DATA_CF_NAME_BYTES,
                     (String.valueOf(i) + "anchor").getBytes(), link.getText().getBytes());
         }
         return p;
@@ -90,9 +91,33 @@ public class HBase implements DuplicateChecker {
         }
     }
 
-    public void putMark(String sourceUrl, String value) {
+    Put getPutMark(String sourceUrl){
+        String value = String.valueOf(System.currentTimeMillis());
+        byte[] sourceBytes = Bytes.toBytes(sourceUrl);
         Put p = new Put(makeRowKey(sourceUrl).getBytes());
-        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), "qualif".getBytes(), value.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES,
+                Bytes.toBytes(value));
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES,
+                HBASE_MARK_DEFAULT_SEEN_DURATION_BYTES);
+//        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
+//                sourceBytes);
+        p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
+                sourceBytes);
+        return p;
+    }
+
+    public void putMark(String sourceUrl) {
+        String value = String.valueOf(System.currentTimeMillis());
+        byte[] sourceBytes = Bytes.toBytes(sourceUrl);
+        Put p = new Put(makeRowKey(sourceUrl).getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES,
+                Bytes.toBytes(value));
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES,
+                HBASE_MARK_DEFAULT_SEEN_DURATION_BYTES);
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
+                sourceBytes);
+        p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
+                sourceBytes);
         try {
             table.put(p);
         } catch (IOException e) {
@@ -139,8 +164,122 @@ public class HBase implements DuplicateChecker {
         return false;
     }
 
-    public boolean existMark(String sourceUrl) {
+    /**
+     *
+     * why? because there is two type: type one : those which not seen at all, two : those which should update
+     */
+    public boolean shouldFetch(String sourceUrl) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
+                byte[] resDur = result.getValue(
+                        HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+                if(res != null && resDur != null){
+                    Long lastseen = Long.valueOf(Bytes.toString(res));
+                    Long dur = Long.valueOf(Bytes.toString(resDur));
+                    if(System.currentTimeMillis() > lastseen + dur)
+                        return true;
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return true;
+    }
+
+    public String getContentHash(String sourceUrl){
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
+                if(res != null){
+                    return Bytes.toString(res);
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return "";
+    }
+
+    String getSeenDur(String sourceUrl){
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+                if(res != null){
+                    return Bytes.toString(res);
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
+    }
+
+    public void updateLastSeen(String sourceUrl, String newHash){
+        String value = String.valueOf(System.currentTimeMillis());
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        Put p = new Put(makeRowKey(sourceUrl).getBytes());
+        String oldDurStr = getSeenDur(sourceUrl), contentHash = "";
+        Long oldDur = null, newDur ;
+        get.addFamily(HBASE_MARK_CF_NAME.getBytes());
+        Result result;
+        try {
+            result = table.get(get);
+            if (result != null) {
+                byte[] durByte = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
+                byte[] hash = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
+                if(hash != null){
+                    contentHash = Bytes.toString(hash);
+                }
+                if(durByte != null){
+                    oldDur = Long.valueOf(Bytes.toString(durByte));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes(), value.getBytes());
+        if(oldDurStr != null){
+            oldDur = Long.valueOf(oldDurStr);
+        } else {
+            oldDur = Long.valueOf(HBASE_MARK_DEFAULT_SEEN_DURATION) * 2;
+        }
+
+
+        if(newHash.equals(contentHash)){
+            newDur = oldDur * 2;
+        } else {
+            newDur = oldDur / 2;
+        }
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes(), newHash.getBytes());
+        p.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes(),
+                newDur.toString().getBytes());
+        try {
+
+            table.put(p);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+
+    boolean existMark(String sourceUrl) {
+        Get get = new Get(makeRowKey(sourceUrl).getBytes());
+        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
         Result result;
         try {
             result = table.get(get);
@@ -180,6 +319,25 @@ public class HBase implements DuplicateChecker {
         return DigestUtils.md5Hex(inp);
     }
 
+    public int getNumberOfReferences(String sourceUrl){
+        Scan scan = new Scan(makeRowKey(sourceUrl).getBytes());
+        HBASE_MARK_CF_NAME.getBytes();
+        HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes();
+        scan.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes());
+        ResultScanner resultScanner;
+        try {
+            resultScanner = table.getScanner(scan);
+            for(Result result : resultScanner) {
+                if (result != null) {
+                    return Bytes.toInt(result.getValue(HBASE_MARK_CF_NAME.getBytes(),
+                            HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes()));
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return 0;
+    }
     private void initialize(Admin admin) {
         try {
             HTableDescriptor desc = new HTableDescriptor(tableName);

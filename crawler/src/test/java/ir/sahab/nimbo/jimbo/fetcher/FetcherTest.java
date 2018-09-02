@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static org.asynchttpclient.Dsl .*;
+import static org.asynchttpclient.Dsl.*;
 
 public class FetcherTest {
 

@@ -16,7 +16,7 @@ public class Config {
     private static Properties props;
     static {
         ES_HOSTS = new ArrayList<>();
-        String resourceName = "search-conf.properties";
+        String resourceName = "conf.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         props = new Properties();
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {

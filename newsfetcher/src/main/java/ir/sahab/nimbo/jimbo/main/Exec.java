@@ -34,10 +34,12 @@ public class Exec extends Thread {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return null;
     }
+
+
 
 
     @Override
@@ -55,6 +57,7 @@ public class Exec extends Thread {
         ex.scheduleAtFixedRate(new Runnable() {
             private int i = 0;
 
+
             @Override
             public void run() {
                 new Thread(() -> {
@@ -65,19 +68,23 @@ public class Exec extends Thread {
                         i = 0;
                         url = urls.get(i);
                     }
+                    i++;
                     RssFeedParser parser = new RssFeedParser(url.getUrl());
                     RssFeed rssFeed = parser.readFeed();
                     for (RssFeedMessage message : rssFeed.getMessages()) {
                         if (rssMessages.add(message.getLink())) {
                             String text = fetch(message.getLink(), url);
                             if (text != null) {
-                                blockingQueue.add(new ElasticsearchWebpageModel(message.getLink(), text, message.getTitle(), message.getDescription()));
+                                try {
+                                    blockingQueue.put(new ElasticsearchWebpageModel(message.getLink(), text, message.getTitle(), message.getDescription()));
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
-                    i++;
                 }
-                ).run();
+                ).start();
             }
         }, 0, 60/rssNumber, TimeUnit.SECONDS);
         elasticsearchHandler.run();

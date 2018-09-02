@@ -12,6 +12,7 @@
         <module>anchor</module>
         <module>commons</module>
         <module>newsfetcher</module>
+        <module>keywords</module>
     </modules>
 
 

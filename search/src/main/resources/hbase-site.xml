@@ -1,0 +1,15 @@
+<configuration>
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://hitler:9000/hbase</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>hitler,genghis,alexander</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.property.clientPort</name>
+        <value>2186</value>
+    </property>
+
+</configuration>

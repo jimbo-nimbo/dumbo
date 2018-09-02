@@ -6,6 +6,7 @@ import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,14 +18,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.text.DecimalFormat;
+import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 public class Worker implements Runnable {
@@ -63,9 +59,13 @@ public class Worker implements Runnable {
                         try {
                             String text = Jsoup.connect(shuffledLink).timeout(timeout)
                                     .validateTLSCertificates(false).get().html();
-                            rawWebPagesQueue.add(new WebPageModel(text, shuffledLink));
+                            rawWebPagesQueue.put(new WebPageModel(text, shuffledLink));
                             Metrics.getInstance().markSuccessfulFetches();
-                        } catch (IOException | IllegalArgumentException e) {
+                            Timer.Context fetcherUpdateSiteHBaseRequestsTimeContext =
+                                    Metrics.getInstance().fetcherUpdateSiteHBaseRequestsTime();
+                            HBase.getInstance().updateLastSeen(shuffledLink, DigestUtils.md5Hex(text));
+                            fetcherUpdateSiteHBaseRequestsTimeContext.stop();
+                        } catch (IOException | IllegalArgumentException | StringIndexOutOfBoundsException e) {
                             logger.error(e.getMessage());
                         } finally {
                             httpTimeContext.stop();
@@ -113,19 +113,18 @@ public class Worker implements Runnable {
         lruPutTimeContext.stop();
 
         Timer.Context hbaseExistTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
-        boolean hbaseExist = HBase.getInstance().existMark(link);
+        boolean shouldFetch = HBase.getInstance().shouldFetch(link);
         hbaseExistTimeContext.stop();
 
-        if (hbaseExist) {
-            Metrics.getInstance().markNewLinks();
+        //TODO maybe an update
+        if (!shouldFetch) {
+            Metrics.getInstance().markDuplicatedLinks();
             lruCache.remove(host);
             return false;
-        } else {
-            Metrics.getInstance().markDuplicatedLinks();
         }
-
+        Metrics.getInstance().markNewLinks();
         Timer.Context hbasePutMarkTimeContext = Metrics.getInstance().hbasePutMarkRequestsTime();
-        HBase.getInstance().putMark(link, "1");
+        HBase.getInstance().putMark(link);
         hbasePutMarkTimeContext.stop();
 
         return true;
