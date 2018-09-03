@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.main;
 
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
+import ir.sahab.nimbo.jimbo.elasticsearch.TrendFinder;
 import org.elasticsearch.search.SearchHit;
 
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
@@ -74,7 +75,11 @@ public class Main {
 
     @Command
     public void getTrendWords(){
-
+        List<String> trendWords = TrendFinder.findTrendWords();
+        for(String word: trendWords) {
+            System.out.println(word);
+            System.out.println("-------------------------------------------------------------");
+        }
     }
     @Command
     public void getTrendNewsWithTweets(){

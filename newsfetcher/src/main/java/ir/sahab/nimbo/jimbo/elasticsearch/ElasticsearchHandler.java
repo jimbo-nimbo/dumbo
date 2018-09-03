@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -80,6 +81,7 @@ public class ElasticsearchHandler implements Runnable {
                     .field("content", model.getArticle())
                     .field("title", model.getTitle())
                     .field("description", model.getDescription())
+                    .field("date", new Date().toString())
                     .endObject();
             bulkRequestBuilder.add(
                     client.prepareIndex(indexName, "_doc", getId(model.getUrl())).setSource(builder));

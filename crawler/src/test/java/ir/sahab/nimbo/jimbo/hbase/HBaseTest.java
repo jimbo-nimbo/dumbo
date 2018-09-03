@@ -238,19 +238,26 @@ public class HBaseTest {
     @Test
     public void benchmarkPutMarkNotTest(){
         HBase hBase = HBase.getInstance();
-        Random rand = new Random();
-        final int size = 5000;
-        ArrayList<Put> puts = new ArrayList<>();
-        String[] urls = new String[size];
-        for(int i = 0; i < size; i++){
-            urls[i] = String.valueOf(rand.nextLong());
-        }
         long b = System.currentTimeMillis();
-        for (int i = 0; i < size; i++) {
-            hBase.putMark(urls[i]);
+
+        final int graphSize = 10;
+
+        for (int src = 0; src < graphSize; src++) {
+
+            final List<Link> links  = new ArrayList<>();
+
+            for (int des = 1; des <= graphSize; des++) {
+
+                for (int freq = 0; freq < graphSize - des; freq++) {
+                    links.add(new Link("https://www.test.com" + (src + des) % graphSize,
+                            "anchor from " + src + " to " + (src + des) % graphSize) );
+                }
+            }
+
+            HBaseDataModel hBaseDataModel = new HBaseDataModel("https://www.test.com" + src, links);
+            hBase.putData(hBaseDataModel);
         }
         System.err.println(System.currentTimeMillis() - b);
-        System.err.println((System.currentTimeMillis() - b) / size);
     }
 
 
