@@ -167,7 +167,7 @@ public class AnchorFinderTest
     }
 
     @Test
-    public void pureTest() throws IOException {
+    public void pureTest() throws IOException, InterruptedException {
         // create connection with HBase
         Configuration config = null;
         try {
@@ -222,6 +222,8 @@ public class AnchorFinderTest
 
         // save to HBase- Spark built-in API method
         hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
+
+        Thread.sleep(30000);
     }
 
     class TestData implements Serializable {
