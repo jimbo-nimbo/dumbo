@@ -34,17 +34,13 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class AnchorFinder
-{
+public class AnchorFinder {
 
     private static final RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
                     new HttpHost("hitler", 9200, "http")));
 
-    void extractNumRefers() throws IOException {
+    void extractAnchorsToHbase() {
 
         final Configuration hConf = createHbaseConfig();
 
