@@ -34,36 +34,19 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class NumRefers {
+public class AnchorFinder
+{
 
     private static final RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
                     new HttpHost("hitler", 9200, "http")));
 
-    static void extractNumRefers() throws IOException {
-        final Configuration hConf = HBaseConfiguration.create();
+    void extractNumRefers() throws IOException {
 
-        final String hbaseSiteXmlPath = Objects.requireNonNull(NumRefers.class
-                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
-        final String coreSiteXmlPath = Objects.requireNonNull(NumRefers.class
-                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
-
-        hConf.addResource(new Path(hbaseSiteXmlPath));
-        hConf.addResource(new Path(coreSiteXmlPath));
-
-        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+        final Configuration hConf = createHbaseConfig();
 
         final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
         final JavaSparkContext jsc = new JavaSparkContext(conf);
-
-        /**
-         * part one test spark...
-         */
-//        final JavaRDD<Integer> parallelize = jsc.parallelize(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
-//        final List<Integer> collect = parallelize.sample(false, 0.3, System.currentTimeMillis())
-//                .collect();
-//        collect.forEach(System.out::println);
 
         /**
          * part two read data from HBase
@@ -229,6 +212,23 @@ public class NumRefers {
         job.setOutputFormatClass(TableOutputFormat.class);
         hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
         */
+    }
+
+    Configuration createHbaseConfig()
+    {
+        final Configuration hConf = HBaseConfiguration.create();
+
+        final String hbaseSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
+        final String coreSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
+
+        hConf.addResource(new Path(hbaseSiteXmlPath));
+        hConf.addResource(new Path(coreSiteXmlPath));
+
+        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+        return hConf;
     }
 
 }
