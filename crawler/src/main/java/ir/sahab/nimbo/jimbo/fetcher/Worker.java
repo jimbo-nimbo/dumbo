@@ -53,10 +53,12 @@ public class Worker implements Runnable {
             try {
                 final List<String> shuffledLinks = shuffledLinksQueue.take();
                 Metrics.getInstance().markFetcherReceivedLinks(shuffledLinks.size());
-
                 for (String shuffledLink : shuffledLinks) {
                     Timer.Context urlFetchTimeContext = Metrics.getInstance().urlFetchRequestsTime();
+                    Timer.Context fetcherMarkWorkerCheckLinkRequestsTimeContext =
+                            Metrics.getInstance().fetcherMarkWorkerCheckLinkRequestsTime();
                     HBaseMarkModel markModel = checkLink(shuffledLink);
+                    fetcherMarkWorkerCheckLinkRequestsTimeContext.stop();
                     if (markModel != null) {
                         Timer.Context httpTimeContext = Metrics.getInstance().httpRequestsTime();
                         try {
@@ -76,7 +78,6 @@ public class Worker implements Runnable {
                     }
                     urlFetchTimeContext.stop();
                 }
-
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
@@ -84,7 +85,6 @@ public class Worker implements Runnable {
     }
 
     private HBaseMarkModel checkLink(String link) {
-
         URL url;
         try {
             url = new URL(link);
@@ -93,13 +93,10 @@ public class Worker implements Runnable {
             Metrics.getInstance().markMalformedUrls();
             return null;
         }
-
         String host = url.getHost();
-
         Timer.Context lruExistTimeContext = Metrics.getInstance().lruExistRequestsTime();
         boolean lruExist = lruCache.exist(host);
         lruExistTimeContext.stop();
-
         if (lruExist) {
             Metrics.getInstance().markLruHit();
 
@@ -113,12 +110,9 @@ public class Worker implements Runnable {
         Timer.Context lruPutTimeContext = Metrics.getInstance().lruPutRequestsTime();
         lruCache.add(host);
         lruPutTimeContext.stop();
-
-        Timer.Context hbaseExistTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
+        Timer.Context fetcherShouldFetchRequestsTimeContext = Metrics.getInstance().fetcherShouldFetchRequestsTime();
         HBaseMarkModel shouldFetchMarkModel = DuplicateChecker.getInstance().getShouldFetchMarkModel(link);
-        hbaseExistTimeContext.stop();
-
-        //TODO maybe an update
+        fetcherShouldFetchRequestsTimeContext.stop();
         if (shouldFetchMarkModel != null && shouldFetchMarkModel.getDuration()
                 + shouldFetchMarkModel.getLastSeen() > System.currentTimeMillis()) {
             Metrics.getInstance().markDuplicatedLinks();
@@ -130,9 +124,9 @@ public class Worker implements Runnable {
                     Config.HBASE_MARK_DEFAULT_SEEN_DURATION, "");
         }
         Metrics.getInstance().markNewLinks();
-        Timer.Context hbasePutMarkTimeContext = Metrics.getInstance().hbasePutMarkRequestsTime();
+        Timer.Context fetcherAddMarkRequestsTimeContext = Metrics.getInstance().fetcherAddMarkRequestsTime();
         DuplicateChecker.getInstance().add(shouldFetchMarkModel);
-        hbasePutMarkTimeContext.stop();
+        fetcherAddMarkRequestsTimeContext.stop();
         return shouldFetchMarkModel;
     }
 
