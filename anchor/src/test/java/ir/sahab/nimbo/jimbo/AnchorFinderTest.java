@@ -221,9 +221,9 @@ public class AnchorFinderTest
                 });
 
         // save to HBase- Spark built-in API method
-        hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
+        hbasePuts.saveAsTextFile("hdfs://hitler:9000/teg");
+//        hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
 
-        Thread.sleep(30000);
     }
 
     class TestData implements Serializable {
