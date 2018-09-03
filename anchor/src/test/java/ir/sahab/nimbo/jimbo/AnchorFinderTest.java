@@ -19,7 +19,7 @@ public class AnchorFinderTest
 
     @BeforeClass
     public static void createSparkContext() {
-        final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME).setMaster("spark://hitler:7077");
+        final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME).setMaster("local[*]");
         jsc = new JavaSparkContext(conf);
     }
 
