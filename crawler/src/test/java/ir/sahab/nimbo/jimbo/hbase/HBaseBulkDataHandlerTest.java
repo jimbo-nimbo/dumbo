@@ -1,7 +1,6 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.crawler.CrawlerSetting;
-import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.Link;
 import org.junit.Test;
 
@@ -11,7 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import static org.junit.Assert.assertTrue;
 
-public class HBaseBulkHandlerTest {
+public class HBaseBulkDataHandlerTest {
 
     @Test
     public void bulkTest() throws InterruptedException {
@@ -19,7 +18,8 @@ public class HBaseBulkHandlerTest {
                 new ArrayBlockingQueue<>(new CrawlerSetting().getHbaseQueueMaxSize());
         ArrayBlockingQueue<HBaseDataModel> queue =
                 new ArrayBlockingQueue<>(new CrawlerSetting().getHbaseQueueMaxSize());
-        new Thread(new HBaseBulkHandler(queue)).start();
+        HBaseBulkDataHandler hBaseBulkDataHandler = new HBaseBulkDataHandler(queue);
+        hBaseBulkDataHandler.runWorkers();
 
         for (int i = 0; i < 900; i++) {
             List<Link> links = new ArrayList<>();

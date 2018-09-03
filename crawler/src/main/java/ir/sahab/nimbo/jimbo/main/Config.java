@@ -23,8 +23,10 @@ public class Config {
     public static final byte[] HBASE_MARK_CF_NAME_BYTES;
     public static final String HBASE_SITE_DIR;
     public static final String HBASE_CORE_DIR;
-    public static final int HBASE_BULK_LIMIT;
-    public static final int HBASE_NUMBER_OF_THREAD;
+    public static final int HBASE_MARK_BULK_LIMIT;
+    public static final int HBASE_MARK_NUMBER_OF_THREAD;
+    public static final int HBASE_DATA_BULK_LIMIT;
+    public static final int HBASE_DATA_NUMBER_OF_THREAD;
     public static final int HBASE_BULK_CAPACITY;
     public static final Long HBASE_DURATION_MIN;
     public static final Long HBASE_DURATION_MAX;
@@ -68,8 +70,10 @@ public class Config {
         HBASE_SITE_DIR = props.getProperty("hbase_site_dir");
         HBASE_CORE_DIR = props.getProperty("hbase_core_dir");
         LOG_PROP_DIR = props.getProperty("log_prop_dir");
-        HBASE_BULK_LIMIT = Integer.valueOf(props.getProperty("hbase_bulk_limit"));
-        HBASE_NUMBER_OF_THREAD = Integer.valueOf(props.getProperty("hbase_number_of_thread"));
+        HBASE_MARK_BULK_LIMIT = Integer.valueOf(props.getProperty("hbase_mark_bulk_limit"));
+        HBASE_MARK_NUMBER_OF_THREAD = Integer.valueOf(props.getProperty("hbase_mark_number_of_thread"));
+        HBASE_DATA_BULK_LIMIT = Integer.valueOf(props.getProperty("hbase_data_bulk_limit"));
+        HBASE_DATA_NUMBER_OF_THREAD = Integer.valueOf(props.getProperty("hbase_data_number_of_thread"));
         HBASE_BULK_CAPACITY = Integer.valueOf(props.getProperty("hbase_bulk_capacity"));
         TWITTER_ACCESS_TOKEN = props.getProperty("access_token");
         TWITTER_CONSUMER_KEY = props.getProperty("consumer_key");

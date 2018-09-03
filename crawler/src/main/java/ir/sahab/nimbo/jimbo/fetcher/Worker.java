@@ -70,7 +70,9 @@ public class Worker implements Runnable {
                                     Metrics.getInstance().fetcherUpdateSiteHBaseRequestsTime();
                             DuplicateChecker.getInstance().updateLastSeen(markModel, DigestUtils.md5Hex(text));
                             fetcherUpdateSiteHBaseRequestsTimeContext.stop();
-                        } catch (IOException | IllegalArgumentException | StringIndexOutOfBoundsException e) {
+                        } catch (IOException | IllegalArgumentException |
+                                StringIndexOutOfBoundsException | ArrayIndexOutOfBoundsException |
+                                OutOfMemoryError e) {
                             logger.error(e.getMessage());
                         } finally {
                             httpTimeContext.stop();
