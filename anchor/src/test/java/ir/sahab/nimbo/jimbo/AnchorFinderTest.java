@@ -4,17 +4,23 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.PairFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import scala.Tuple2;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.*;
 
@@ -63,7 +69,74 @@ public class AnchorFinderTest
 
         config.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
         config.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME); // column family
-//        config.set(TableInputFormat.SCAN_COLUMNS, "cf1:vc cf1:vs"); // 3 column qualifiers
+        config.set(TableInputFormat.SCAN_COLUMNS, "cf1:vc cf1:vs"); // 3 column qualifiers
+
+        final JavaPairRDD<ImmutableBytesWritable, Result> hBaseRDD =
+                jsc.newAPIHadoopRDD(config, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
+
+        JavaPairRDD<String, TestData> rowPairRDD = hBaseRDD.mapToPair(
+                new PairFunction<Tuple2<ImmutableBytesWritable, Result>, String, TestData>() {
+                    @Override
+                    public Tuple2<String, TestData> call(
+                            Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
+
+                        Result r = entry._2;
+                        String keyRow = Bytes.toString(r.getRow());
+
+                        TestData cd = new TestData();
+                        cd.setRowkey(keyRow);
+                        cd.setVc(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vc"))));
+                        cd.setVs(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vs"))));
+                        return new Tuple2<>(keyRow, cd);
+                    }
+                });
+
+        Map<String, TestData> stringTestDataMap = rowPairRDD.collectAsMap();
+        stringTestDataMap.forEach(new BiConsumer<String, TestData>()
+        {
+            @Override
+            public void accept(String s, TestData testData)
+            {
+                System.out.println(s + " -> " + testData.getRowkey() + ", vc" + testData.getVc() + ", vs" + testData.getVs());
+            }
+        });
+
+    }
+
+    class TestData {
+        private String rowkey;
+        private String vc;
+        private String vs;
+
+        public void setRowkey(String rowkey)
+        {
+            this.rowkey = rowkey;
+        }
+
+        public void setVc(String vc)
+        {
+            this.vc = vc;
+        }
+
+        public void setVs(String vs)
+        {
+            this.vs = vs;
+        }
+
+        public String getRowkey()
+        {
+            return rowkey;
+        }
+
+        public String getVc()
+        {
+            return vc;
+        }
+
+        public String getVs()
+        {
+            return vs;
+        }
     }
 
 }
