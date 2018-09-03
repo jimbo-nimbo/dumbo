@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.metrics;
 
 import com.codahale.metrics.*;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
+import ir.sahab.nimbo.jimbo.hbase.DuplicateChecker;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
@@ -35,6 +36,8 @@ public class Metrics {
     private Meter extractedLinks;
     private Meter newLinks;
     private Meter duplicatedLinks;
+    private Meter dcTake;
+    private Meter fetcherMarkWorkerNumberOfBulkPacksSend;
 
     private Timer lruExistRequests;
     private Timer lruPutRequests;
@@ -43,7 +46,9 @@ public class Metrics {
     private Timer kafkaConsumeRequests;
     private Timer hbaseExistRequests;
     private Timer hbasePutMarkRequests;
-    private Timer hbasePutBulkRequests;
+    private Timer hbasePutBulkDataRequests;
+    private Timer hbasePutBulkMarkRequests;
+    private Timer hbasePutDataRequests;
     private Timer urlFetchRequests;
     private Timer parserJobRequests;
     private Timer parserElasticPutDataRequests;
@@ -51,7 +56,14 @@ public class Metrics {
     private Timer parserJsoupParseRequests;
     private Timer parserExtractLinksRequests;
     private Timer fetcherUpdateSiteHBase;
-    private Timer hbasePutDataRequests;
+    private Timer fetcherShouldFetchRequests;
+    private Timer fetcherAddMarkRequests;
+    private Timer fetcherMarkWorkerJobRequests;
+    private Timer fetcherMarkWorkerPutRequests;
+    private Timer fetcherMarkWorkerCheckLinkRequests;
+    private Timer dcAddRequests;
+    private Timer dcUpdateLastSeenRequests;
+    private Timer dcGetShouldFetchRequests;
 
     private Metrics() {
         metricRegistry = new MetricRegistry();
@@ -69,6 +81,10 @@ public class Metrics {
         metricRegistry.register("fetched.queue.size", (Gauge<Integer>) fetchedQueue::size);
         metricRegistry.register("elastic.queue.size", (Gauge<Integer>) elasticQueue::size);
         metricRegistry.register("hbase.queue.size", (Gauge<Integer>) hbaseQueue::size);
+        Metrics.getInstance().getMetricRegistry().register("bulk.mark.queue.size",
+                (Gauge<Integer>) DuplicateChecker.getArrayBlockingQueue()::size);
+        Metrics.getInstance().getMetricRegistry().register("bulk.mark.cache.size",
+                (Gauge<Long>) DuplicateChecker.getCache()::estimatedSize);
 
         parsedPages = metricRegistry.meter("parsed.pages");
         elasticSubmitFailure = metricRegistry.meter("elasticsearch.submit.failure");
@@ -97,23 +113,35 @@ public class Metrics {
                 return Ratio.of(newLinks.getCount(), denominator == 0 ? 1 : denominator);
             }
         });
+        dcTake = metricRegistry.meter("dc.take");
+        fetcherMarkWorkerNumberOfBulkPacksSend = metricRegistry
+                .meter("fetcher.mark.worker.number.of.bilk.packs.send");
 
         lruExistRequests = metricRegistry.timer("lru.exist.requests");
         lruPutRequests = metricRegistry.timer("lru.put.requests");
         httpRequests = metricRegistry.timer("http.requests");
         kafkaProduceRequests = metricRegistry.timer("kafka.produce.requests");
         kafkaConsumeRequests = metricRegistry.timer("kafka.consume.requests");
+        urlFetchRequests = metricRegistry.timer("url.fetch.requests");
+        fetcherUpdateSiteHBase = metricRegistry.timer("fetcher.update.site.hbase.requests");
+        fetcherShouldFetchRequests = metricRegistry.timer("fetcher.should.fetch.requests");
+        fetcherAddMarkRequests = metricRegistry.timer("fetcher.add.mark.requests");
         hbaseExistRequests = metricRegistry.timer("hbase.exist.requests");
         hbasePutMarkRequests = metricRegistry.timer("hbase.put.mark.requests");
-        hbasePutBulkRequests = metricRegistry.timer("hbase.put.bulk.requests");
-        urlFetchRequests = metricRegistry.timer("url.fetch.requests");
+        hbasePutBulkDataRequests = metricRegistry.timer("hbase.put.bulk.data.requests");
+        hbasePutBulkMarkRequests = metricRegistry.timer("hbase.put.bulk.mark.requests");
         hbasePutDataRequests = metricRegistry.timer("hbase.put.data.requests");
         parserTakeWebPageRequests = metricRegistry.timer("parser.take.webpage.requests");
         parserJsoupParseRequests = metricRegistry.timer("parser.jsoup.parse.requests");
         parserJobRequests = metricRegistry.timer("parser.job.requests");
         parserExtractLinksRequests = metricRegistry.timer("parser.extract.links.requests");
         parserElasticPutDataRequests = metricRegistry.timer("parser.elastic.put.data.reuests");
-        fetcherUpdateSiteHBase = metricRegistry.timer("fetcher.update.site.hbase.requests");
+        dcAddRequests = metricRegistry.timer("dc.add.requests");
+        dcGetShouldFetchRequests = metricRegistry.timer("dc.should.fetch.requests");
+        dcUpdateLastSeenRequests = metricRegistry.timer("dc.update.last.seen.requests");
+        fetcherMarkWorkerPutRequests = metricRegistry.timer("fetcher.mark.worker.put.requests");
+        fetcherMarkWorkerJobRequests = metricRegistry.timer("fetcher.mark.worker.job.requests");
+        fetcherMarkWorkerCheckLinkRequests = metricRegistry.timer("fetcher.mark.worker.checklink.requests");
     }
 
     public void startJmxReport() {
@@ -133,87 +161,78 @@ public class Metrics {
     public void markParsedPages() {
         parsedPages.mark();
     }
-
     public void markElasticSubmitFailure() {
         elasticSubmitFailure.mark();
     }
-
     public void markElasticSubmitSuccess() {
         elasticSubmitSuccess.mark();
     }
-
     public void markShuffledPacks() {
         shuffledPacks.mark();
     }
-
     public void markFetcherReceivedLinks(long n) {
         fetcherReceivedLinks.mark(n);
     }
-
     public void markMalformedUrls() {
         malformedUrls.mark();
     }
-
     public void markLruHit() {
         lruHit.mark();
     }
-
     public void markLruMiss() {
         lruMiss.mark();
     }
-
     public void markSuccessfulFetches() {
         successfulFetches.mark();
     }
-
     public void markInvalidDocuments() {
         invalidDocuments.mark();
     }
-
     public void markExtractedLinks(long n) {
         extractedLinks.mark(n);
     }
-
-    public Timer.Context lruExistRequestsTime() {
-        return lruExistRequests.time();
+    public void markNewLinks() {
+        newLinks.mark();
     }
-
-    public Timer.Context lruPutRequestsTime() {
-        return lruPutRequests.time();
+    public void markDuplicatedLinks() {
+        duplicatedLinks.mark();
     }
-
-    public Timer.Context httpRequestsTime() {
-        return httpRequests.time();
-    }
-
-    public Timer.Context kafkaProduceRequestsTime() {
-        return kafkaProduceRequests.time();
-    }
-
-    public Timer.Context kafkaConsumeRequestsTime() {
-        return kafkaConsumeRequests.time();
-    }
-
-    public Timer.Context hbaseExistRequestsTime() {
-        return hbaseExistRequests.time();
-    }
-
-    public Timer.Context hbasePutMarkRequestsTime() {
-        return hbasePutMarkRequests.time();
-    }
-
-    public Timer.Context hbasePutBulkRequestsTime() {
-        return hbasePutBulkRequests.time();
-    }
+    public void markdcTake(){dcTake.mark();}
+    public void markFetcherMarkWorkerNumberOfBulkPacksSend(){fetcherMarkWorkerNumberOfBulkPacksSend.mark();}
 
     public Timer.Context urlFetchRequestsTime() {
         return urlFetchRequests.time();
     }
-
+    public Timer.Context lruExistRequestsTime() {
+        return lruExistRequests.time();
+    }
+    public Timer.Context lruPutRequestsTime() {
+        return lruPutRequests.time();
+    }
+    public Timer.Context httpRequestsTime() {
+        return httpRequests.time();
+    }
+    public Timer.Context kafkaProduceRequestsTime() {
+        return kafkaProduceRequests.time();
+    }
+    public Timer.Context kafkaConsumeRequestsTime() {
+        return kafkaConsumeRequests.time();
+    }
+    public Timer.Context hbaseExistRequestsTime() {
+        return hbaseExistRequests.time();
+    }
+    public Timer.Context hbasePutMarkRequestsTime() {
+        return hbasePutMarkRequests.time();
+    }
+    public Timer.Context hbasePutBulkDataRequestsTime() {
+        return hbasePutBulkDataRequests.time();
+    }
+    public Timer.Context hbasePutBulkMarkRequestsTime() {
+        return hbasePutBulkMarkRequests.time();
+    }
     public Timer.Context hbasePutDataRequestsTime() {
         return hbasePutDataRequests.time();
     }
-
     public Timer.Context parserElasticPutDataRequestsTime() {
         return parserElasticPutDataRequests.time();
     }
@@ -232,16 +251,15 @@ public class Metrics {
     public Timer.Context fetcherUpdateSiteHBaseRequestsTime() {
         return fetcherUpdateSiteHBase.time();
     }
+    public Timer.Context fetcherShouldFetchRequestsTime(){return fetcherShouldFetchRequests.time();}
+    public Timer.Context fetcherMarkWorkerCheckLinkRequestsTime(){return fetcherMarkWorkerCheckLinkRequests.time();}
+    public Timer.Context fetcherAddMarkRequestsTime(){return fetcherAddMarkRequests.time();}
+    public Timer.Context dcAddRequestsTime(){return dcAddRequests.time();}
+    public Timer.Context dcGetShouldFetchRequestsTime(){return dcGetShouldFetchRequests.time();}
+    public Timer.Context dcUpdateKastSeenRequestsTime(){return dcUpdateLastSeenRequests.time();}
+    public Timer.Context fetcherMarkWorkerPutRequestsTime(){return fetcherMarkWorkerPutRequests.time();}
+    public Timer.Context fetcherMarkWorkerJobRequestsTime(){return fetcherMarkWorkerJobRequests.time();}
 
-
-
-    public void markNewLinks() {
-        newLinks.mark();
-    }
-
-    public void markDuplicatedLinks() {
-        duplicatedLinks.mark();
-    }
 
     public MetricRegistry getMetricRegistry() {
         return metricRegistry;

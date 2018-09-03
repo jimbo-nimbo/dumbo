@@ -38,7 +38,7 @@ public class HBaseBulkHandler implements Runnable {
                 logger.error(e.getMessage());
             }
 
-            Timer.Context hbasePutBulkTimeContext = Metrics.getInstance().hbasePutBulkRequestsTime();
+            Timer.Context hbasePutBulkTimeContext = Metrics.getInstance().hbasePutBulkDataRequestsTime();
             try {
                 HBase.getInstance().getTable().put(puts);
             } catch (IOException e) {

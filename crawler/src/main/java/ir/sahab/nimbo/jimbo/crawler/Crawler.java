@@ -6,6 +6,7 @@ import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
 import ir.sahab.nimbo.jimbo.hbase.HBaseBulkHandler;
+import ir.sahab.nimbo.jimbo.hbase.HBaseBulkMarkHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
@@ -29,6 +30,7 @@ public class Crawler {
     private final Fetcher fetcher;
     private final Parser parser;
     private final HBaseBulkHandler hbaseBulkHandler;
+    private final HBaseBulkMarkHandler hBaseBulkMarkHandler;
     private ElasticsearchHandler elasticSearchHandler;
 
     // TODO: what to do with settings?
@@ -49,7 +51,7 @@ public class Crawler {
 
         hbaseBulkHandler = new HBaseBulkHandler(hbaseDataQueue);
         elasticSearchHandler = new ElasticsearchHandler(elasticQueue, new ElasticsearchSetting());
-
+        hBaseBulkMarkHandler = new HBaseBulkMarkHandler();
         // TODO: isn't it better to use static queues?
         // TODO: static methods? or singleton?
         // TODO: why not use singleton for crawler, as well as parser and fetcher?
@@ -61,6 +63,7 @@ public class Crawler {
         parser.runWorkers();
         fetcher.runWorkers();
         elasticSearchHandler.runWorkers();
+        hBaseBulkMarkHandler.runWorkers();
         new Thread(hbaseBulkHandler).start();
 
         Metrics.getInstance().startJmxReport();
