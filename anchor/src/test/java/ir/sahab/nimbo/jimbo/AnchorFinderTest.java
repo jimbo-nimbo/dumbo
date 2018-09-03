@@ -24,7 +24,7 @@ public class AnchorFinderTest
     @Test
     public void testSpark() {
 
-        final JavaRDD<Integer> parallelize = jsc.parallelize(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        final JavaRDD<Integer> parallelize = jsc.parallelize(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
         final List<Integer> collect = parallelize.collect();
 
         for (int i = 0; i < collect.size(); i++) {
