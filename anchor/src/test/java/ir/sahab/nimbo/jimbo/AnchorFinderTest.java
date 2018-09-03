@@ -100,7 +100,7 @@ public class AnchorFinderTest
 
     }
 
-    @Test
+//    @Test
     public void createGraph() throws IOException {
 
         final Configuration config = AnchorFinder.createHbaseConfiguration();
@@ -164,6 +164,62 @@ public class AnchorFinderTest
 
         // save to HBase- Spark built-in API method
         hbasePut.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
+    }
+
+    @Test
+    public void pureTest() throws IOException {
+        // create connection with HBase
+        Configuration config = null;
+        try {
+            config = HBaseConfiguration.create();
+            config.set("hbase.zookeeper.quorum", "127.0.0.1");
+            config.set("hbase.zookeeper.property.clientPort","2181");
+            //config.set("hbase.master", "127.0.0.1:60000");
+            HBaseAdmin.checkHBaseAvailable(config);
+            System.out.println("HBase is running!");
+        }
+        catch (MasterNotRunningException e) {
+            System.out.println("HBase is not running!");
+            System.exit(1);
+        }catch (Exception ce){
+            ce.printStackTrace();
+        }
+
+        config.set(TableInputFormat.INPUT_TABLE, "tableName");
+
+// new Hadoop API configuration
+        Job newAPIJobConfiguration1 = Job.getInstance(config);
+        newAPIJobConfiguration1.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "tableName");
+        newAPIJobConfiguration1.setOutputFormatClass(org.apache.hadoop.hbase.mapreduce.TableOutputFormat.class);
+
+
+        List<List<String>> lists = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            List<String> list = new ArrayList<>();
+            for (int j = 0; j < 10; j++) {
+                list.add("aa" + i);
+            }
+            lists.add(list);
+        }
+
+        final JavaRDD<List<String>> parallelize = jsc.parallelize(lists);
+
+// create Key, Value pair to store in HBase
+        JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = parallelize.mapToPair(
+                new PairFunction<List<String>, ImmutableBytesWritable, Put>() {
+                    @Override
+                    public Tuple2<ImmutableBytesWritable, Put> call(List<String> row) throws Exception {
+
+                        Put put = new Put(Bytes.toBytes(row.get(0)));
+                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row.get(1)));
+                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row.get(2)));
+
+                        return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
+                    }
+                });
+
+        // save to HBase- Spark built-in API method
+        hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
     }
 
     class TestData implements Serializable {
