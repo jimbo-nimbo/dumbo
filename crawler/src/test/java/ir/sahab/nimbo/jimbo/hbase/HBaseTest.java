@@ -226,6 +226,54 @@ public class HBaseTest {
     }
 
     @Test
+    public void basicHbaseBenchmarkNotTest(){
+        HBase hBase = HBase.getInstance();
+        StringBuilder bigUrl = new StringBuilder("https://www.test.com");
+        Random rand = new Random();
+        final int size = 5000;
+        ArrayList<Put> puts = new ArrayList<>();
+        ArrayList<Put> puts2 = new ArrayList<>();
+        for(int i = 0; i < 20; i++){
+            bigUrl.append((char)(rand.nextInt() + 10));
+        }
+        for (int i = 0; i < size; i++) {
+            Put put = new Put(bigUrl.toString().getBytes());
+            put.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES, bigUrl.toString().getBytes());
+            puts.add(put);
+            puts2.add(HBase.getInstance().getPutMark(bigUrl.toString()));
+        }
+        long b = System.currentTimeMillis();
+        try {
+            HBase.getInstance().table.put(puts);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
+        b = System.currentTimeMillis();
+        try {
+            HBase.getInstance().table.put(puts2);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
+        b = System.currentTimeMillis();
+        for (int i = 0; i < size; i++) {
+            try {
+                Put put = new Put(bigUrl.toString().getBytes());
+                put.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES, bigUrl.toString().getBytes());
+                HBase.getInstance().table.put(put);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
+    }
+
+    @Test
     public void benchmarkExistMarkNotTest(){
         HBase hBase = HBase.getInstance();
         long b = System.currentTimeMillis();
@@ -237,6 +285,35 @@ public class HBaseTest {
 
     @Test
     public void benchmarkPutMarkNotTest(){
+        HBase hBase = HBase.getInstance();
+        Random rand = new Random();
+        final int size = 5000;
+        ArrayList<Put> puts = new ArrayList<>();
+        String[] urls = new String[size];
+        for(int i = 0; i < size; i++){
+            urls[i] = String.valueOf(rand.nextLong());
+        }
+        long b = System.currentTimeMillis();
+        for (int i = 0; i < size; i++) {
+            hBase.putMark(urls[i]);
+        }
+        System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
+        for (int i = 0; i < size; i++) {
+            puts.add(HBase.getInstance().getPutMark(urls[i]));
+        }
+        b = System.currentTimeMillis();
+        try {
+            HBase.getInstance().table.put(puts);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.err.println(System.currentTimeMillis() - b);
+        System.err.println((System.currentTimeMillis() - b) / size);
+    }
+
+    @Test
+    public void makeGraph(){
         HBase hBase = HBase.getInstance();
 
         long b = System.currentTimeMillis();
@@ -250,8 +327,10 @@ public class HBaseTest {
             for (int des = 1; des <= graphSize; des++) {
 
                 for (int freq = 0; freq < graphSize - des; freq++) {
-                    links.add(new Link("https://www.test.com" + (src + des) % graphSize,
+                    final int i = (src + des) % graphSize;
+                    links.add(new Link("https://www.test.com" + i ,
                             "anchor from " + src + " to " + (src + des) % graphSize) );
+                    System.out.println(i);
                 }
             }
 

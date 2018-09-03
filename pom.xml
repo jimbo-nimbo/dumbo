@@ -13,6 +13,7 @@
         <module>commons</module>
         <module>newsfetcher</module>
         <module>keywords</module>
+        <module>domainGraph</module>
     </modules>
 
 
