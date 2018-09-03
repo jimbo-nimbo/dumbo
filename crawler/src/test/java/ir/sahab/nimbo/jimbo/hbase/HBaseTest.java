@@ -238,6 +238,7 @@ public class HBaseTest {
     @Test
     public void benchmarkPutMarkNotTest(){
         HBase hBase = HBase.getInstance();
+
         long b = System.currentTimeMillis();
 
         final int graphSize = 10;
@@ -259,7 +260,5 @@ public class HBaseTest {
         }
         System.err.println(System.currentTimeMillis() - b);
     }
-
-
 
 }
