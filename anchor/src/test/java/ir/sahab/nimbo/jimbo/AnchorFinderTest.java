@@ -15,9 +15,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import scala.Serializable;
 import scala.Tuple2;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -48,10 +48,7 @@ public class AnchorFinderTest
 
     @Test
     public void testHbase() {
-        // define Spark Context
-//        final SQLContext sqlContext = new SQLContext(jsc);
 
-        // create connection with HBase
         Configuration config = null;
         try {
             config = HBaseConfiguration.create();
@@ -67,6 +64,8 @@ public class AnchorFinderTest
         }catch (Exception ce){
             ce.printStackTrace();
         }
+
+//        config.set(TableInputFormat.INPUT_TABLE, "tableName");
 
         config.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
         config.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME); // column family
