@@ -193,26 +193,29 @@ public class AnchorFinderTest
         newAPIJobConfiguration1.setOutputFormatClass(org.apache.hadoop.hbase.mapreduce.TableOutputFormat.class);
 
 
-        List<List<String>> lists = new ArrayList<>();
+        List<Integer> lists = new ArrayList<>();
+//        for (int i = 0; i < 10; i++) {
+//            List<String> list = new ArrayList<>();
+//            for (int j = 0; j < 10; j++) {
+//                list.add("aa" + i);
+//            }
+//            lists.add(list);
+//        }
         for (int i = 0; i < 10; i++) {
-            List<String> list = new ArrayList<>();
-            for (int j = 0; j < 10; j++) {
-                list.add("aa" + i);
-            }
-            lists.add(list);
+            lists.add(new Integer(i));
         }
 
-        final JavaRDD<List<String>> parallelize = jsc.parallelize(lists);
+        final JavaRDD<Integer> parallelize = jsc.parallelize(lists);
 
 // create Key, Value pair to store in HBase
         JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = parallelize.mapToPair(
-                new PairFunction<List<String>, ImmutableBytesWritable, Put>() {
+                new PairFunction<Integer, ImmutableBytesWritable, Put>() {
                     @Override
-                    public Tuple2<ImmutableBytesWritable, Put> call(List<String> row) throws Exception {
+                    public Tuple2<ImmutableBytesWritable, Put> call(Integer row) throws Exception {
 
-                        Put put = new Put(Bytes.toBytes(row.get(0)));
-                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row.get(1)));
-                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row.get(2)));
+                        Put put = new Put(Bytes.toBytes(row.intValue()));
+                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row.intValue() + 1));
+                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row.intValue()));
 
                         return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
                     }
