@@ -202,23 +202,22 @@ public class AnchorFinderTest
 //            lists.add(list);
 //        }
         for (int i = 0; i < 10; i++) {
-            lists.add(new Integer(i));
+            lists.add(i);
         }
 
         final JavaRDD<Integer> parallelize = jsc.parallelize(lists);
 
 // create Key, Value pair to store in HBase
         JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = parallelize.mapToPair(
-                new PairFunction<Integer, ImmutableBytesWritable, Put>() {
-                    @Override
-                    public Tuple2<ImmutableBytesWritable, Put> call(Integer row) throws Exception {
+                (PairFunction<Integer, ImmutableBytesWritable, Put>) row -> {
 
-                        Put put = new Put(Bytes.toBytes(row.intValue()));
-                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row.intValue() + 1));
-                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row.intValue()));
+                    Put put = new Put(Bytes.toBytes(row));
+                    put.addColumn(Bytes.toBytes("columFamily"),
+                            Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row + 1));
+                    put.addColumn(Bytes.toBytes("columFamily"),
+                            Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row));
 
-                        return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
-                    }
+                    return new Tuple2<>(new ImmutableBytesWritable(), put);
                 });
 
         // save to HBase- Spark built-in API method
