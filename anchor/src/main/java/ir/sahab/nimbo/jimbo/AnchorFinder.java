@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.MasterNotRunningException;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
@@ -228,6 +230,25 @@ public class AnchorFinder {
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
         hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
         return hConf;
+    }
+
+    static Configuration createHbaseConfiguration() {
+        Configuration config = null;
+        try {
+            config = HBaseConfiguration.create();
+            config.set("hbase.zookeeper.quorum", "hitler");
+            config.set("hbase.zookeeper.property.clientPort","2181");
+            //config.set("hbase.master", "127.0.0.1:60000");
+            HBaseAdmin.checkHBaseAvailable(config);
+            System.out.println("HBase is running!");
+        }
+        catch (MasterNotRunningException e) {
+            System.out.println("HBase is not running!");
+            System.exit(1);
+        }catch (Exception ce){
+            ce.printStackTrace();
+        }
+        return config;
     }
 
 }
