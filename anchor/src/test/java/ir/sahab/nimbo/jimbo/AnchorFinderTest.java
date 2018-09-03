@@ -25,8 +25,7 @@ public class AnchorFinderTest
     public void testSpark() {
 
         final JavaRDD<Integer> parallelize = jsc.parallelize(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
-        final List<Integer> collect =
-                parallelize.sample(false, 0.3, System.currentTimeMillis()).collect();
+        final List<Integer> collect = parallelize.collect();
 
         for (int i = 0; i < collect.size(); i++) {
             assertEquals(i, collect.get(i).intValue());
