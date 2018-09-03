@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import scala.Tuple2;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -75,35 +76,26 @@ public class AnchorFinderTest
                 jsc.newAPIHadoopRDD(config, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
 
         JavaPairRDD<String, TestData> rowPairRDD = hBaseRDD.mapToPair(
-                new PairFunction<Tuple2<ImmutableBytesWritable, Result>, String, TestData>() {
-                    @Override
-                    public Tuple2<String, TestData> call(
-                            Tuple2<ImmutableBytesWritable, Result> entry) throws Exception {
+                (PairFunction<Tuple2<ImmutableBytesWritable, Result>, String, TestData>) entry -> {
 
-                        Result r = entry._2;
-                        String keyRow = Bytes.toString(r.getRow());
+                    Result r = entry._2;
+                    String keyRow = Bytes.toString(r.getRow());
 
-                        TestData cd = new TestData();
-                        cd.setRowkey(keyRow);
-                        cd.setVc(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vc"))));
-                        cd.setVs(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vs"))));
-                        return new Tuple2<>(keyRow, cd);
-                    }
+                    TestData cd = new TestData();
+                    cd.setRowkey(keyRow);
+                    cd.setVc(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vc"))));
+                    cd.setVs(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vs"))));
+                    return new Tuple2<>(keyRow, cd);
                 });
 
         Map<String, TestData> stringTestDataMap = rowPairRDD.collectAsMap();
-        stringTestDataMap.forEach(new BiConsumer<String, TestData>()
-        {
-            @Override
-            public void accept(String s, TestData testData)
-            {
-                System.out.println(s + " -> " + testData.getRowkey() + ", vc" + testData.getVc() + ", vs" + testData.getVs());
-            }
-        });
+        stringTestDataMap.forEach((s, testData) ->
+                System.out.println(
+                        s + " -> " + testData.getRowkey() + ", vc" + testData.getVc() + ", vs" + testData.getVs()));
 
     }
 
-    class TestData {
+    class TestData implements Serializable {
         private String rowkey;
         private String vc;
         private String vs;
