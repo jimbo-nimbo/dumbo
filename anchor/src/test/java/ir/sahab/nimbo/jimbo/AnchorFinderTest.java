@@ -13,10 +13,10 @@ import static org.junit.Assert.*;
 
 public class AnchorFinderTest
 {
-    private JavaSparkContext jsc;
+    private static JavaSparkContext jsc;
 
     @BeforeClass
-    public void createSparkContext() {
+    public static void createSparkContext() {
         final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME).setMaster("spark://hitler:7077");
         jsc = new JavaSparkContext(conf);
     }
