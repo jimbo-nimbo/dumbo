@@ -2,12 +2,12 @@ package ir.sahab.nimbo.jimbo;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Row;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
@@ -17,7 +17,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,9 +25,8 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.BiConsumer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class AnchorFinderTest
 {
@@ -37,7 +35,10 @@ public class AnchorFinderTest
 
     @BeforeClass
     public static void createSparkContext() {
-        final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME).setMaster("spark://hitler:7077");
+        final SparkConf conf = new SparkConf()
+                .setAppName(Config.SPARK_APP_NAME)
+                .setMaster("local[*]");
+
         jsc = new JavaSparkContext(conf);
     }
 
@@ -166,9 +167,10 @@ public class AnchorFinderTest
         hbasePut.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
     }
 
-    @Test
+//    @Test
     public void pureTest() throws IOException, InterruptedException {
         // create connection with HBase
+        /*
         Configuration config = null;
         try {
             config = HBaseConfiguration.create();
@@ -185,45 +187,73 @@ public class AnchorFinderTest
             ce.printStackTrace();
         }
 
-        config.set(TableInputFormat.INPUT_TABLE, "tableName");
+        config.set(TableInputFormat.INPUT_TABLE, "testtest");
 
-// new Hadoop API configuration
-        Job newAPIJobConfiguration1 = Job.getInstance(config);
-        newAPIJobConfiguration1.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "tableName");
+        *//////////////////////////////////////////////////////////////
+
+        Configuration hConf = HBaseConfiguration.create();
+        String path = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
+        hConf.addResource(new Path(path));
+        path = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
+        hConf.addResource(new Path(path));
+        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+
+        Job newAPIJobConfiguration1 = Job.getInstance(hConf);
+        newAPIJobConfiguration1.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "testtest");
         newAPIJobConfiguration1.setOutputFormatClass(org.apache.hadoop.hbase.mapreduce.TableOutputFormat.class);
 
 
         List<Integer> lists = new ArrayList<>();
-//        for (int i = 0; i < 10; i++) {
-//            List<String> list = new ArrayList<>();
-//            for (int j = 0; j < 10; j++) {
-//                list.add("aa" + i);
-//            }
-//            lists.add(list);
-//        }
         for (int i = 0; i < 10; i++) {
             lists.add(i);
         }
 
         final JavaRDD<Integer> parallelize = jsc.parallelize(lists);
 
-// create Key, Value pair to store in HBase
         JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = parallelize.mapToPair(
                 (PairFunction<Integer, ImmutableBytesWritable, Put>) row -> {
 
                     Put put = new Put(Bytes.toBytes(row));
-                    put.addColumn(Bytes.toBytes("columFamily"),
+                    put.addColumn(Bytes.toBytes("cf"),
                             Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row + 1));
-                    put.addColumn(Bytes.toBytes("columFamily"),
+                    put.addColumn(Bytes.toBytes("cf"),
                             Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row));
 
                     return new Tuple2<>(new ImmutableBytesWritable(), put);
                 });
 
-        // save to HBase- Spark built-in API method
-        hbasePuts.saveAsTextFile("hdfs://hitler:9000/teg");
-//        hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
+        hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
+    }
 
+    @Test
+    public void connTest() throws IOException {
+        Configuration hConf = HBaseConfiguration.create();
+        String path = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
+        hConf.addResource(new Path(path));
+        path = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
+        hConf.addResource(new Path(path));
+        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+
+        JavaPairRDD<String, Integer> countRDD = jsc.parallelize(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+                .mapToPair((PairFunction<Integer, String, Integer>) integer ->
+                        new Tuple2<>(integer.toString(), integer));
+
+        Job job = Job.getInstance(hConf);
+        job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
+        job.setOutputFormatClass(TableOutputFormat.class);
+        JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = countRDD.mapToPair(row -> {
+            String rowKey = row._1;
+            Put put = new Put(DigestUtils.md5Hex(rowKey).getBytes());
+            put.addColumn(Bytes.toBytes(Config.MARK_CF_NAME), Bytes.toBytes("Refers"), Bytes.toBytes(row._2));
+            return new Tuple2<>(new ImmutableBytesWritable(), put);
+        });
+        hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
     }
 
     class TestData implements Serializable {
