@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.MasterNotRunningException;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
@@ -34,36 +36,18 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class NumRefers {
+public class AnchorFinder {
 
     private static final RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
                     new HttpHost("hitler", 9200, "http")));
 
-    static void extractNumRefers() throws IOException {
-        final Configuration hConf = HBaseConfiguration.create();
+    void extractAnchorsToHbase() {
 
-        final String hbaseSiteXmlPath = Objects.requireNonNull(NumRefers.class
-                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
-        final String coreSiteXmlPath = Objects.requireNonNull(NumRefers.class
-                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
-
-        hConf.addResource(new Path(hbaseSiteXmlPath));
-        hConf.addResource(new Path(coreSiteXmlPath));
-
-        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+        final Configuration hConf = createHbaseConfig();
 
         final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
         final JavaSparkContext jsc = new JavaSparkContext(conf);
-
-        /**
-         * part one test spark...
-         */
-//        final JavaRDD<Integer> parallelize = jsc.parallelize(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
-//        final List<Integer> collect = parallelize.sample(false, 0.3, System.currentTimeMillis())
-//                .collect();
-//        collect.forEach(System.out::println);
 
         /**
          * part two read data from HBase
@@ -229,6 +213,42 @@ public class NumRefers {
         job.setOutputFormatClass(TableOutputFormat.class);
         hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
         */
+    }
+
+    Configuration createHbaseConfig()
+    {
+        final Configuration hConf = HBaseConfiguration.create();
+
+        final String hbaseSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
+        final String coreSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
+
+        hConf.addResource(new Path(hbaseSiteXmlPath));
+        hConf.addResource(new Path(coreSiteXmlPath));
+
+        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+        return hConf;
+    }
+
+    static Configuration createHbaseConfiguration() {
+        Configuration config = null;
+        try {
+            config = HBaseConfiguration.create();
+            config.set("hbase.zookeeper.quorum", "hitler");
+            config.set("hbase.zookeeper.property.clientPort","2181");
+            //config.set("hbase.master", "127.0.0.1:60000");
+            HBaseAdmin.checkHBaseAvailable(config);
+            System.out.println("HBase is running!");
+        }
+        catch (MasterNotRunningException e) {
+            System.out.println("HBase is not running!");
+            System.exit(1);
+        }catch (Exception ce){
+            ce.printStackTrace();
+        }
+        return config;
     }
 
 }

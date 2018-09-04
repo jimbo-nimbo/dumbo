@@ -5,10 +5,9 @@ import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchSetting;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.FetcherSetting;
 import ir.sahab.nimbo.jimbo.fetcher.Fetcher;
-import ir.sahab.nimbo.jimbo.hbase.HBaseBulkHandler;
+import ir.sahab.nimbo.jimbo.hbase.HBaseBulkDataHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseBulkMarkHandler;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
-import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import ir.sahab.nimbo.jimbo.parser.Parser;
 import ir.sahab.nimbo.jimbo.parser.ParserSetting;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.ConnectException;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -29,7 +27,7 @@ public class Crawler {
     private final Shuffler shuffler;
     private final Fetcher fetcher;
     private final Parser parser;
-    private final HBaseBulkHandler hbaseBulkHandler;
+    private final HBaseBulkDataHandler hbaseBulkDataHandler;
     private final HBaseBulkMarkHandler hBaseBulkMarkHandler;
     private ElasticsearchHandler elasticSearchHandler;
 
@@ -49,7 +47,7 @@ public class Crawler {
         fetcher = new Fetcher(shuffleQueue, fetchedQueue, new FetcherSetting());
         parser = new Parser(fetchedQueue, elasticQueue, hbaseDataQueue, new ParserSetting());
 
-        hbaseBulkHandler = new HBaseBulkHandler(hbaseDataQueue);
+        hbaseBulkDataHandler = new HBaseBulkDataHandler(hbaseDataQueue);
         elasticSearchHandler = new ElasticsearchHandler(elasticQueue, new ElasticsearchSetting());
         hBaseBulkMarkHandler = new HBaseBulkMarkHandler();
         // TODO: isn't it better to use static queues?
@@ -64,7 +62,7 @@ public class Crawler {
         fetcher.runWorkers();
         elasticSearchHandler.runWorkers();
         hBaseBulkMarkHandler.runWorkers();
-        new Thread(hbaseBulkHandler).start();
+        hbaseBulkDataHandler.runWorkers();
 
         Metrics.getInstance().startJmxReport();
         Metrics.getInstance().startCsvReport();

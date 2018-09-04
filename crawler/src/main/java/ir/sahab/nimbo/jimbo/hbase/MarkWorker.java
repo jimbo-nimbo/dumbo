@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static ir.sahab.nimbo.jimbo.main.Config.HBASE_BULK_LIMIT;
+import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class MarkWorker extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(MarkWorker.class);
@@ -19,7 +19,7 @@ public class MarkWorker extends Thread {
         Timer.Context fetcherMarkWorkerJobRequestsTimeContext = Metrics.getInstance().fetcherMarkWorkerJobRequestsTime();
         ArrayList<Put> puts = new ArrayList<>();
         while (true) {
-            for (int i = 0; i < HBASE_BULK_LIMIT; i++) {
+            for (int i = 0; i < HBASE_MARK_BULK_LIMIT; i++) {
                 puts.add(HBase.getInstance().getPutMark(DuplicateChecker.getInstance().take()));
             }
             try {
