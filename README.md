@@ -29,15 +29,48 @@ Run search module, then "?l" command shows all possible commands.
  ```json
  {
    "settings" : {
-     "number_of_shards" : 3,
-     "number_of_replicas" : 1
+     "number_of_shards" : 6,
+     "number_of_replicas" : 1,
+     "analysis": {
+        "filter": {
+          "english_stop": {
+            "type":       "stop",
+            "stopwords":  "_english_" 
+          },
+          "english_keywords": {
+            "type":       "keyword_marker",
+            "keywords":   ["the who"] 
+          },
+          "english_stemmer": {
+            "type":       "stemmer",
+            "language":   "english"
+          },
+          "english_possessive_stemmer": {
+            "type":       "stemmer",
+            "language":   "possessive_english"
+          }
+        },
+        "analyzer": {
+          "rebuilt_english": {
+            "tokenizer":  "standard",
+            "filter": [
+              "english_possessive_stemmer",
+              "lowercase",
+              "english_stop",
+              "english_keywords",
+              "english_stemmer"
+            ]
+          }
+        }
+      }  
    },
    "mappings": {
      "_doc": {
        "properties": {
          "content": {
            "type": "text",
-           "term_vector": "yes"
+           "term_vector": "yes",
+           "analyzer" : "rebuilt_english"
          },
          "description": {
            "type": "text"
