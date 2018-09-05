@@ -25,7 +25,6 @@ public class ElasticClient {
         return ourInstance;
     }
 
-
     private ElasticClient() {
         client = new RestHighLevelClient(
                 RestClient.builder(new HttpHost(Config.ES_HOSTS.get(0).getHostName(),
@@ -47,7 +46,6 @@ public class ElasticClient {
         simpleQuery.add(mustFind);
         return jimboElasticSearch(simpleQuery, new ArrayList<>(), new ArrayList<>());
     }
-
 
     public ArrayList<SearchHit> jimboElasticSearch(
             ArrayList<String> mustFind,

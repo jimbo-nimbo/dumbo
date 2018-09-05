@@ -23,16 +23,6 @@ public class DuplicateCheckerTest {
     }
 
     @Test
-    public void getShouldFetchMarkModel() {
-        HBase.getInstance().putMark(STACKOVERFLOW);
-        HBaseMarkModel hBaseMarkModel = DuplicateChecker.getInstance().getShouldFetchMarkModel(STACKOVERFLOW);
-        HBaseMarkModel hBaseMarkModel2 = DuplicateChecker.getInstance().getShouldFetchMarkModel(JAVA_CODE);
-        assertTrue(hBaseMarkModel.getDuration() + hBaseMarkModel.getLastSeen() > System.currentTimeMillis());
-        assertTrue(hBaseMarkModel2 == null);
-    }
-
-
-    @Test
     public void add() {
         //DuplicateChecker.getInstance().add();
     }

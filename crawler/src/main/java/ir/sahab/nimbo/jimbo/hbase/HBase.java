@@ -29,7 +29,6 @@ public class HBase{
     private TableName tableName;
     Table table = null;
 
-    // TODO: remove all the unnecessary functions
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
         Configuration config = HBaseConfiguration.create();
@@ -120,102 +119,6 @@ public class HBase{
 
     }
 
-
-    void putMark(String sourceUrl) {
-        Long value = System.currentTimeMillis();
-        byte[] sourceBytes = Bytes.toBytes(sourceUrl);
-        Put p = new Put(makeRowKey(sourceUrl).getBytes());
-        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES,
-                Bytes.toBytes(value));
-        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES,
-                HBASE_MARK_DEFAULT_SEEN_DURATION_BYTES);
-        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
-                sourceBytes);
-        p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
-                sourceBytes);
-        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_CONTENT_HASH_BYTES, Bytes.toBytes("12345"));
-        try {
-            table.put(p);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    boolean existMark(String sourceUrl) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_MARK_CF_NAME.getBytes());
-                if (navigableMap != null && !navigableMap.isEmpty()) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return false;
-    }
-
-    byte[] getData(String sourceUrl, String qualifier) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        try {
-            return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
-        }
-    }
-
-    byte[] getMark(String sourceUrl, String qualifier) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        try {
-            return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-            return null;
-        }
-    }
-
-    boolean existData(String sourceUrl) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                NavigableMap<byte[], byte[]> navigableMap = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes());
-                if (navigableMap != null && !navigableMap.isEmpty()) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return false;
-    }
-
-    int getNumberOfReferences(String sourceUrl){
-        Scan scan = new Scan(makeRowKey(sourceUrl).getBytes());
-        HBASE_MARK_CF_NAME.getBytes();
-        HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes();
-        scan.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes());
-        ResultScanner resultScanner;
-        try {
-            resultScanner = table.getScanner(scan);
-            for(Result result : resultScanner) {
-                if (result != null) {
-                    return Bytes.toInt(result.getValue(HBASE_MARK_CF_NAME.getBytes(),
-                            HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes()));
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return 0;
-    }
-
     @SuppressWarnings("Duplicates")
     private void initialize(Admin admin) {
         try {
@@ -229,11 +132,6 @@ public class HBase{
         }
     }
 
-    String reverseUrl(URL url) {
-        //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
-        return reverseDomain(url.getHost()) + getHash(url.getPath());
-    }
-
     private static String getHash(String inp) {
         return DigestUtils.md5Hex(inp);
     }
@@ -244,97 +142,5 @@ public class HBase{
 
     Table getTable() {
         return table;
-    }
-
-    @SuppressWarnings("Duplicates")
-    ResultScanner scanData(List<byte[]> qulifiers){
-
-        Scan scan = new Scan();
-        ResultScanner results = null;
-        for(byte[] bytes : qulifiers) {
-            scan.addColumn(HBASE_DATA_CF_NAME.getBytes(), bytes);
-        }
-        try {
-            results = table.getScanner(scan);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return results;
-    }
-
-    @SuppressWarnings("Duplicates")
-    ResultScanner scanColumnFamily(List<byte[]> columnFamily){
-        Scan scan = new Scan();
-        ResultScanner results = null;
-        for(byte[] bytes : columnFamily) {
-            scan.addFamily(bytes);
-        }
-        try {
-            results = table.getScanner(scan);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return results;
-    }
-
-    private String reverseDomain(String domain) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] res = domain.split("\\.");
-        try {
-            stringBuilder.append(res[res.length - 1]);
-            for (int i = 1; i < res.length; i++) {
-                stringBuilder.append("." + res[res.length - 1 - i]);
-            }
-        } catch (IndexOutOfBoundsException e) {
-            logger.error(e.getMessage());
-        }
-        return stringBuilder.toString();
-    }
-
-    String getContentHash(String sourceUrl){
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
-                if(res != null){
-                    return Bytes.toString(res);
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return "";
-    }
-
-    void putData(HBaseDataModel hBaseDataModel) {
-        Put p = getPutData(hBaseDataModel);
-        try {
-            if (hBaseDataModel.getLinks().size() > 0) {
-                table.put(p);
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    String getSeenDur(String sourceUrl){
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-                if(res != null){
-                    return Bytes.toString(res);
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
     }
 }
