@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.ConnectException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class ElasticsearchHandler{
@@ -12,23 +11,19 @@ public class ElasticsearchHandler{
     private static final Logger logger = LoggerFactory.getLogger(ElasticsearchHandler.class);
     private final ElasticsearchSetting elasticsearchSetting;
     private static ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
-    private final ElasticWorker[] elasticWorkers;
+    private final Worker[] elasticWorkers;
 
     public ElasticsearchHandler(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
                                 ElasticsearchSetting elasticsearchSetting){
         this.elasticsearchSetting = elasticsearchSetting;
         ElasticsearchHandler.elasticQueue = elasticQueue;
-        elasticWorkers = new ElasticWorker[elasticsearchSetting.getNumberOfThreads()];
+        elasticWorkers = new Worker[elasticsearchSetting.getNumberOfThreads()];
     }
 
     public void runWorkers() throws ConnectException {
         for(int i = 0; i < elasticsearchSetting.getNumberOfThreads(); i++) {
-            try {
-                elasticWorkers[i] = new ElasticWorker(elasticQueue, elasticsearchSetting);
-                elasticWorkers[i].start();
-            } catch (UnknownHostException e) {
-                logger.error("Could not connect to ElasticSearch");
-                throw new ConnectException("Could not connect to ElasticSearch");            }
+                elasticWorkers[i] = new Worker(elasticQueue, elasticsearchSetting);
+                new Thread(elasticWorkers[i]).start();
         }
 
     }

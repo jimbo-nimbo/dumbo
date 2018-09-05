@@ -1,13 +1,9 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
-import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 

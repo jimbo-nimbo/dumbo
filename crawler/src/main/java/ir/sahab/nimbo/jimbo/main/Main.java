@@ -1,7 +1,7 @@
 package ir.sahab.nimbo.jimbo.main;
 
-import ir.sahab.nimbo.jimbo.crawler.CrawlerSetting;
 import ir.sahab.nimbo.jimbo.crawler.Crawler;
+import ir.sahab.nimbo.jimbo.crawler.CrawlerSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

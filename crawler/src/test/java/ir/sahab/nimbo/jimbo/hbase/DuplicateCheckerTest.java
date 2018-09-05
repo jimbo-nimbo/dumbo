@@ -6,9 +6,8 @@ import org.junit.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.ArrayBlockingQueue;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class DuplicateCheckerTest {
 

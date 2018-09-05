@@ -2,7 +2,6 @@ package ir.sahab.nimbo.jimbo.fetcher;
 
 import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.hbase.DuplicateChecker;
-import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 

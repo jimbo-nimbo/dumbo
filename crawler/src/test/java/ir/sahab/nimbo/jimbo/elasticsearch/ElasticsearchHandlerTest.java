@@ -3,11 +3,8 @@ package ir.sahab.nimbo.jimbo.elasticsearch;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class ElasticsearchHandlerTest {

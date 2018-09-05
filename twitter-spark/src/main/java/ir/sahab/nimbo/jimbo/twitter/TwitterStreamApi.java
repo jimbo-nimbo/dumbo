@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.twitter;
 
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
+
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
 public class TwitterStreamApi {

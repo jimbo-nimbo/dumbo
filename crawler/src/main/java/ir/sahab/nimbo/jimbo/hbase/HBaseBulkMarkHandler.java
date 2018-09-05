@@ -3,7 +3,7 @@ package ir.sahab.nimbo.jimbo.hbase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static ir.sahab.nimbo.jimbo.main.Config.*;
+import static ir.sahab.nimbo.jimbo.main.Config.HBASE_MARK_NUMBER_OF_THREAD;
 
 public class HBaseBulkMarkHandler{
 

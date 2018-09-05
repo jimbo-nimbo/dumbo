@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static ir.sahab.nimbo.jimbo.main.Config.*;
+import static ir.sahab.nimbo.jimbo.main.Config.HBASE_MARK_BULK_LIMIT;
 
 public class MarkWorker extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(MarkWorker.class);

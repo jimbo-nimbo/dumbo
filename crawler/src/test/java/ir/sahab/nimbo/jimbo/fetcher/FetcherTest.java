@@ -1,17 +1,11 @@
 package ir.sahab.nimbo.jimbo.fetcher;
 
 import ir.sahab.nimbo.jimbo.parser.WebPageModel;
-import org.asynchttpclient.*;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import static org.asynchttpclient.Dsl.*;
 
 public class FetcherTest {
 

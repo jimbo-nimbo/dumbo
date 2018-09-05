@@ -1,14 +1,13 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Timer;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
