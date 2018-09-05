@@ -115,15 +115,19 @@ public class Worker implements Runnable {
         Timer.Context fetcherShouldFetchRequestsTimeContext = Metrics.getInstance().fetcherShouldFetchRequestsTime();
         HBaseMarkModel shouldFetchMarkModel = DuplicateChecker.getInstance().getShouldFetchMarkModel(link);
         fetcherShouldFetchRequestsTimeContext.stop();
-        if (shouldFetchMarkModel != null && shouldFetchMarkModel.getDuration()
-                + shouldFetchMarkModel.getLastSeen() > System.currentTimeMillis()) {
+        if (shouldFetchMarkModel != null &&
+                shouldFetchMarkModel.getDuration() +
+                        shouldFetchMarkModel.getLastSeen() > System.currentTimeMillis()) {
             Metrics.getInstance().markDuplicatedLinks();
             lruCache.remove(host);
             return null;
         }
         if(shouldFetchMarkModel == null){
+            Metrics.getInstance().markFetcherMarkWorkerNewLink();
             shouldFetchMarkModel = new HBaseMarkModel(link, System.currentTimeMillis(),
                     Config.HBASE_MARK_DEFAULT_SEEN_DURATION, "");
+        } else {
+            Metrics.getInstance().markFetcherMarkWorkerUpdateLink();
         }
         Metrics.getInstance().markNewLinks();
         Timer.Context fetcherAddMarkRequestsTimeContext = Metrics.getInstance().fetcherAddMarkRequestsTime();

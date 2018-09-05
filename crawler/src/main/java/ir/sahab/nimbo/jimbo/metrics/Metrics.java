@@ -38,6 +38,8 @@ public class Metrics {
     private Meter duplicatedLinks;
     private Meter dcTake;
     private Meter fetcherMarkWorkerNumberOfBulkPacksSend;
+    private Meter fetcherMarkWorkerNewLink;
+    private Meter fetcherMarkWorkerUpdateLink;
 
     private Timer lruExistRequests;
     private Timer lruPutRequests;
@@ -116,6 +118,8 @@ public class Metrics {
         dcTake = metricRegistry.meter("dc.take");
         fetcherMarkWorkerNumberOfBulkPacksSend = metricRegistry
                 .meter("fetcher.mark.worker.number.of.bilk.packs.send");
+        fetcherMarkWorkerNewLink = metricRegistry.meter("fetcher.mark.worker.newlink");
+        fetcherMarkWorkerUpdateLink = metricRegistry.meter("fetcher.mark.worker.updatelink");
 
         lruExistRequests = metricRegistry.timer("lru.exist.requests");
         lruPutRequests = metricRegistry.timer("lru.put.requests");
@@ -142,6 +146,7 @@ public class Metrics {
         fetcherMarkWorkerPutRequests = metricRegistry.timer("fetcher.mark.worker.put.requests");
         fetcherMarkWorkerJobRequests = metricRegistry.timer("fetcher.mark.worker.job.requests");
         fetcherMarkWorkerCheckLinkRequests = metricRegistry.timer("fetcher.mark.worker.checklink.requests");
+
     }
 
     public void startJmxReport() {
@@ -199,6 +204,8 @@ public class Metrics {
     }
     public void markdcTake(){dcTake.mark();}
     public void markFetcherMarkWorkerNumberOfBulkPacksSend(){fetcherMarkWorkerNumberOfBulkPacksSend.mark();}
+    public void markFetcherMarkWorkerNewLink(){fetcherMarkWorkerNewLink.mark();}
+    public void markFetcherMarkWorkerUpdateLink(){fetcherMarkWorkerUpdateLink.mark();}
 
     public Timer.Context urlFetchRequestsTime() {
         return urlFetchRequests.time();
@@ -263,5 +270,19 @@ public class Metrics {
 
     public MetricRegistry getMetricRegistry() {
         return metricRegistry;
+    }
+
+
+    public void mockInit(){
+
+        ArrayBlockingQueue<List<String>> shuffleQueue = new
+                ArrayBlockingQueue<>(1000);
+        ArrayBlockingQueue<WebPageModel> fetchedQueue = new
+                ArrayBlockingQueue<>(1000);
+        ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue = new
+                ArrayBlockingQueue<>(1000);
+        ArrayBlockingQueue<HBaseDataModel> hbaseDataQueue = new
+                ArrayBlockingQueue<>(1000);
+        initialize(shuffleQueue, fetchedQueue, elasticQueue, hbaseDataQueue);
     }
 }

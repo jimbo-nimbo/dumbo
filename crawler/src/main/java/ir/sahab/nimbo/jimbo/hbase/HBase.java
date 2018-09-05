@@ -105,11 +105,12 @@ public class HBase{
                 byte[] lseen = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES);
                 byte[] dur = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES);
                 byte[] hash = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_CONTENT_HASH_BYTES);
-                if (url == null && lseen != null && dur != null && hash != null) {
+                if (url != null && lseen != null && dur != null && hash != null) {
                     hBaseMarkModel = new HBaseMarkModel(Bytes.toString(url),
                             Bytes.toLong(lseen),
                             Bytes.toLong(dur),
                             Bytes.toString(hash));
+                    return hBaseMarkModel;
                 }
             }
         } catch (IOException e) {
@@ -120,7 +121,7 @@ public class HBase{
     }
 
 
-    public void putMark(String sourceUrl) {
+    void putMark(String sourceUrl) {
         Long value = System.currentTimeMillis();
         byte[] sourceBytes = Bytes.toBytes(sourceUrl);
         Put p = new Put(makeRowKey(sourceUrl).getBytes());
@@ -132,6 +133,7 @@ public class HBase{
                 sourceBytes);
         p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
                 sourceBytes);
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_CONTENT_HASH_BYTES, Bytes.toBytes("12345"));
         try {
             table.put(p);
         } catch (IOException e) {
@@ -157,36 +159,7 @@ public class HBase{
         return false;
     }
 
-    /**
-     *
-     * why? because there is two type: type one : those which not seen at all, two : those which should update
-     */
-    public boolean shouldFetch(String sourceUrl) {
-        Get get = new Get(makeRowKey(sourceUrl).getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
-        get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-        Result result;
-        try {
-            result = table.get(get);
-            if (result != null) {
-                byte[] res = result.getValue(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_LAST_SEEN.getBytes());
-                byte[] resDur = result.getValue(
-                        HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_SEEN_DURATION.getBytes());
-                if(res != null && resDur != null){
-                    Long lastseen = Long.valueOf(Bytes.toString(res));
-                    Long dur = Long.valueOf(Bytes.toString(resDur));
-                    if(System.currentTimeMillis() > lastseen + dur)
-                        return true;
-                    return false;
-                }
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return true;
-    }
-
-    public byte[] getData(String sourceUrl, String qualifier) {
+    byte[] getData(String sourceUrl, String qualifier) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
         try {
             return table.get(get).getValue(HBASE_DATA_CF_NAME.getBytes(), qualifier.getBytes());
@@ -196,7 +169,7 @@ public class HBase{
         }
     }
 
-    public byte[] getMark(String sourceUrl, String qualifier) {
+    byte[] getMark(String sourceUrl, String qualifier) {
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
         try {
             return table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
@@ -223,7 +196,7 @@ public class HBase{
         return false;
     }
 
-    public int getNumberOfReferences(String sourceUrl){
+    int getNumberOfReferences(String sourceUrl){
         Scan scan = new Scan(makeRowKey(sourceUrl).getBytes());
         HBASE_MARK_CF_NAME.getBytes();
         HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES.getBytes();
@@ -318,7 +291,7 @@ public class HBase{
         return stringBuilder.toString();
     }
 
-    public String getContentHash(String sourceUrl){
+    String getContentHash(String sourceUrl){
         Get get = new Get(makeRowKey(sourceUrl).getBytes());
         get.addColumn(HBASE_MARK_CF_NAME.getBytes(), HBASE_MARK_Q_NAME_CONTENT_HASH.getBytes());
         Result result;
@@ -336,7 +309,7 @@ public class HBase{
         return "";
     }
 
-    public void putData(HBaseDataModel hBaseDataModel) {
+    void putData(HBaseDataModel hBaseDataModel) {
         Put p = getPutData(hBaseDataModel);
         try {
             if (hBaseDataModel.getLinks().size() > 0) {

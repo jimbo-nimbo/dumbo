@@ -4,6 +4,7 @@ import ir.sahab.nimbo.jimbo.parser.Link;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,18 +31,6 @@ public class HBaseTest {
         JAVA_CODE_URL = new URL(JAVA_CODE);
         HBase.getInstance();
     }
-    @Before
-    public void setUp() throws Exception {
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void getInstance() {
-    }
 
     @Test
     public void getAndPutDataTest() throws MalformedURLException {
@@ -62,7 +51,9 @@ public class HBaseTest {
         String url = "http://www.test.com";
         HBase.getInstance().putMark(url);
         byte[] res = HBase.getInstance().getMark(url, HBASE_MARK_Q_NAME_URL);
-        assertEquals(url, new String(res));
+        HBaseMarkModel hBaseMarkModel = HBase.getInstance().getMark(url);
+        assertEquals(url, Bytes.toString(res));
+        assertEquals(url, hBaseMarkModel.getUrl());
     }
 
     @Test
@@ -151,13 +142,6 @@ public class HBaseTest {
         System.err.println(HBase.getInstance().getNumberOfReferences("https://www.test.com100"));
     }
 
-    @Test
-    public void shouldFetchTest(){
-        HBase.getInstance().putMark(STACKOVERFLOW);
-        assertFalse(HBase.getInstance().shouldFetch(STACKOVERFLOW));
-        assertTrue(HBase.getInstance().shouldFetch(JAVA_CODE));
-
-    }
 
     @Test
     public void singlePutHugeMarkTest(){
