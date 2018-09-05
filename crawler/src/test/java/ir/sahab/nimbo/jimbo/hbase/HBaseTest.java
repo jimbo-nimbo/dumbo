@@ -121,7 +121,7 @@ public class HBaseTest {
     }
 
     @Test
-    public void singlePutHugeDataTest(){
+    public void singlePutHugeDataTest() throws InterruptedException {
         HBase hBase = HBase.getInstance();
         ArrayList<Link> arrayList = new ArrayList<>();
         Link link = new Link("https://www.href.com", "anchor");
@@ -129,11 +129,11 @@ public class HBaseTest {
         for (int i = 0; i < 900; i++) {
             hBase.putData(new HBaseDataModel("https://www.test.com" + String.valueOf(i), arrayList));
         }
-        //Thread.sleep(10000);
+        Thread.sleep(1000);
         for(int i = 0; i < 900; i++) {
             assertTrue(hBase.existData("https://www.nimac.com" + String.valueOf(i)));
-//            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
-//                System.err.println(i);
+            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
+                System.err.println(i);
         }
     }
 
@@ -144,16 +144,16 @@ public class HBaseTest {
 
 
     @Test
-    public void singlePutHugeMarkTest(){
+    public void singlePutHugeMarkTest() throws InterruptedException {
         HBase hBase = HBase.getInstance();
         for (int i = 0; i < 900; i++) {
             hBase.putMark("https://www.test.com" + String.valueOf(i));
         }
-        //Thread.sleep(10000);
+        Thread.sleep(1000);
         for(int i = 0; i < 900; i++) {
             assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
-//            if(!hBase.existMark("https://www.test.com" + String.valueOf(i)))
-//                System.err.println(i);
+            if(!hBase.existMark("https://www.test.com" + String.valueOf(i)))
+                System.err.println(i);
         }
     }
 
@@ -170,7 +170,7 @@ public class HBaseTest {
     }
 
 
-    @Test
+    //@Test
     public void basicHbaseBenchmarkNotTest(){
         HBase hBase = HBase.getInstance();
         StringBuilder bigUrl = new StringBuilder("https://www.test.com");

@@ -32,7 +32,6 @@ public class MarkWorker extends Thread {
             }
             puts.clear();
             fetcherMarkWorkerJobRequestsTimeContext.stop();
-
         }
     }
 }

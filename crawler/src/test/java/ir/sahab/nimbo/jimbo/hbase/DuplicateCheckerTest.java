@@ -35,6 +35,7 @@ public class DuplicateCheckerTest {
 
     @Test
     public void add() {
+        //DuplicateChecker.getInstance().add();
     }
 
     @Test

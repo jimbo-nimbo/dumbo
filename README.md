@@ -101,3 +101,33 @@ Run search module, then "?l" command shows all possible commands.
    }
  }
 ```
+
+analysis of performance:
+hbase data bulk, hbase mark bulk, elastic bulk
+HBase mark thread, HBase data thread, fetcher thread, parser thread, elastic thread : number of fetch and parse per second : testTime
+5000, 5000, 500
+16, 8, 200, 8, 4 : 150, 151 : 3065s
+
+5000, 5000, 500
+16, 8, 150, 8, 4 : 109, 109 : 710s
+
+5000, 5000, 500
+16, 8, 250, 8, 4 : 150, 148 : 2200s
+
+5000, 5000, 1000
+16, 8, 250, 8, 4 : 
+
+
+
+
+
+
+
+# Setting Kafka
+
+```$xslt
+./bin/kafka-server-start.sh -daemon config/server.properties
+./bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+
+
+```

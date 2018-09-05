@@ -27,7 +27,9 @@ public class DuplicateChecker {
         Timer.Context dcGetShouldFetchRequestsTimeContext = Metrics.getInstance().dcGetShouldFetchRequestsTime();
         HBaseMarkModel hBaseMarkModel = cache.getIfPresent(sourceUrl);
         if (hBaseMarkModel == null) {
+            Timer.Context hbaseExistRequestsTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
             hBaseMarkModel = HBase.getInstance().getMark(sourceUrl);
+            hbaseExistRequestsTimeContext.stop();
         }
         dcGetShouldFetchRequestsTimeContext.stop();
         return hBaseMarkModel;
