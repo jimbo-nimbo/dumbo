@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Worker implements Runnable{
-    private static final Logger logger = LoggerFactory.getLogger(ElasticWorker.class);
+    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     private final ElasticsearchSetting elasticsearchSetting;
 
