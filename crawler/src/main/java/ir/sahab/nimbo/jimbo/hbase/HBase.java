@@ -21,7 +21,7 @@ import java.util.Objects;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
-public class HBase{
+public class HBase {
 
     private static final Logger logger = LoggerFactory.getLogger(HBase.class);
 
@@ -116,7 +116,6 @@ public class HBase{
             e.printStackTrace();
         }
         return null;
-
     }
 
     @SuppressWarnings("Duplicates")

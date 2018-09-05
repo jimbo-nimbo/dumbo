@@ -27,7 +27,6 @@ public class HBase {
     private TableName tableName;
     Table table = null;
 
-    // TODO: remove all the unnecessary functions
     private HBase() {
         tableName = TableName.valueOf(HBASE_TABLE_NAME);
         Configuration config = HBaseConfiguration.create();
@@ -58,26 +57,6 @@ public class HBase {
 
     public static HBase getInstance() {
         return hbase;
-    }
-
-
-    String reverseUrl(URL url) {
-        //return url.getProtocol() + "://" + reverseDomain(url.getHost()) + url.getPath();
-        return reverseDomain(url.getHost()) + getHash(url.getPath());
-    }
-
-    private String reverseDomain(String domain) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] res = domain.split("\\.");
-        try {
-            stringBuilder.append(res[res.length - 1]);
-            for (int i = 1; i < res.length; i++) {
-                stringBuilder.append("." + res[res.length - 1 - i]);
-            }
-        } catch (IndexOutOfBoundsException e) {
-            logger.error(e.getMessage());
-        }
-        return stringBuilder.toString();
     }
 
     private static String getHash(String inp) {
@@ -125,41 +104,7 @@ public class HBase {
         }
     }
 
-    public ResultScanner scanData(List<byte[]> qulifiers) {
-
-        Scan scan = new Scan();
-        ResultScanner results = null;
-        for (byte[] bytes : qulifiers) {
-            scan.addColumn(HBASE_DATA_CF_NAME.getBytes(), bytes);
-        }
-        try {
-            results = table.getScanner(scan);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return results;
-    }
-
-    public ResultScanner scanColumnFamily(List<byte[]> columnFamily) {
-
-        Scan scan = new Scan();
-        ResultScanner results = null;
-        for (byte[] bytes : columnFamily) {
-            scan.addFamily(bytes);
-        }
-        try {
-            results = table.getScanner(scan);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return results;
-    }
-
     String makeRowKey(String row) {
         return getHash(row);
-    }
-
-    Table getTable() {
-        return table;
     }
 }
