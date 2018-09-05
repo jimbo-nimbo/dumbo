@@ -1,19 +1,14 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
-import ir.sahab.nimbo.jimbo.ElasticClientBuilder;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,7 +32,7 @@ public class ElasticsearchHandler implements Runnable {
                                 ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
 
         this.elasticsearchSetting = elasticsearchSetting;
-        client = ElasticClientBuilder.build();
+        client = ElasticClientBuilder.buildTransport();
         ElasticsearchHandler.elasticQueue = elasticQueue;
     }
 

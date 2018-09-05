@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo;
+package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,5 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
-import ir.sahab.nimbo.jimbo.ElasticClientBuilder;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -29,7 +28,7 @@ public class ElasticWorker extends Thread {
     public ElasticWorker(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
                                 ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
         this.elasticsearchSetting = elasticsearchSetting;
-        client = ElasticClientBuilder.build();
+        client = ElasticClientBuilder.buildTransport();
         this.elasticQueue = elasticQueue;
     }
 

@@ -1,25 +1,10 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
-import ir.sahab.nimbo.jimbo.ElasticClientBuilder;
-import ir.sahab.nimbo.jimbo.main.Config;
-import ir.sahab.nimbo.jimbo.metrics.Metrics;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class ElasticsearchHandler{

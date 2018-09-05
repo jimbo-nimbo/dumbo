@@ -30,7 +30,7 @@ public class FetcherTest {
 //
 //        List<CompletableFuture<Response>> listenableFutures = new ArrayList<>();
 //        for (int i = 0; i < 200; i++) {
-//            Request request = Dsl.get("https://en.wikipedia.org/wiki/" + i).build();
+//            Request request = Dsl.get("https://en.wikipedia.org/wiki/" + i).buildTransport();
 //            client.
 //            ListenableFuture<Response> future = client.executeRequest(request);
 //            CompletableFuture<Response> completableFuture = future.toCompletableFuture();
