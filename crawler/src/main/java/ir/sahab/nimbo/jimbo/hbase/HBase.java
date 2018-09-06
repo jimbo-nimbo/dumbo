@@ -14,47 +14,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.NavigableMap;
 import java.util.Objects;
 
 import static ir.sahab.nimbo.jimbo.main.Config.*;
 
-public class HBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(HBase.class);
+public class HBase extends AbstractHBase {
 
     private static HBase hbase = new HBase();
-    private TableName tableName;
-    Table table = null;
 
     private HBase() {
-        tableName = TableName.valueOf(HBASE_TABLE_NAME);
-        Configuration config = HBaseConfiguration.create();
-        String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_SITE_DIR)).getPath();
-        config.addResource(new Path(path));
-        path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_CORE_DIR)).getPath();
-        config.addResource(new Path(path));
-        boolean conn = true;
-        Connection connection = null;
-        while (conn) {
-            try {
-                connection = ConnectionFactory.createConnection(config);
-                conn = false;
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
+        super(HBASE_TABLE_NAME);
+    }
+
+    @Override
+    protected void initializeTable(Connection connection) throws IOException {
+        Admin admin = connection.getAdmin();
+        if (admin.tableExists(tableName)) {
+            return;
         }
-        try {
-            Admin admin = connection.getAdmin();
-            if (!admin.tableExists(tableName)) {
-                initialize(admin);
-            }
-            table = connection.getTable(tableName);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        HTableDescriptor desc = new HTableDescriptor(tableName);
+        desc.addFamily(new HColumnDescriptor(HBASE_DATA_CF_NAME));
+        desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
+        // TODO: region bandy
+        admin.createTable(desc);
     }
 
     public static HBase getInstance() {
@@ -99,7 +81,7 @@ public class HBase {
         HBaseMarkModel hBaseMarkModel;
         try {
             Result result = table.get(get);
-            if(result != null) {
+            if (result != null) {
                 byte[] url = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES);
                 byte[] lseen = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_LAST_SEEN_BYTES);
                 byte[] dur = result.getValue(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_SEEN_DURATION_BYTES);
@@ -116,27 +98,6 @@ public class HBase {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @SuppressWarnings("Duplicates")
-    private void initialize(Admin admin) {
-        try {
-            HTableDescriptor desc = new HTableDescriptor(tableName);
-            desc.addFamily(new HColumnDescriptor(HBASE_DATA_CF_NAME));
-            desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
-            //TODO region bandy
-            admin.createTable(desc);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private static String getHash(String inp) {
-        return DigestUtils.md5Hex(inp);
-    }
-
-    String makeRowKey(String row){
-        return getHash(row);
     }
 
     Table getTable() {

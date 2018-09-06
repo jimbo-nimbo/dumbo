@@ -19,48 +19,18 @@ import java.util.Objects;
 
 import static ir.sahab.nimbo.jimbo.elastic.Config.*;
 
-public class HBase {
+public class HBase extends AbstractHBase {
 
     private static final Logger logger = LoggerFactory.getLogger(HBase.class);
 
     private static HBase hbase = new HBase();
-    private TableName tableName;
-    Table table = null;
 
     private HBase() {
-        tableName = TableName.valueOf(HBASE_TABLE_NAME);
-        Configuration config = HBaseConfiguration.create();
-        String path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_SITE_DIR)).getPath();
-        config.addResource(new Path(path));
-        path = Objects.requireNonNull(this.getClass().getClassLoader().getResource(HBASE_CORE_DIR)).getPath();
-        config.addResource(new Path(path));
-        boolean conn = true;
-        Connection connection = null;
-        while (conn) {
-            try {
-                connection = ConnectionFactory.createConnection(config);
-                conn = false;
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
-        }
-        try {
-            Admin admin = connection.getAdmin();
-            if (!admin.tableExists(tableName)) {
-                initialize(admin);
-            }
-            table = connection.getTable(tableName);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        super(HBASE_TABLE_NAME);
     }
 
     public static HBase getInstance() {
         return hbase;
-    }
-
-    private static String getHash(String inp) {
-        return DigestUtils.md5Hex(inp);
     }
 
     public int getNumberOfReferences(String sourceUrl) {
@@ -81,30 +51,16 @@ public class HBase {
         return 0;
     }
 
-    private void initialize(Admin admin) {
-        try {
-            HTableDescriptor desc = new HTableDescriptor(tableName);
-            desc.addFamily(new HColumnDescriptor(HBASE_DATA_CF_NAME));
-            desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
-            //TODO region bandy
-            admin.createTable(desc);
-//            TableDescriptorBuilder tableDescriptorBuilder =
-//                    TableDescriptorBuilder.newBuilder(tableName);
-//            List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFAnchor.getBytes()).build());
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFMeta.getBytes()).build());
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFTitle.getBytes()).build());
-//            columnFamilyDescriptors.add(ColumnFamilyDescriptorBuilder.newBuilder(cFText.getBytes()).build());
-//            //columnFamilyDescriptorBuilder.setValue("col1".getBytes(), "val1".getBytes());
-//            //columnFamilyDescriptorBuilder2.setValue("col2".getBytes(), "val2".getBytes());
-//            tableDescriptorBuilder.setColumnFamilies(columnFamilyDescriptors);
-//            admin.createTable(tableDescriptorBuilder.build());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
+    @Override
+    protected void initializeTable(Connection connection) throws IOException {
+        Admin admin = connection.getAdmin();
+        if (admin.tableExists(tableName)) {
+            return;
         }
-    }
-
-    String makeRowKey(String row) {
-        return getHash(row);
+        HTableDescriptor desc = new HTableDescriptor(tableName);
+        desc.addFamily(new HColumnDescriptor(HBASE_DATA_CF_NAME));
+        desc.addFamily(new HColumnDescriptor(HBASE_MARK_CF_NAME));
+        // TODO: region bandy
+        admin.createTable(desc);
     }
 }
