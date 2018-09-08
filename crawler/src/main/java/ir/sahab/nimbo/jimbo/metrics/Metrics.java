@@ -41,6 +41,10 @@ public class Metrics {
     private Meter fetcherMarkWorkerNewLink;
     private Meter fetcherMarkWorkerUpdateLink;
     private Meter elasticWorkerNumberOfCyclesDone;
+    private Meter elasticNumberOfPutsFromQ;
+    private Meter hbaseNumberOfMarksFromQ;
+    private Meter dcPageNotChanged;
+    private Meter dcPageChanged;
 
     private Timer lruExistRequests;
     private Timer lruPutRequests;
@@ -124,6 +128,10 @@ public class Metrics {
         fetcherMarkWorkerUpdateLink = metricRegistry.meter("fetcher.mark.worker.updatelink");
         elasticWorkerNumberOfCyclesDone =
                 metricRegistry.meter("elasticsearch.worker.number.of.cycles");
+        hbaseNumberOfMarksFromQ = metricRegistry.meter("hbase.number.of.marks.from.Q");
+        elasticNumberOfPutsFromQ = metricRegistry.meter("elastic.number.of.puts.from.Q");
+        dcPageChanged = metricRegistry.meter("dc.page.changed");
+        dcPageNotChanged = metricRegistry.meter("dc.page.not.changed");
 
         lruExistRequests = metricRegistry.timer("lru.exist.requests");
         lruPutRequests = metricRegistry.timer("lru.put.requests");
@@ -212,6 +220,11 @@ public class Metrics {
     public void markFetcherMarkWorkerNewLink(){fetcherMarkWorkerNewLink.mark();}
     public void markFetcherMarkWorkerUpdateLink(){fetcherMarkWorkerUpdateLink.mark();}
     public void markElasticWorkerNumberOfCyclesDone(){elasticWorkerNumberOfCyclesDone.mark();}
+    public void markElasticNumberOfPutsFromQ(){elasticNumberOfPutsFromQ.mark();}
+    public void markHbaseNumberOfMarksFromQ(){hbaseNumberOfMarksFromQ.mark();}
+    public void markDcPageNotChanged(){dcPageNotChanged.mark();}
+    public void markDcPageChanged(){dcPageChanged.mark();}
+
     public Timer.Context urlFetchRequestsTime() {
         return urlFetchRequests.time();
     }

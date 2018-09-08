@@ -77,7 +77,7 @@ public class Crawler {
             try {
                 parserThreadControler.set(Integer.valueOf(cmd));
             } catch (Exception e){
-                logger.info("wrong number format in crawler input scanner");
+                logger.error("wrong number format in crawler input scanner");
             }
 
         } while (!cmd.equals("quit"));

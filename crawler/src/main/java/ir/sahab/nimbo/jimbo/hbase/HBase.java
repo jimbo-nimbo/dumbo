@@ -70,6 +70,8 @@ public class HBase extends AbstractHBase {
                 Bytes.toBytes(markModel.getDuration()));
         p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
                 sourceBytes);
+        p.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_CONTENT_HASH_BYTES,
+                Bytes.toBytes(markModel.getBodyHash()));
         p.addColumn(HBASE_DATA_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES,
                 sourceBytes);
         return p;

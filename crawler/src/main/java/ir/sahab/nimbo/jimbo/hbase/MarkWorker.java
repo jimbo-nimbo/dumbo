@@ -21,6 +21,7 @@ public class MarkWorker extends Thread {
         while (true) {
             for (int i = 0; i < HBASE_MARK_BULK_LIMIT; i++) {
                 puts.add(HBase.getInstance().getPutMark(DuplicateChecker.getInstance().take()));
+                Metrics.getInstance().markHbaseNumberOfMarksFromQ();
             }
             try {
                 Metrics.getInstance().markFetcherMarkWorkerNumberOfBulkPacksSend();

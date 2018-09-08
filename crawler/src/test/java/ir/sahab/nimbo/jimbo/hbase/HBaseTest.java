@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.parser.Link;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -55,15 +56,18 @@ public class HBaseTest {
 
     }
 
-//    @Test
-//    public void putAndGetMarkTest() throws MalformedURLException {
-//        String url = "http://www.test.com";
-//        HBase.getInstance().putMark(url);
-//        byte[] res = HBase.getInstance().getMark(url, HBASE_MARK_Q_NAME_URL);
-//        HBaseMarkModel hBaseMarkModel = HBase.getInstance().getMark(url);
-//        assertEquals(url, Bytes.toString(res));
-//        assertEquals(url, hBaseMarkModel.getUrl());
-//    }
+    @Test
+    public void putAndGetMarkTest() throws IOException {
+        String url = "http://www.test.com";
+        HBaseMarkModel hBaseMarkModel = new HBaseMarkModel(
+                url, System.currentTimeMillis(), 100L, DigestUtils.md5Hex(url));
+        HBase.getInstance().table.put(HBase.getInstance().getPutMark(hBaseMarkModel));
+        HBaseMarkModel hBaseMarkModel1 = HBase.getInstance().getMark(url);
+        assertEquals(url, hBaseMarkModel.getUrl());
+        assertEquals(hBaseMarkModel.getBodyHash(), hBaseMarkModel1.getBodyHash());
+        assertEquals(hBaseMarkModel.getDuration(), hBaseMarkModel1.getDuration());
+        assertEquals(hBaseMarkModel.getLastSeen(), hBaseMarkModel1.getLastSeen());
+    }
 
     @Test
     public void existData() {

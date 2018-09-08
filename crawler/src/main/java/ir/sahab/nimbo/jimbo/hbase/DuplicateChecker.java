@@ -4,6 +4,7 @@ import com.codahale.metrics.Timer;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -14,10 +15,12 @@ import static ir.sahab.nimbo.jimbo.main.Config.*;
 public class DuplicateChecker {
     private static DuplicateChecker duplicateChecker = new DuplicateChecker();
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DuplicateChecker.class);
-    private static Cache<String, HBaseMarkModel> cache = Caffeine.newBuilder()
+    static Cache<String, HBaseMarkModel> cache = Caffeine.newBuilder()
             .expireAfterWrite(100L, TimeUnit.SECONDS)
             .maximumSize(HBASE_BULK_CAPACITY).build();
-    private static ArrayBlockingQueue<HBaseMarkModel> arrayBlockingQueue = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
+    static ArrayBlockingQueue<HBaseMarkModel> arrayBlockingQueue = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
+
+
     private DuplicateChecker(){
 
     }
@@ -50,15 +53,19 @@ public class DuplicateChecker {
 
     public void updateLastSeen(HBaseMarkModel markModel, String newHash){
         Timer.Context dcUpdateKastSeenRequestsTimeContext = Metrics.getInstance().dcUpdateKastSeenRequestsTime();
-        if(markModel.getBodyHash().equals(newHash) && markModel.getDuration() < HBASE_DURATION_MAX) {
-            markModel.setDuration(markModel.getDuration() * 2);
-        }
-        else {
-            if(markModel.getDuration() > HBASE_DURATION_MIN) {
+        if(markModel.getBodyHash().equals(newHash)){
+            if (markModel.getDuration() < HBASE_DURATION_MAX) {
+                Metrics.getInstance().markDcPageNotChanged();
+                markModel.setDuration(markModel.getDuration() * 2);
+                add(markModel);
+            }
+        } else {
+            if (markModel.getDuration() > HBASE_DURATION_MIN) {
+                Metrics.getInstance().markDcPageChanged();
                 markModel.setDuration(markModel.getDuration() / 2);
+                add(markModel);
             }
         }
-        add(markModel);
         dcUpdateKastSeenRequestsTimeContext.close();
     }
     public HBaseMarkModel take(){
@@ -83,4 +90,5 @@ public class DuplicateChecker {
     public static ArrayBlockingQueue<HBaseMarkModel> getArrayBlockingQueue() {
         return arrayBlockingQueue;
     }
+
 }

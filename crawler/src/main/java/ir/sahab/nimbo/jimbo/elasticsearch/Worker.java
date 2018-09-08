@@ -53,6 +53,7 @@ public class Worker implements Runnable{
             for (int i = 0; i < bulkSize; i++) {
                 try {
                     models.add(elasticQueue.take());
+                    Metrics.getInstance().markElasticNumberOfPutsFromQ();
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
                 }
@@ -101,7 +102,7 @@ public class Worker implements Runnable{
             @Override
             public void onFailure(Exception e) {
                 Metrics.getInstance().markElasticSubmitFailure();
-                logger.warn(e.getMessage());
+                logger.error(e.getMessage());
             }
         });
     }

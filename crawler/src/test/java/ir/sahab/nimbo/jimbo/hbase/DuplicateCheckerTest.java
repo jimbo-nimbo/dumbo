@@ -1,6 +1,7 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -15,6 +16,8 @@ public class DuplicateCheckerTest {
     static final String JAVA_CODE = "https://examples.javacodegeeks.com";
     static URL STACKOVERFLOWURL;
     static URL JAVA_CODE_URL;
+    static HBaseMarkModel JAVA_CODE_MARK_MODEL = new HBaseMarkModel(
+            JAVA_CODE, System.currentTimeMillis(), 100L, DigestUtils.md5Hex(JAVA_CODE));
     @BeforeClass
     public static void setUpALL() throws MalformedURLException {
         STACKOVERFLOWURL = new URL(STACKOVERFLOW);
@@ -22,13 +25,21 @@ public class DuplicateCheckerTest {
         Metrics.getInstance().mockInit();
     }
 
+
+    void addJava(){
+        DuplicateChecker.getInstance().add(JAVA_CODE_MARK_MODEL);
+    }
+
     @Test
     public void add() {
-        //DuplicateChecker.getInstance().add();
+        addJava();
+        assertTrue(DuplicateChecker.cache.estimatedSize() > 0);
+        assertTrue(DuplicateChecker.arrayBlockingQueue.size() > 0);
     }
 
     @Test
     public void updateLastSeen() {
+        //DuplicateChecker.getInstance().updateLastSeen(JAVA_CODE_MARK_MODEL, );
     }
 
     @Test
@@ -36,14 +47,7 @@ public class DuplicateCheckerTest {
     }
 
     @Test
-    public void getInstance() {
-    }
+    public void getShouldFetchTest() {
 
-    @Test
-    public void getCache() {
-    }
-
-    @Test
-    public void getArrayBlockingQueue() {
     }
 }

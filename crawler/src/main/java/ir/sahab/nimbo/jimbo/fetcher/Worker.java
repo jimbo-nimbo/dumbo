@@ -12,6 +12,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,19 +54,25 @@ public class Worker implements Runnable {
                 Metrics.getInstance().markFetcherReceivedLinks(shuffledLinks.size());
                 for (String shuffledLink : shuffledLinks) {
                     Timer.Context urlFetchTimeContext = Metrics.getInstance().urlFetchRequestsTime();
+                    //250-300
                     Timer.Context fetcherMarkWorkerCheckLinkRequestsTimeContext =
                             Metrics.getInstance().fetcherMarkWorkerCheckLinkRequestsTime();
+                    //1-4
                     HBaseMarkModel markModel = checkLink(shuffledLink);
                     fetcherMarkWorkerCheckLinkRequestsTimeContext.stop();
                     if (markModel != null) {
                         Timer.Context httpTimeContext = Metrics.getInstance().httpRequestsTime();
+                        //1060
                         try {
-                            String text = Jsoup.connect(shuffledLink).timeout(timeout)
-                                    .validateTLSCertificates(false).get().html();
-                            rawWebPagesQueue.put(new WebPageModel(text, shuffledLink));
+                            Document doc = Jsoup.connect(shuffledLink).timeout(timeout)
+                                    .validateTLSCertificates(false).get();
+                            String html = doc.html();
+                            String text = doc.text();
+                            rawWebPagesQueue.put(new WebPageModel(html, shuffledLink));
                             Metrics.getInstance().markSuccessfulFetches();
                             Timer.Context fetcherUpdateSiteHBaseRequestsTimeContext =
                                     Metrics.getInstance().fetcherUpdateSiteHBaseRequestsTime();
+                            //1
                             DuplicateChecker.getInstance().updateLastSeen(markModel, DigestUtils.md5Hex(text));
                             fetcherUpdateSiteHBaseRequestsTimeContext.stop();
                         } catch (IOException | IllegalArgumentException |
@@ -99,7 +106,6 @@ public class Worker implements Runnable {
         lruExistTimeContext.stop();
         if (lruExist) {
             Metrics.getInstance().markLruHit();
-
             Timer.Context kafkaProduceTimeContext = Metrics.getInstance().kafkaProduceRequestsTime();
             producer.send(new ProducerRecord<>(Config.URL_FRONTIER_TOPIC, null, link));
             kafkaProduceTimeContext.stop();
@@ -120,17 +126,13 @@ public class Worker implements Runnable {
             lruCache.remove(host);
             return null;
         }
-        if(shouldFetchMarkModel == null){
+        if (shouldFetchMarkModel == null) {
             Metrics.getInstance().markFetcherMarkWorkerNewLink();
             shouldFetchMarkModel = new HBaseMarkModel(link, System.currentTimeMillis(),
                     Config.HBASE_MARK_DEFAULT_SEEN_DURATION, "");
         } else {
             Metrics.getInstance().markFetcherMarkWorkerUpdateLink();
         }
-        Metrics.getInstance().markNewLinks();
-        Timer.Context fetcherAddMarkRequestsTimeContext = Metrics.getInstance().fetcherAddMarkRequestsTime();
-        DuplicateChecker.getInstance().add(shouldFetchMarkModel);
-        fetcherAddMarkRequestsTimeContext.stop();
         return shouldFetchMarkModel;
     }
 
