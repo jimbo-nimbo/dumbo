@@ -40,6 +40,7 @@ public class Metrics {
     private Meter fetcherMarkWorkerNumberOfBulkPacksSend;
     private Meter fetcherMarkWorkerNewLink;
     private Meter fetcherMarkWorkerUpdateLink;
+    private Meter elasticWorkerNumberOfCyclesDone;
 
     private Timer lruExistRequests;
     private Timer lruPutRequests;
@@ -66,6 +67,7 @@ public class Metrics {
     private Timer dcAddRequests;
     private Timer dcUpdateLastSeenRequests;
     private Timer dcGetShouldFetchRequests;
+    private Timer elasticSearchWorkerJobsRequests;
 
     private Metrics() {
         metricRegistry = new MetricRegistry();
@@ -120,6 +122,8 @@ public class Metrics {
                 .meter("fetcher.mark.worker.number.of.bilk.packs.send");
         fetcherMarkWorkerNewLink = metricRegistry.meter("fetcher.mark.worker.newlink");
         fetcherMarkWorkerUpdateLink = metricRegistry.meter("fetcher.mark.worker.updatelink");
+        elasticWorkerNumberOfCyclesDone =
+                metricRegistry.meter("elasticsearch.worker.number.of.cycles");
 
         lruExistRequests = metricRegistry.timer("lru.exist.requests");
         lruPutRequests = metricRegistry.timer("lru.put.requests");
@@ -146,6 +150,7 @@ public class Metrics {
         fetcherMarkWorkerPutRequests = metricRegistry.timer("fetcher.mark.worker.put.requests");
         fetcherMarkWorkerJobRequests = metricRegistry.timer("fetcher.mark.worker.job.requests");
         fetcherMarkWorkerCheckLinkRequests = metricRegistry.timer("fetcher.mark.worker.checklink.requests");
+        elasticSearchWorkerJobsRequests = metricRegistry.timer("elasticsearch.worker.jobs.requests");
 
     }
 
@@ -206,7 +211,7 @@ public class Metrics {
     public void markFetcherMarkWorkerNumberOfBulkPacksSend(){fetcherMarkWorkerNumberOfBulkPacksSend.mark();}
     public void markFetcherMarkWorkerNewLink(){fetcherMarkWorkerNewLink.mark();}
     public void markFetcherMarkWorkerUpdateLink(){fetcherMarkWorkerUpdateLink.mark();}
-
+    public void markElasticWorkerNumberOfCyclesDone(){elasticWorkerNumberOfCyclesDone.mark();}
     public Timer.Context urlFetchRequestsTime() {
         return urlFetchRequests.time();
     }
@@ -266,6 +271,7 @@ public class Metrics {
     public Timer.Context dcUpdateKastSeenRequestsTime(){return dcUpdateLastSeenRequests.time();}
     public Timer.Context fetcherMarkWorkerPutRequestsTime(){return fetcherMarkWorkerPutRequests.time();}
     public Timer.Context fetcherMarkWorkerJobRequestsTime(){return fetcherMarkWorkerJobRequests.time();}
+    public Timer.Context elasticSearchWorkerJobsRequestsTime(){return elasticSearchWorkerJobsRequests.time();}
 
 
     public MetricRegistry getMetricRegistry() {

@@ -102,6 +102,8 @@ public class HBaseTest {
 //        assertEquals(100, HBase.getInstance().getBulkQueue().size());
 //    }
 
+
+
     //@Test
 //    public void singlePutHugeMarkImmediateNotTest(){
 //        HBase hBase = HBase.getInstance();
@@ -154,7 +156,6 @@ public class HBaseTest {
         System.err.println((System.currentTimeMillis() - b) / size);
     }
 
-//    @Test
 //    public void benchmarkExistMarkNotTest(){
 //        HBase hBase = HBase.getInstance();
 //        long b = System.currentTimeMillis();

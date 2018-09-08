@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
+import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpHost;
@@ -46,6 +47,7 @@ public class Worker implements Runnable{
         final String indexName = elasticsearchSetting.getIndexName();
         List<ElasticsearchWebpageModel> models = new ArrayList<>();
         while (true) {
+            Metrics.getInstance().markElasticWorkerNumberOfCyclesDone();
             models.clear();
             for (int i = 0; i < bulkSize; i++) {
                 try {
@@ -54,20 +56,21 @@ public class Worker implements Runnable{
                     logger.error(e.getMessage());
                 }
             }
-
+            Timer.Context elasticSearchWorkerJobsRequestsTimeContext =
+                    Metrics.getInstance().elasticSearchWorkerJobsRequestsTime();
             try {
                 submit(models, indexName);
             } catch (IOException e) {
                 logger.error(e.getMessage());
+            } finally {
+                elasticSearchWorkerJobsRequestsTimeContext.stop();
             }
         }
     }
 
 
     void submit(List<ElasticsearchWebpageModel> models, String indexName) throws IOException {
-
         XContentBuilder builder;
-
         BulkRequest bulkRequest = new BulkRequest();
         for (ElasticsearchWebpageModel model : models) {
 
@@ -88,18 +91,24 @@ public class Worker implements Runnable{
 
             bulkRequest.add(request);
         }
-        client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
-            @Override
-            public void onResponse(BulkResponse bulkItemResponses) {
-                Metrics.getInstance().markElasticSubmitSuccess();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Metrics.getInstance().markElasticSubmitFailure();
-                logger.warn(e.getMessage());
-            }
-        });
+        BulkResponse bulk = client.bulk(bulkRequest);
+        if(bulk.hasFailures()){
+            Metrics.getInstance().markElasticSubmitFailure();
+        } else {
+            Metrics.getInstance().markElasticSubmitSuccess();
+        }
+//        client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
+//            @Override
+//            public void onResponse(BulkResponse bulkItemResponses) {
+//                Metrics.getInstance().markElasticSubmitSuccess();
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//                Metrics.getInstance().markElasticSubmitFailure();
+//                logger.warn(e.getMessage());
+//            }
+//        });
     }
 
     private String getId(String url) {
