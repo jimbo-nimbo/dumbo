@@ -22,23 +22,7 @@ abstract public class AbstractHBase {
 
     protected AbstractHBase(String tableName) {
         this.tableName = TableName.valueOf(tableName);
-        Configuration config = HBaseConfiguration.create();
-        String path = Objects.requireNonNull(this.getClass().getClassLoader()
-                .getResource("hbase-site.xml")).getPath();
-        config.addResource(new Path(path));
-        path = Objects.requireNonNull(this.getClass().getClassLoader()
-                .getResource("core-site.xml")).getPath();
-        config.addResource(new Path(path));
-        boolean conn = true;
-        Connection connection = null;
-        while (conn) {
-            try {
-                connection = ConnectionFactory.createConnection(config);
-                conn = false;
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
-        }
+        Connection connection = HBaseConnection.getInstance().getConnection();
         try {
             initializeTable(connection);
             table = connection.getTable(this.tableName);

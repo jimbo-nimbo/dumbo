@@ -26,15 +26,15 @@ public class DocKeywords {
     public static void extractKeyword() throws IOException {
         Configuration hConf = HBaseConfiguration.create();
         String path = Objects.requireNonNull(DocKeywords.class
-                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
+                .getClassLoader().getResource("hbase-site.xml")).getPath();
         hConf.addResource(new Path(path));
         path = Objects.requireNonNull(DocKeywords.class
-                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
+                .getClassLoader().getResource("core-site.xml")).getPath();
         hConf.addResource(new Path(path));
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_INPUT_TABLE);
         hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.MARK_CF_NAME);
 
-        SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
+        SparkConf conf = new SparkConf().setAppName("DocKeywordsApp");
         JavaSparkContext jsc = new JavaSparkContext(conf);
 
         JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD = jsc
