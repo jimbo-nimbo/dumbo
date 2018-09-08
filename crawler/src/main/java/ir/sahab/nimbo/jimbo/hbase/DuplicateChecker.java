@@ -63,6 +63,7 @@ public class DuplicateChecker {
             if (markModel.getDuration() > HBASE_DURATION_MIN) {
                 Metrics.getInstance().markDcPageChanged();
                 markModel.setDuration(markModel.getDuration() / 2);
+                markModel.setBodyHash(newHash);
                 add(markModel);
             }
         }

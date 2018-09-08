@@ -4,7 +4,7 @@ public class HBaseMarkModel {
     private final String url;
     private final Long lastSeen;
     private Long duration;
-    private final String bodyHash;
+    private String bodyHash;
 
     public HBaseMarkModel(String url, Long lastSeen, Long duration, String bodyHash) {
         this.url = url;
@@ -31,5 +31,9 @@ public class HBaseMarkModel {
 
     public void setDuration(Long duration) {
         this.duration = duration;
+    }
+
+    public void setBodyHash(String bodyHash) {
+        this.bodyHash = bodyHash;
     }
 }
