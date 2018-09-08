@@ -1,4 +1,4 @@
-package ir.sahab.nimbo.jimbo;
+package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,12 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-class ElasticConfig {
+public class ElasticConfig {
     private static final Logger logger = LoggerFactory.getLogger(ElasticConfig.class);
 
     public static final String CLUSTER_NAME;
     public static final String HOSTS;
-    public static final int BULK_SIZE;
     public static final String INDEX_NAME;
 
     static {
@@ -27,7 +26,6 @@ class ElasticConfig {
 
         CLUSTER_NAME = props.getProperty("cluster.name");
         HOSTS = props.getProperty("hosts");
-        BULK_SIZE = Integer.parseInt(props.getProperty("bulk_size"));
         INDEX_NAME = props.getProperty("index_name");
     }
 }

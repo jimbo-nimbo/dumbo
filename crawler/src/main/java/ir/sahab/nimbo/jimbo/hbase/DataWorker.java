@@ -1,7 +1,6 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import com.codahale.metrics.Timer;
-import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.hadoop.hbase.client.Put;
 import org.slf4j.Logger;
@@ -12,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import static ir.sahab.nimbo.jimbo.main.Config.*;
+import static ir.sahab.nimbo.jimbo.main.Config.HBASE_DATA_BULK_LIMIT;
 
 public class DataWorker extends Thread{
 

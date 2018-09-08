@@ -3,8 +3,6 @@ package ir.sahab.nimbo.jimbo.main;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
-
 public class MainTest {
     @Test
     public void fetchTest() {

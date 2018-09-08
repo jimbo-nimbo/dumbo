@@ -2,10 +2,9 @@ package ir.sahab.nimbo.jimbo.main;
 
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
+import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
 import ir.sahab.nimbo.jimbo.elasticsearch.TrendFinder;
 import org.elasticsearch.search.SearchHit;
-
-import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -2,7 +2,6 @@ package ir.sahab.nimbo.jimbo.fetcher;
 
 import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.hbase.DuplicateChecker;
-import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.hbase.HBaseMarkModel;
 import ir.sahab.nimbo.jimbo.kafka.KafkaPropertyFactory;
 import ir.sahab.nimbo.jimbo.main.Config;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -115,15 +113,19 @@ public class Worker implements Runnable {
         Timer.Context fetcherShouldFetchRequestsTimeContext = Metrics.getInstance().fetcherShouldFetchRequestsTime();
         HBaseMarkModel shouldFetchMarkModel = DuplicateChecker.getInstance().getShouldFetchMarkModel(link);
         fetcherShouldFetchRequestsTimeContext.stop();
-        if (shouldFetchMarkModel != null && shouldFetchMarkModel.getDuration()
-                + shouldFetchMarkModel.getLastSeen() > System.currentTimeMillis()) {
+        if (shouldFetchMarkModel != null &&
+                shouldFetchMarkModel.getDuration() +
+                        shouldFetchMarkModel.getLastSeen() > System.currentTimeMillis()) {
             Metrics.getInstance().markDuplicatedLinks();
             lruCache.remove(host);
             return null;
         }
         if(shouldFetchMarkModel == null){
+            Metrics.getInstance().markFetcherMarkWorkerNewLink();
             shouldFetchMarkModel = new HBaseMarkModel(link, System.currentTimeMillis(),
                     Config.HBASE_MARK_DEFAULT_SEEN_DURATION, "");
+        } else {
+            Metrics.getInstance().markFetcherMarkWorkerUpdateLink();
         }
         Metrics.getInstance().markNewLinks();
         Timer.Context fetcherAddMarkRequestsTimeContext = Metrics.getInstance().fetcherAddMarkRequestsTime();

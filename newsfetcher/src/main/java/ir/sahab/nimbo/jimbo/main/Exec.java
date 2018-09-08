@@ -1,8 +1,8 @@
 package ir.sahab.nimbo.jimbo.main;
 
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchHandler;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchSetting;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchHandler;
 import ir.sahab.nimbo.jimbo.rss.RssFeed;
 import ir.sahab.nimbo.jimbo.rss.RssFeedMessage;
 import ir.sahab.nimbo.jimbo.rss.RssFeedParser;

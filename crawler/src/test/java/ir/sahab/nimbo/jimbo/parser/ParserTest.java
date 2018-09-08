@@ -9,8 +9,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import static org.junit.Assert.*;
-
 public class ParserTest {
 
     private int arraySize = 10000;

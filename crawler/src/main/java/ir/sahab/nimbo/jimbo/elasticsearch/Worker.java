@@ -1,36 +1,42 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
-import ir.sahab.nimbo.jimbo.ElasticClientBuilder;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.client.transport.TransportClient;
+import org.apache.http.HttpHost;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class ElasticWorker extends Thread {
-
-    private static final Logger logger = LoggerFactory.getLogger(ElasticWorker.class);
+public class Worker implements Runnable{
+    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     private final ElasticsearchSetting elasticsearchSetting;
 
     private static ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
 
-    private final TransportClient client;
+    private final RestHighLevelClient client;
 
-    public ElasticWorker(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
-                                ElasticsearchSetting elasticsearchSetting) throws UnknownHostException {
+    public Worker(ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
+                  ElasticsearchSetting elasticsearchSetting) {
         this.elasticsearchSetting = elasticsearchSetting;
-        client = ElasticClientBuilder.build();
         this.elasticQueue = elasticQueue;
+
+        this.client = new RestHighLevelClient(
+        RestClient.builder(
+                new HttpHost("hitler", 9200, "http"),
+                new HttpHost("genghis", 9200, "http")));
     }
 
     @Override
@@ -50,24 +56,26 @@ public class ElasticWorker extends Thread {
             }
 
             try {
-                if (submit(models, indexName)) {
-                    Metrics.getInstance().markElasticSubmitSuccess();
-                } else {
-                    Metrics.getInstance().markElasticSubmitFailure();
-                }
+                submit(models, indexName);
             } catch (IOException e) {
-                Metrics.getInstance().markElasticSubmitFailure();
                 logger.error(e.getMessage());
             }
         }
     }
 
 
-    boolean submit(List<ElasticsearchWebpageModel> models, String indexName) throws IOException {
-        XContentBuilder builder;
-        BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
+    void submit(List<ElasticsearchWebpageModel> models, String indexName) throws IOException {
 
+        XContentBuilder builder;
+
+        BulkRequest bulkRequest = new BulkRequest();
         for (ElasticsearchWebpageModel model : models) {
+
+            final IndexRequest request = new IndexRequest(
+                indexName,
+                "_doc",
+                getId(model.getUrl()));
+
             builder = XContentFactory.jsonBuilder();
             builder.startObject()
                     .field("url", model.getUrl())
@@ -75,11 +83,23 @@ public class ElasticWorker extends Thread {
                     .field("title", model.getTitle())
                     .field("description", model.getDescription())
                     .endObject();
-            bulkRequestBuilder.add(
-                    client.prepareIndex(indexName, "_doc", getId(model.getUrl())).setSource(builder));
-        }
 
-        return !bulkRequestBuilder.get().hasFailures();
+            request.source(builder);
+
+            bulkRequest.add(request);
+        }
+        client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
+            @Override
+            public void onResponse(BulkResponse bulkItemResponses) {
+                Metrics.getInstance().markElasticSubmitSuccess();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Metrics.getInstance().markElasticSubmitFailure();
+                logger.warn(e.getMessage());
+            }
+        });
     }
 
     private String getId(String url) {
@@ -91,5 +111,4 @@ public class ElasticWorker extends Thread {
         super.finalize();
         client.close();
     }
-
 }

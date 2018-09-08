@@ -1,13 +1,13 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.parser.Link;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -18,7 +18,7 @@ import static ir.sahab.nimbo.jimbo.main.Config.*;
 import static org.junit.Assert.*;
 
 public class HBaseTest {
-
+    private static final Logger logger = LoggerFactory.getLogger(HBaseTest.class);
 
     static final String STACKOVERFLOW = "https://stackoverflow.com";
     static final String JAVA_CODE = "https://examples.javacodegeeks.com";
@@ -30,17 +30,15 @@ public class HBaseTest {
         JAVA_CODE_URL = new URL(JAVA_CODE);
         HBase.getInstance();
     }
-    @Before
-    public void setUp() throws Exception {
 
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void getInstance() {
+    byte[] getMark(String sourceUrl, String qualifier) {
+        Get get = new Get(HBase.getInstance().makeRowKey(sourceUrl).getBytes());
+        try {
+            return HBase.getInstance().table.get(get).getValue(HBASE_MARK_CF_NAME.getBytes(), qualifier.getBytes());
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            return null;
+        }
     }
 
     @Test
@@ -57,13 +55,15 @@ public class HBaseTest {
 
     }
 
-    @Test
-    public void putAndGetMarkTest() throws MalformedURLException {
-        String url = "http://www.test.com";
-        HBase.getInstance().putMark(url);
-        byte[] res = HBase.getInstance().getMark(url, HBASE_MARK_Q_NAME_URL);
-        assertEquals(url, new String(res));
-    }
+//    @Test
+//    public void putAndGetMarkTest() throws MalformedURLException {
+//        String url = "http://www.test.com";
+//        HBase.getInstance().putMark(url);
+//        byte[] res = HBase.getInstance().getMark(url, HBASE_MARK_Q_NAME_URL);
+//        HBaseMarkModel hBaseMarkModel = HBase.getInstance().getMark(url);
+//        assertEquals(url, Bytes.toString(res));
+//        assertEquals(url, hBaseMarkModel.getUrl());
+//    }
 
     @Test
     public void existData() {
@@ -75,21 +75,12 @@ public class HBaseTest {
 //        assertFalse(HBase.getInstance().existData(JAVA_CODE));
     }
 
-    @Test
-    public void existMark() {
-        HBase.getInstance().putMark(STACKOVERFLOW);
-        assertTrue(HBase.getInstance().existMark(STACKOVERFLOW));
-        assertFalse(HBase.getInstance().existMark(JAVA_CODE));
-    }
-    @Test
-    public void revUrlTest() throws MalformedURLException {
-        //assertEquals("https://com.google", HBase.getInstance().reverseUrl(new URL("https://google.com")));
-        assertEquals("com.google.www", HBase.getInstance().reverseUrl(new URL("https://www.google.com")));
-        assertEquals("com.google.dev.www", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com")));
-        //assertEquals("https://com.google/test/test", HBase.getInstance().reverseUrl(new URL("https://google.com/test/test")));
-        assertEquals("com.google.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.google.com/test/test")));
-        assertEquals("com.google.dev.www/test/test", HBase.getInstance().reverseUrl(new URL("https://www.dev.google.com/test/test")));
-    }
+//    @Test
+//    public void existMark() {
+//        HBase.getInstance().putMark(STACKOVERFLOW);
+//        assertTrue(HBase.getInstance().existMark(STACKOVERFLOW));
+//        assertFalse(HBase.getInstance().existMark(JAVA_CODE));
+//    }
 
 //    @Test
 //    public void putBulkData() throws MalformedURLException {
@@ -112,81 +103,19 @@ public class HBaseTest {
 //    }
 
     //@Test
-    public void processAllNotTest() throws IOException {
-        ResultScanner results = HBase.getInstance()
-                .scanColumnFamily(Arrays.asList(HBASE_DATA_CF_NAME.getBytes()));
-        for (Result result = results.next(); result != null; result = results.next()){
-            Set<Map.Entry<byte[], byte[]>> enterySet = result.getFamilyMap(HBASE_DATA_CF_NAME.getBytes()).entrySet();
-            for(Map.Entry<byte[], byte[]> bytes : enterySet){
-                String qualif = new String(bytes.getKey());
-                if(qualif.contains("link")){
-                    String rev = HBase.getInstance().reverseUrl(new URL(new String(bytes.getValue())));
-                    if(rev.equals("") || rev.length() == 0){
-                        System.err.println(new String(bytes.getValue()));
-                    }
-                }
-            }
-        }
-    }
+//    public void singlePutHugeMarkImmediateNotTest(){
+//        HBase hBase = HBase.getInstance();
+//        for (int i = 0; i < 900; i++) {
+//            hBase.putMark("https://www.nimac.com" + String.valueOf(i));
+//            assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
+////            if(!hBase.existMark("https://www.nimac.com" + String.valueOf(i)))
+////                System.err.println(i);
+//        }
+//        //Thread.sleep(10000);
+//    }
 
-    @Test
-    public void singlePutHugeDataTest(){
-        HBase hBase = HBase.getInstance();
-        ArrayList<Link> arrayList = new ArrayList<>();
-        Link link = new Link("https://www.href.com", "anchor");
-        arrayList.add(link);
-        for (int i = 0; i < 900; i++) {
-            hBase.putData(new HBaseDataModel("https://www.test.com" + String.valueOf(i), arrayList));
-        }
-        //Thread.sleep(10000);
-        for(int i = 0; i < 900; i++) {
-            assertTrue(hBase.existData("https://www.nimac.com" + String.valueOf(i)));
-//            if(!hBase.existData("https://www.test.com" + String.valueOf(i)))
-//                System.err.println(i);
-        }
-    }
-
-    @Test
-    public void numberOfReferences(){
-        System.err.println(HBase.getInstance().getNumberOfReferences("https://www.test.com100"));
-    }
-
-    @Test
-    public void shouldFetchTest(){
-        HBase.getInstance().putMark(STACKOVERFLOW);
-        assertFalse(HBase.getInstance().shouldFetch(STACKOVERFLOW));
-        assertTrue(HBase.getInstance().shouldFetch(JAVA_CODE));
-
-    }
-
-    @Test
-    public void singlePutHugeMarkTest(){
-        HBase hBase = HBase.getInstance();
-        for (int i = 0; i < 900; i++) {
-            hBase.putMark("https://www.test.com" + String.valueOf(i));
-        }
-        //Thread.sleep(10000);
-        for(int i = 0; i < 900; i++) {
-            assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
-//            if(!hBase.existMark("https://www.test.com" + String.valueOf(i)))
-//                System.err.println(i);
-        }
-    }
 
     //@Test
-    public void singlePutHugeMarkImmediateNotTest(){
-        HBase hBase = HBase.getInstance();
-        for (int i = 0; i < 900; i++) {
-            hBase.putMark("https://www.nimac.com" + String.valueOf(i));
-            assertTrue(hBase.existMark("https://www.nimac.com" + String.valueOf(i)));
-//            if(!hBase.existMark("https://www.nimac.com" + String.valueOf(i)))
-//                System.err.println(i);
-        }
-        //Thread.sleep(10000);
-    }
-
-
-    @Test
     public void basicHbaseBenchmarkNotTest(){
         HBase hBase = HBase.getInstance();
         StringBuilder bigUrl = new StringBuilder("https://www.test.com");
@@ -264,5 +193,14 @@ public class HBaseTest {
         }
         System.err.println(System.currentTimeMillis() - b);
     }
+//    @Test
+//    public void benchmarkExistMarkNotTest(){
+//        HBase hBase = HBase.getInstance();
+//        long b = System.currentTimeMillis();
+//        for (int i = 0; i < 300; i++) {
+//            hBase.existMark("https://www.test.com" + String.valueOf(i));
+//        }
+//        System.err.println(System.currentTimeMillis() - b);
+//    }
 
 }

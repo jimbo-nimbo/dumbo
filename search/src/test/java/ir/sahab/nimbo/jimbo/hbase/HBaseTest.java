@@ -2,8 +2,6 @@ package ir.sahab.nimbo.jimbo.hbase;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class HBaseTest {
 
     @Test

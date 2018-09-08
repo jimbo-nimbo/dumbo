@@ -3,7 +3,6 @@ package ir.sahab.nimbo.jimbo.parser;
 import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.Validator;
-import ir.sahab.nimbo.jimbo.hbase.HBase;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;

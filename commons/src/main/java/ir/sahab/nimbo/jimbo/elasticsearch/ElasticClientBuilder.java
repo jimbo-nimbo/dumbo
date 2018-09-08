@@ -1,5 +1,7 @@
-package ir.sahab.nimbo.jimbo;
+package ir.sahab.nimbo.jimbo.elasticsearch;
 
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -53,7 +55,7 @@ public class ElasticClientBuilder {
      * get hosts from readHosts() because there may be multiple hosts
      * and it's configurable in elasticsearch.properties file in resources
      */
-    public static TransportClient build() throws UnknownHostException {
+    public static TransportClient buildTransport() throws UnknownHostException {
         Settings settings = readSettings();
         TransportClient client = new PreBuiltTransportClient(settings);
 
@@ -85,5 +87,20 @@ public class ElasticClientBuilder {
         int getPort() {
             return port;
         }
+    }
+
+    private static List<HttpHost> getHttpHosts() {
+        List<HttpHost> res = new ArrayList<>();
+        List<Host> hosts = readHosts();
+        for (Host host : hosts) {
+            res.add(new HttpHost(host.getHostName(), host.getPort(), "http"));
+        }
+        return res;
+    }
+
+    public static RestClient buildRest() {
+        List<HttpHost> hostsArray = getHttpHosts();
+        HttpHost[] hosts = hostsArray.toArray(new HttpHost[hostsArray.size()]);
+        return RestClient.builder(hosts).build();
     }
 }

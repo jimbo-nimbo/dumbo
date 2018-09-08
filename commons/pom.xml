@@ -33,6 +33,18 @@
             <artifactId>transport</artifactId>
             <version>6.4.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client</artifactId>
+            <version>6.4.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-shaded-client</artifactId>
+            <version>1.2.6.1</version>
+        </dependency>
     </dependencies>
 
 
