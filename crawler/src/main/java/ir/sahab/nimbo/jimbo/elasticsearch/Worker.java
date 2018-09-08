@@ -8,6 +8,7 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -91,7 +92,7 @@ public class Worker implements Runnable{
 
             bulkRequest.add(request);
         }
-        client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
+        client.bulkAsync(bulkRequest, RequestOptions.DEFAULT, new ActionListener<BulkResponse>() {
             @Override
             public void onResponse(BulkResponse bulkItemResponses) {
                 Metrics.getInstance().markElasticSubmitSuccess();

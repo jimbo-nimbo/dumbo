@@ -17,6 +17,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -216,7 +217,14 @@ public class AnchorFinderTest
             return Bytes.toInt(CellUtil.cloneValue(cell));
         });
 
-        final List<Integer> collect = resultRDD.collect();
+
+        final List<Integer> collect = resultRDD
+//                .sortBy(new Function<Integer, Object>() {
+//                    @Override
+//                    public Object call(Integer integer) throws Exception {
+//                    }
+//                })
+        .collect();
         System.out.println(collect.size());
         for (int i = 0; i < collect.size(); i++) {
             System.out.println(i);
