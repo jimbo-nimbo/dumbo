@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class ParseWorker implements Runnable {
 
@@ -28,13 +29,16 @@ class ParseWorker implements Runnable {
     private final ArrayBlockingQueue<WebPageModel> webPage;
     private final ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue;
     private final ArrayBlockingQueue<HBaseDataModel> hbaseQueue;
-
+    private final int id;
+    private final AtomicInteger parserThreadControler;
     private boolean running = true;
 
     ParseWorker(Producer<String, String> producer,
                 ArrayBlockingQueue<WebPageModel> webPage,
                 ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
-                ArrayBlockingQueue<HBaseDataModel> hbaseQueue) {
+                ArrayBlockingQueue<HBaseDataModel> hbaseQueue, AtomicInteger parserThreadControler, int id) {
+        this.id = id;
+        this.parserThreadControler = parserThreadControler;
         this.producer = producer;
         this.webPage = webPage;
         this.elasticQueue = elasticQueue;
@@ -44,37 +48,45 @@ class ParseWorker implements Runnable {
     @Override
     public void run() {
         while (running) {
-            try {
-                Timer.Context parserJobRequestsTimeContex = Metrics.getInstance().parserJobRequestsTime();
-                Timer.Context parserTakeWebPageRequestsTimeContext =
-                        Metrics.getInstance().parserTakeWebPageRequestsTime();
-                WebPageModel model = webPage.take();
-                parserTakeWebPageRequestsTimeContext.stop();
-                Timer.Context parserJsoupParseRequestsTimeContext =
-                        Metrics.getInstance().parserJsoupParseRequestsTime();
-                final Document document = Jsoup.parse(model.getHtml());
-                parserJsoupParseRequestsTimeContext.stop();
-                Metrics.getInstance().markParsedPages();
-                if (Validator.allValidation(document)) {
-                    Timer.Context parserElasticPutDataRequestsTimeContext =
-                            Metrics.getInstance().parserElasticPutDataRequestsTime();
-                    sendToElastic(model, document);
-                    parserElasticPutDataRequestsTimeContext.stop();
-                    Timer.Context parserExtractLinksRequestsTimeContext =
-                            Metrics.getInstance().parserExtractLinksRequestsTime();
-                    List<Link> links = extractLinks(document);
-                    parserExtractLinksRequestsTimeContext.stop();
-                    sendLinksToKafka(links);
-                    Timer.Context hbasePutDataTimeContext = Metrics.getInstance().hbasePutDataRequestsTime();
-                    hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
-                    hbasePutDataTimeContext.stop();
-                    Metrics.getInstance().markExtractedLinks(links.size());
-                } else {
-                    Metrics.getInstance().markInvalidDocuments();
+            if(parserThreadControler.get() >= id) {
+                try {
+                    Timer.Context parserJobRequestsTimeContex = Metrics.getInstance().parserJobRequestsTime();
+                    Timer.Context parserTakeWebPageRequestsTimeContext =
+                            Metrics.getInstance().parserTakeWebPageRequestsTime();
+                    WebPageModel model = webPage.take();
+                    parserTakeWebPageRequestsTimeContext.stop();
+                    Timer.Context parserJsoupParseRequestsTimeContext =
+                            Metrics.getInstance().parserJsoupParseRequestsTime();
+                    final Document document = Jsoup.parse(model.getHtml());
+                    parserJsoupParseRequestsTimeContext.stop();
+                    Metrics.getInstance().markParsedPages();
+                    if (Validator.allValidation(document)) {
+                        Timer.Context parserElasticPutDataRequestsTimeContext =
+                                Metrics.getInstance().parserElasticPutDataRequestsTime();
+                        sendToElastic(model, document);
+                        parserElasticPutDataRequestsTimeContext.stop();
+                        Timer.Context parserExtractLinksRequestsTimeContext =
+                                Metrics.getInstance().parserExtractLinksRequestsTime();
+                        List<Link> links = extractLinks(document);
+                        parserExtractLinksRequestsTimeContext.stop();
+                        sendLinksToKafka(links);
+                        Timer.Context hbasePutDataTimeContext = Metrics.getInstance().hbasePutDataRequestsTime();
+                        hbaseQueue.put(new HBaseDataModel(model.getLink(), links));
+                        hbasePutDataTimeContext.stop();
+                        Metrics.getInstance().markExtractedLinks(links.size());
+                    } else {
+                        Metrics.getInstance().markInvalidDocuments();
+                    }
+                    parserJobRequestsTimeContex.stop();
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
                 }
-                parserJobRequestsTimeContex.stop();
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
+            } else {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

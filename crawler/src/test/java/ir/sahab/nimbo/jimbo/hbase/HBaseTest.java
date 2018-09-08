@@ -102,6 +102,8 @@ public class HBaseTest {
 //        assertEquals(100, HBase.getInstance().getBulkQueue().size());
 //    }
 
+
+
     //@Test
 //    public void singlePutHugeMarkImmediateNotTest(){
 //        HBase hBase = HBase.getInstance();
@@ -154,46 +156,6 @@ public class HBaseTest {
         System.err.println((System.currentTimeMillis() - b) / size);
     }
 
-
-
-    @Test
-    public void benchmarkExistMarkNotTest(){
-        HBase hBase = HBase.getInstance();
-        long b = System.currentTimeMillis();
-        for (int i = 0; i < 300; i++) {
-            hBase.existMark("https://www.test.com" + String.valueOf(i));
-        }
-        System.err.println(System.currentTimeMillis() - b);
-    }
-
-    @Test
-    public void makeGraph(){
-        HBase hBase = HBase.getInstance();
-
-        long b = System.currentTimeMillis();
-
-        final int graphSize = 10;
-
-        for (int src = 0; src < graphSize; src++) {
-
-            final List<Link> links  = new ArrayList<>();
-
-            for (int des = 1; des <= graphSize; des++) {
-
-                for (int freq = 0; freq < graphSize - des; freq++) {
-                    final int i = (src + des) % graphSize;
-                    links.add(new Link("https://www.test.com" + i ,
-                            "anchor from " + src + " to " + (src + des) % graphSize) );
-                    System.out.println(i);
-                }
-            }
-
-            HBaseDataModel hBaseDataModel = new HBaseDataModel("https://www.test.com" + src, links);
-            hBase.putData(hBaseDataModel);
-        }
-        System.err.println(System.currentTimeMillis() - b);
-    }
-//    @Test
 //    public void benchmarkExistMarkNotTest(){
 //        HBase hBase = HBase.getInstance();
 //        long b = System.currentTimeMillis();

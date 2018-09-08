@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParserTest {
 
@@ -25,7 +26,8 @@ public class ParserTest {
         elasticQueue = new ArrayBlockingQueue<>(arraySize);
         parserSetting = new ParserSetting(4);
         hbaseQueue = new ArrayBlockingQueue<>(arraySize);
-        parser = new Parser(webPages, elasticQueue, hbaseQueue, parserSetting);
+        AtomicInteger atomicInteger = new AtomicInteger(8);
+        parser = new Parser(webPages, elasticQueue, hbaseQueue, parserSetting, atomicInteger);
     }
 
     @Test

@@ -20,6 +20,7 @@ import java.net.ConnectException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Crawler {
     private static final Logger logger = LoggerFactory.getLogger(Crawler.class);
@@ -30,6 +31,7 @@ public class Crawler {
     private final HBaseBulkDataHandler hbaseBulkDataHandler;
     private final HBaseBulkMarkHandler hBaseBulkMarkHandler;
     private ElasticsearchHandler elasticSearchHandler;
+    private AtomicInteger parserThreadControler = new AtomicInteger(8);
 
     // TODO: what to do with settings?
     public Crawler(CrawlerSetting crawlerSetting){
@@ -45,7 +47,7 @@ public class Crawler {
 
         shuffler = new Shuffler(shuffleQueue);
         fetcher = new Fetcher(shuffleQueue, fetchedQueue, new FetcherSetting());
-        parser = new Parser(fetchedQueue, elasticQueue, hbaseDataQueue, new ParserSetting());
+        parser = new Parser(fetchedQueue, elasticQueue, hbaseDataQueue, new ParserSetting(), parserThreadControler);
 
         hbaseBulkDataHandler = new HBaseBulkDataHandler(hbaseDataQueue);
         elasticSearchHandler = new ElasticsearchHandler(elasticQueue, new ElasticsearchSetting());
@@ -70,8 +72,14 @@ public class Crawler {
         Scanner scanner = new Scanner(System.in);
         String cmd;
         do {
-            System.out.print("Type 'quit' to exit: ");
+            System.out.print("write number of core to run");
             cmd = scanner.next();
+            try {
+                parserThreadControler.set(Integer.valueOf(cmd));
+            } catch (Exception e){
+                logger.info("wrong number format in crawler input scanner");
+            }
+
         } while (!cmd.equals("quit"));
     }
 

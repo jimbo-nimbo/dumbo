@@ -24,7 +24,7 @@ public class Parser {
     public Parser(ArrayBlockingQueue<WebPageModel> webPages,
                   ArrayBlockingQueue<ElasticsearchWebpageModel> elasticQueue,
                   ArrayBlockingQueue<HBaseDataModel> hbaseQueue,
-                  ParserSetting parserSetting) {
+                  ParserSetting parserSetting, AtomicInteger parserThreadControler) {
 
         this.webPages = webPages;
         this.elasticQueue = elasticQueue;
@@ -32,7 +32,8 @@ public class Parser {
 
         this.parseWorkers = new ParseWorker[parserSetting.getParserThreadCount()];
         for (int i = 0; i < parseWorkers.length; i++) {
-                parseWorkers[i] = new ParseWorker(producer, webPages, elasticQueue, hbaseQueue);
+                parseWorkers[i] = new ParseWorker(producer, webPages, elasticQueue,
+                        hbaseQueue, parserThreadControler, i);
         }
     }
 
