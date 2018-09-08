@@ -214,7 +214,7 @@ public class AnchorFinder {
         */
     }
 
-    Configuration createHbaseConfig()
+    static Configuration createHbaseConfig()
     {
         final Configuration hConf = HBaseConfiguration.create();
 
@@ -226,8 +226,10 @@ public class AnchorFinder {
         hConf.addResource(new Path(hbaseSiteXmlPath));
         hConf.addResource(new Path(coreSiteXmlPath));
 
+        System.out.println(Config.HBASE_TABLE + "<---");
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
         hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+
         return hConf;
     }
 
@@ -237,7 +239,6 @@ public class AnchorFinder {
             config = HBaseConfiguration.create();
             config.set("hbase.zookeeper.quorum", "hitler");
             config.set("hbase.zookeeper.property.clientPort","2181");
-            //config.set("hbase.master", "127.0.0.1:60000");
             HBaseAdmin.checkHBaseAvailable(config);
             System.out.println("HBase is running!");
         }

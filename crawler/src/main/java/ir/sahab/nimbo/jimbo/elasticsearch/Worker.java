@@ -91,24 +91,18 @@ public class Worker implements Runnable{
 
             bulkRequest.add(request);
         }
-        BulkResponse bulk = client.bulk(bulkRequest);
-        if(bulk.hasFailures()){
-            Metrics.getInstance().markElasticSubmitFailure();
-        } else {
-            Metrics.getInstance().markElasticSubmitSuccess();
-        }
-//        client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
-//            @Override
-//            public void onResponse(BulkResponse bulkItemResponses) {
-//                Metrics.getInstance().markElasticSubmitSuccess();
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//                Metrics.getInstance().markElasticSubmitFailure();
-//                logger.warn(e.getMessage());
-//            }
-//        });
+        client.bulkAsync(bulkRequest, new ActionListener<BulkResponse>() {
+            @Override
+            public void onResponse(BulkResponse bulkItemResponses) {
+                Metrics.getInstance().markElasticSubmitSuccess();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Metrics.getInstance().markElasticSubmitFailure();
+                logger.warn(e.getMessage());
+            }
+        });
     }
 
     private String getId(String url) {

@@ -3,9 +3,9 @@ package ir.sahab.nimbo.jimbo;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.MasterNotRunningException;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -20,7 +20,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import scala.Serializable;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -32,12 +31,14 @@ public class AnchorFinderTest
 {
     private static JavaSparkContext jsc;
     private static int testGraphSize = 10;
+    private static String testQualifier = "test";
+    private static String testColumnFamily = "test";
 
     @BeforeClass
     public static void createSparkContext() {
         final SparkConf conf = new SparkConf()
                 .setAppName(Config.SPARK_APP_NAME)
-                .setMaster("local[*]");
+                .setMaster("local");
 
         jsc = new JavaSparkContext(conf);
     }
@@ -51,54 +52,6 @@ public class AnchorFinderTest
         for (int i = 0; i < collect.size(); i++) {
             assertEquals(i, collect.get(i).intValue());
         }
-    }
-
-//    @Test
-    public void testHbase() {
-
-        Configuration config = null;
-        try {
-            config = HBaseConfiguration.create();
-            config.set("hbase.zookeeper.quorum", "hitler");
-            config.set("hbase.zookeeper.property.clientPort","2181");
-            //config.set("hbase.master", "127.0.0.1:60000");
-            HBaseAdmin.checkHBaseAvailable(config);
-            System.out.println("HBase is running!");
-        }
-        catch (MasterNotRunningException e) {
-            System.out.println("HBase is not running!");
-            System.exit(1);
-        }catch (Exception ce){
-            ce.printStackTrace();
-        }
-
-        config.set(TableInputFormat.INPUT_TABLE, "tableName");
-
-        config.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-        config.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME); // column family
-        config.set(TableInputFormat.SCAN_COLUMNS, "cf1:vc cf1:vs"); // 3 column qualifiers
-
-        final JavaPairRDD<ImmutableBytesWritable, Result> hBaseRDD =
-                jsc.newAPIHadoopRDD(config, TableInputFormat.class, ImmutableBytesWritable.class, Result.class);
-
-        JavaPairRDD<String, TestData> rowPairRDD = hBaseRDD.mapToPair(
-                (PairFunction<Tuple2<ImmutableBytesWritable, Result>, String, TestData>) entry -> {
-
-                    Result r = entry._2;
-                    String keyRow = Bytes.toString(r.getRow());
-
-                    TestData cd = new TestData();
-                    cd.setRowkey(keyRow);
-                    cd.setVc(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vc"))));
-                    cd.setVs(Bytes.toString(r.getValue(Bytes.toBytes("cf1"), Bytes.toBytes("vs"))));
-                    return new Tuple2<>(keyRow, cd);
-                });
-
-        Map<String, TestData> stringTestDataMap = rowPairRDD.collectAsMap();
-        stringTestDataMap.forEach((s, testData) ->
-                System.out.println(
-                        s + " -> " + testData.getRowkey() + ", vc" + testData.getVc() + ", vs" + testData.getVs()));
-
     }
 
 //    @Test
@@ -229,7 +182,71 @@ public class AnchorFinderTest
     }
 
     @Test
-    public void connTest() throws IOException {
+    public void connTest() throws IOException, InterruptedException {
+        final Configuration hbaseConfig = AnchorFinder.createHbaseConfiguration();
+
+        final Job job = Job.getInstance(hbaseConfig);
+        job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
+        job.setOutputFormatClass(TableOutputFormat.class);
+        final JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = jsc
+                .parallelize(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+                .mapToPair((PairFunction<Integer, String, Integer>) integer ->
+                        new Tuple2<>(integer.toString(), integer))
+                .mapToPair(row -> {
+                    String rowKey = row._1;
+                    Put put = new Put(DigestUtils.md5Hex(rowKey).getBytes());
+                    put.addColumn(Bytes.toBytes(testColumnFamily),
+                            Bytes.toBytes(testQualifier),
+                            Bytes.toBytes(row._2));
+                    return new Tuple2<>(new ImmutableBytesWritable(), put);
+                });
+        hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
+
+        Thread.sleep(10000);
+
+        final JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD =
+                jsc.newAPIHadoopRDD(
+                        createHbaseConfig(),
+                        TableInputFormat.class,
+                        ImmutableBytesWritable.class, Result.class);
+        System.out.println(hbaseRDD.count());
+
+        final JavaRDD<Integer> resultRDD = hbaseRDD.map(tuple -> {
+            final Cell cell = tuple._2.listCells().get(0);
+            return Bytes.toInt(CellUtil.cloneValue(cell));
+        });
+
+        final List<Integer> collect = resultRDD.collect();
+        System.out.println(collect.size());
+        for (int i = 0; i < collect.size(); i++) {
+            System.out.println(i);
+            assertEquals(i, collect.get(i).intValue());
+        }
+
+    }
+
+    Configuration createHbaseConfig()
+    {
+        final Configuration hConf = HBaseConfiguration.create();
+
+        final String hbaseSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
+        final String coreSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
+                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
+
+        hConf.addResource(new Path(hbaseSiteXmlPath));
+        hConf.addResource(new Path(coreSiteXmlPath));
+
+        System.out.println(Config.HBASE_TABLE + "<---");
+
+        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
+
+        return hConf;
+    }
+
+    @Test
+    public void test() {
         Configuration hConf = HBaseConfiguration.create();
         String path = Objects.requireNonNull(AnchorFinder.class
                 .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
@@ -240,56 +257,12 @@ public class AnchorFinderTest
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
         hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
 
-        JavaPairRDD<String, Integer> countRDD = jsc.parallelize(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
-                .mapToPair((PairFunction<Integer, String, Integer>) integer ->
-                        new Tuple2<>(integer.toString(), integer));
+        System.out.println(Config.HBASE_TABLE + ", " + Config.MARK_CF_NAME);
 
-        Job job = Job.getInstance(hConf);
-        job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
-        job.setOutputFormatClass(TableOutputFormat.class);
-        JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = countRDD.mapToPair(row -> {
-            String rowKey = row._1;
-            Put put = new Put(DigestUtils.md5Hex(rowKey).getBytes());
-            put.addColumn(Bytes.toBytes(Config.MARK_CF_NAME), Bytes.toBytes("Refers"), Bytes.toBytes(row._2));
-            return new Tuple2<>(new ImmutableBytesWritable(), put);
-        });
-        hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
-    }
-
-    class TestData implements Serializable {
-        private String rowkey;
-        private String vc;
-        private String vs;
-
-        public void setRowkey(String rowkey)
-        {
-            this.rowkey = rowkey;
-        }
-
-        public void setVc(String vc)
-        {
-            this.vc = vc;
-        }
-
-        public void setVs(String vs)
-        {
-            this.vs = vs;
-        }
-
-        public String getRowkey()
-        {
-            return rowkey;
-        }
-
-        public String getVc()
-        {
-            return vc;
-        }
-
-        public String getVs()
-        {
-            return vs;
-        }
+        JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD = jsc
+                .newAPIHadoopRDD(hConf, TableInputFormat.class,
+                        ImmutableBytesWritable.class, Result.class);
+        System.out.println(hbaseRDD.count());
     }
 
 }
