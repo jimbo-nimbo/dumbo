@@ -24,6 +24,10 @@ public class DuplicateChecker {
 
     }
 
+    public boolean exist(String url){
+        return cache.getIfPresent(url) != null;
+    }
+
     public HBaseMarkModel getShouldFetchMarkModel(String sourceUrl) {
         Metrics.getInstance().markdcShouldFetch();
         Timer.Context dcGetShouldFetchRequestsTimeContext = Metrics.getInstance().dcGetShouldFetchRequestsTime();
@@ -89,11 +93,11 @@ public class DuplicateChecker {
         return duplicateChecker;
     }
 
-    public static Cache<String, HBaseMarkModel> getCache() {
+    static Cache<String, HBaseMarkModel> getCache() {
         return cache;
     }
 
-    public static ArrayBlockingQueue<HBaseMarkModel> getArrayBlockingQueue() {
+    static ArrayBlockingQueue<HBaseMarkModel> getArrayBlockingQueue() {
         return arrayBlockingQueue;
     }
 

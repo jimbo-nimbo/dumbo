@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo.parser;
 import com.codahale.metrics.Timer;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchWebpageModel;
 import ir.sahab.nimbo.jimbo.fetcher.Validator;
+import ir.sahab.nimbo.jimbo.hbase.DuplicateChecker;
 import ir.sahab.nimbo.jimbo.hbase.HBaseDataModel;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
@@ -118,7 +119,7 @@ class ParseWorker implements Runnable {
 
         for (Element aTag : aTags) {
             String href = aTag.absUrl("href");
-            if (href == null || href.equals(""))
+            if (href == null || href.equals("") || DuplicateChecker.getInstance().exist(href))
                 continue;
             links.add(new Link(href, aTag.text()));
         }
