@@ -4,7 +4,6 @@ import com.codahale.metrics.Timer;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -21,24 +20,29 @@ public class DuplicateChecker {
     static ArrayBlockingQueue<HBaseMarkModel> arrayBlockingQueue = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
 
 
-    private DuplicateChecker(){
+    private DuplicateChecker() {
 
     }
 
     public HBaseMarkModel getShouldFetchMarkModel(String sourceUrl) {
+        Metrics.getInstance().markdcShouldFetch();
         Timer.Context dcGetShouldFetchRequestsTimeContext = Metrics.getInstance().dcGetShouldFetchRequestsTime();
         HBaseMarkModel hBaseMarkModel = cache.getIfPresent(sourceUrl);
         if (hBaseMarkModel == null) {
             Timer.Context hbaseExistRequestsTimeContext = Metrics.getInstance().hbaseExistRequestsTime();
             hBaseMarkModel = HBase.getInstance().getMark(sourceUrl);
             hbaseExistRequestsTimeContext.stop();
+            Metrics.getInstance().markdcCheckWithHBase();
+        } else {
+            Metrics.getInstance().markdcCheckWithCache();
         }
         dcGetShouldFetchRequestsTimeContext.stop();
         return hBaseMarkModel;
 
     }
 
-    public void add(HBaseMarkModel hBaseMarkModel){
+    public void add(HBaseMarkModel hBaseMarkModel) {
+        Metrics.getInstance().markdcAdd();
         Timer.Context dcAddRequestsTimeContext = Metrics.getInstance().dcAddRequestsTime();
         cache.put(hBaseMarkModel.getUrl(), hBaseMarkModel);
         try {
@@ -51,9 +55,10 @@ public class DuplicateChecker {
 
     }
 
-    public void updateLastSeen(HBaseMarkModel markModel, String newHash){
-        Timer.Context dcUpdateKastSeenRequestsTimeContext = Metrics.getInstance().dcUpdateKastSeenRequestsTime();
-        if(markModel.getBodyHash().equals(newHash)){
+    public void updateLastSeen(HBaseMarkModel markModel, String newHash) {
+        Timer.Context dcUpdateLastSeenRequestsTimeContext = Metrics.getInstance().dcUpdateLastSeenRequestsTime();
+        Metrics.getInstance().markdcUpdate();
+        if (markModel.getBodyHash().equals(newHash)) {
             if (markModel.getDuration() < HBASE_DURATION_MAX) {
                 Metrics.getInstance().markDcPageNotChanged();
                 markModel.setDuration(markModel.getDuration() * 2);
@@ -67,9 +72,10 @@ public class DuplicateChecker {
                 add(markModel);
             }
         }
-        dcUpdateKastSeenRequestsTimeContext.close();
+        dcUpdateLastSeenRequestsTimeContext.close();
     }
-    public HBaseMarkModel take(){
+
+    public HBaseMarkModel take() {
         try {
             Metrics.getInstance().markdcTake();
             return arrayBlockingQueue.take();
@@ -79,8 +85,7 @@ public class DuplicateChecker {
         return null;
     }
 
-    public static DuplicateChecker getInstance()
-    {
+    public static DuplicateChecker getInstance() {
         return duplicateChecker;
     }
 

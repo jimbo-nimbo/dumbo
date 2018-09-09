@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
+import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.BeforeClass;
@@ -39,6 +40,7 @@ public class DuplicateCheckerTest {
 
     @Test
     public void updateLastSeen() {
+        System.err.println(Config.HBASE_MARK_DEFAULT_SEEN_DURATION + " " + Config.HBASE_DURATION_MAX + " " + Config.HBASE_DURATION_MIN);
         //DuplicateChecker.getInstance().updateLastSeen(JAVA_CODE_MARK_MODEL, );
     }
 

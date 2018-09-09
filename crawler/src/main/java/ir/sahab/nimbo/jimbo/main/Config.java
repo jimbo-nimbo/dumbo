@@ -95,7 +95,7 @@ public class Config {
         HBASE_TABLE_NAME_BYTES = Bytes.toBytes(HBASE_TABLE_NAME);
         HBASE_MARK_CF_NAME_BYTES = Bytes.toBytes(HBASE_MARK_CF_NAME);
         HBASE_DATA_CF_NAME_BYTES = Bytes.toBytes(HBASE_DATA_CF_NAME);
-        HBASE_DURATION_MIN = Long.valueOf(props.getProperty("hbase_duration_max"));
-        HBASE_DURATION_MAX = Long.valueOf(props.getProperty("hbase_duration_min"));
+        HBASE_DURATION_MIN = Long.valueOf(props.getProperty("hbase_duration_min"));
+        HBASE_DURATION_MAX = Long.valueOf(props.getProperty("hbase_duration_max"));
     }
 }

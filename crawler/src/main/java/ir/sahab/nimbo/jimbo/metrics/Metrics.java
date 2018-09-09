@@ -45,6 +45,11 @@ public class Metrics {
     private Meter hbaseNumberOfMarksFromQ;
     private Meter dcPageNotChanged;
     private Meter dcPageChanged;
+    private Meter dcAdd;
+    private Meter dcUpdate;
+    private Meter dcShouldFetch;
+    private Meter dcCheckWithHBase;
+    private Meter dcCheckWithCache;
 
     private Timer lruExistRequests;
     private Timer lruPutRequests;
@@ -122,8 +127,14 @@ public class Metrics {
             }
         });
         dcTake = metricRegistry.meter("dc.take");
+        dcAdd = metricRegistry.meter("dc.add");
+        dcShouldFetch = metricRegistry.meter("dc.should.fetch");
+        dcUpdate = metricRegistry.meter("dc.update");
+        dcCheckWithCache = metricRegistry.meter("dc.check.with.cache");
+        dcCheckWithHBase = metricRegistry.meter("dc.check.with.hbase");
+
         fetcherMarkWorkerNumberOfBulkPacksSend = metricRegistry
-                .meter("fetcher.mark.worker.number.of.bilk.packs.send");
+                .meter("fetcher.mark.worker.number.of.bulk.packs.send");
         fetcherMarkWorkerNewLink = metricRegistry.meter("fetcher.mark.worker.newlink");
         fetcherMarkWorkerUpdateLink = metricRegistry.meter("fetcher.mark.worker.updatelink");
         elasticWorkerNumberOfCyclesDone =
@@ -132,7 +143,6 @@ public class Metrics {
         elasticNumberOfPutsFromQ = metricRegistry.meter("elastic.number.of.puts.from.Q");
         dcPageChanged = metricRegistry.meter("dc.page.changed");
         dcPageNotChanged = metricRegistry.meter("dc.page.not.changed");
-
         lruExistRequests = metricRegistry.timer("lru.exist.requests");
         lruPutRequests = metricRegistry.timer("lru.put.requests");
         httpRequests = metricRegistry.timer("http.requests");
@@ -216,6 +226,11 @@ public class Metrics {
         duplicatedLinks.mark();
     }
     public void markdcTake(){dcTake.mark();}
+    public void markdcAdd(){dcAdd.mark();}
+    public void markdcUpdate(){dcUpdate.mark();}
+    public void markdcShouldFetch(){dcShouldFetch.mark();}
+    public void markdcCheckWithCache(){dcCheckWithCache.mark();}
+    public void markdcCheckWithHBase(){dcCheckWithHBase.mark();}
     public void markFetcherMarkWorkerNumberOfBulkPacksSend(){fetcherMarkWorkerNumberOfBulkPacksSend.mark();}
     public void markFetcherMarkWorkerNewLink(){fetcherMarkWorkerNewLink.mark();}
     public void markFetcherMarkWorkerUpdateLink(){fetcherMarkWorkerUpdateLink.mark();}
@@ -281,7 +296,7 @@ public class Metrics {
     public Timer.Context fetcherAddMarkRequestsTime(){return fetcherAddMarkRequests.time();}
     public Timer.Context dcAddRequestsTime(){return dcAddRequests.time();}
     public Timer.Context dcGetShouldFetchRequestsTime(){return dcGetShouldFetchRequests.time();}
-    public Timer.Context dcUpdateKastSeenRequestsTime(){return dcUpdateLastSeenRequests.time();}
+    public Timer.Context dcUpdateLastSeenRequestsTime(){return dcUpdateLastSeenRequests.time();}
     public Timer.Context fetcherMarkWorkerPutRequestsTime(){return fetcherMarkWorkerPutRequests.time();}
     public Timer.Context fetcherMarkWorkerJobRequestsTime(){return fetcherMarkWorkerJobRequests.time();}
     public Timer.Context elasticSearchWorkerJobsRequestsTime(){return elasticSearchWorkerJobsRequests.time();}
