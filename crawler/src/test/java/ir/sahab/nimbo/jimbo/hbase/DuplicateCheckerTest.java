@@ -3,12 +3,15 @@ package ir.sahab.nimbo.jimbo.hbase;
 import ir.sahab.nimbo.jimbo.main.Config;
 import ir.sahab.nimbo.jimbo.metrics.Metrics;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.hadoop.hbase.client.Put;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class DuplicateCheckerTest {
@@ -48,6 +51,20 @@ public class DuplicateCheckerTest {
 
     @Test
     public void getShouldFetchTest() {
+        try {
+            HBaseMarkModel hBaseMarkModel = new HBaseMarkModel(
+                    JAVA_CODE, System.currentTimeMillis(), Config.HBASE_DURATION_MIN, DigestUtils.md5Hex(JAVA_CODE));
+            HBase.getInstance().table.put(HBase.getInstance().getPutMark(hBaseMarkModel));
+
+            HBaseMarkModel hBaseMarkModel1 = DuplicateChecker.getInstance().getShouldFetchMarkModel(JAVA_CODE);
+            System.err.println(hBaseMarkModel1.getUrl() + " " + hBaseMarkModel1.getLastSeen() + " " +
+                    hBaseMarkModel1.getDuration() + " " + hBaseMarkModel1.getBodyHash());
+            assertTrue(hBaseMarkModel1.getDuration() +
+                    hBaseMarkModel1.getLastSeen() > System.currentTimeMillis());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 }

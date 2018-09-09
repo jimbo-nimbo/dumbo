@@ -32,10 +32,12 @@ public class ElasticClient {
                                 Config.ES_SCHEME),
                         new HttpHost(Config.ES_HOSTS.get(1).getHostName(),
                                 Config.ES_HOSTS.get(1).getPort(),
-                                Config.ES_SCHEME),
-                        new HttpHost(Config.ES_HOSTS.get(2).getHostName(),
-                                Config.ES_HOSTS.get(2).getPort(),
-                                Config.ES_SCHEME))
+                                Config.ES_SCHEME)
+//                        ,
+//                        new HttpHost(Config.ES_HOSTS.get(2).getHostName(),
+//                                Config.ES_HOSTS.get(2).getPort(),
+//                                Config.ES_SCHEME)
+                        )
                         .setRequestConfigCallback(
                                 requestConfigBuilder ->
                                         requestConfigBuilder
