@@ -40,8 +40,6 @@ public class DuplicateCheckerTest {
 
     @Test
     public void updateLastSeen() {
-        System.err.println(Config.HBASE_MARK_DEFAULT_SEEN_DURATION + " " + Config.HBASE_DURATION_MAX + " " + Config.HBASE_DURATION_MIN);
-        //DuplicateChecker.getInstance().updateLastSeen(JAVA_CODE_MARK_MODEL, );
     }
 
     @Test
