@@ -32,10 +32,12 @@ public class ElasticClient {
                                 Config.ES_SCHEME),
                         new HttpHost(Config.ES_HOSTS.get(1).getHostName(),
                                 Config.ES_HOSTS.get(1).getPort(),
-                                Config.ES_SCHEME),
-                        new HttpHost(Config.ES_HOSTS.get(2).getHostName(),
-                                Config.ES_HOSTS.get(2).getPort(),
-                                Config.ES_SCHEME))
+                                Config.ES_SCHEME)
+//                        ,
+//                        new HttpHost(Config.ES_HOSTS.get(2).getHostName(),
+//                                Config.ES_HOSTS.get(2).getPort(),
+//                                Config.ES_SCHEME)
+                        )
                         .setRequestConfigCallback(
                                 requestConfigBuilder ->
                                         requestConfigBuilder
@@ -61,7 +63,7 @@ public class ElasticClient {
         for (String phrase : mustFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
-                            phrase, "url", "content", "title", "description")
+                            phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
             for (String field : fields)
                 multiMatchQueryBuilder.field(field, Config.getScoreField(field));
@@ -70,13 +72,13 @@ public class ElasticClient {
         for (String phrase : mustNotFind) {
             boolQuery.mustNot(
                     QueryBuilders.multiMatchQuery(
-                            phrase, "url", "content", "title", "description")
+                            phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE));
         }
         for (String phrase : shouldFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
-                            phrase, "url", "content", "title", "description")
+                            phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
             for (String field : fields)
                 multiMatchQueryBuilder.field(field, Config.getScoreField(field));

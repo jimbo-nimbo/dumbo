@@ -31,16 +31,17 @@ public class Main {
         final int SHOW_LIMIT = 10;
         final int SEARCH_LIMIT = Config.ES_RESULT_SIZE;
         int count = 0;
-        int[] refs = new int[SEARCH_LIMIT];
         StringBuilder[] result = new StringBuilder[SEARCH_LIMIT];
         ArrayList<Integer> index = new ArrayList<>();
+        ArrayList<String> urls = new ArrayList<>();
+        Long a = System.currentTimeMillis();
         for(SearchHit searchHit : searchHits){
             if(count < SEARCH_LIMIT){
                 index.add(count);
                 Map<String, Object> map = searchHit.getSourceAsMap();
                 if(map.containsKey("url") && map.containsKey("title") && map.containsKey("content")) {
                     String url = (String) map.get("url");
-                    refs[count] = HBase.getInstance().getNumberOfReferences(url);
+                    urls.add(url);
                     result[count] = new StringBuilder();
                     result[count].append("Title: ").append(map.get("title"))
                             .append("\n").append(map.get("url")).append("\n");
@@ -50,20 +51,25 @@ public class Main {
                     else {
                         result[count].append(content.substring(0, 499)).append("...\n");
                     }
-                    result[count].append("#References : ").append(refs[count]).append("\n");
-                    result[count].append("-------------------------------------------------------------\n");
                     count++;
                 }
             }
         }
+        System.err.println(System.currentTimeMillis() - a);
+        a = System.currentTimeMillis();
+        ArrayList<Integer> finalRefs = HBase.getInstance().getNumberOfReferences(urls);;
         index.sort(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return refs[o2] - refs[o1];
+                return finalRefs.get(o2) - finalRefs.get(o1);
             }
         });
+        System.err.println(System.currentTimeMillis() - a);
         for(int i = 0; i < SHOW_LIMIT && i < searchHits.size(); i++) {
             System.err.println(result[index.get(i)]);
+            System.err.print("#References : ");
+            System.err.println(finalRefs.get(index.get(i)));
+            System.err.println("-------------------------------------------------------------\n");
         }
     }
 

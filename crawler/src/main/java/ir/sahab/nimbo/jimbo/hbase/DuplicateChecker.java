@@ -15,7 +15,7 @@ public class DuplicateChecker {
     private static DuplicateChecker duplicateChecker = new DuplicateChecker();
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DuplicateChecker.class);
     static Cache<String, HBaseMarkModel> cache = Caffeine.newBuilder()
-            .expireAfterWrite(100L, TimeUnit.SECONDS)
+            .expireAfterWrite(HBASE_COFFEIN_CACHE_TIMEOUT, TimeUnit.SECONDS)
             .maximumSize(HBASE_BULK_CAPACITY).build();
     static ArrayBlockingQueue<HBaseMarkModel> arrayBlockingQueue = new ArrayBlockingQueue<>(HBASE_BULK_CAPACITY);
 

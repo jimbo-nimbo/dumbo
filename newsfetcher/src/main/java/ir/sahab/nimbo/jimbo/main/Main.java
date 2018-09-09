@@ -3,7 +3,7 @@ package ir.sahab.nimbo.jimbo.main;
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
-import ir.sahab.nimbo.jimbo.elasticsearch.TrendFinder;
+import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchHandler;
 import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 public class Main {
     private static Scanner inp;
-    static Thread rssThread = new Exec();
+    private static Thread rssThread = new Exec();
 
     public static void main(String[] args) {
         try {
@@ -66,23 +66,20 @@ public class Main {
     }
 
     @Command
-    public void getRelatedTweets(){
-        System.out.println("enter news link");
-        String newsLink = inp.nextLine();
-
-    }
-
-    @Command
     public void getTrendWords(){
-        List<String> trendWords = TrendFinder.findTrendWords();
-        for(String word: trendWords) {
-            System.out.println(word);
-            System.out.println("-------------------------------------------------------------");
-        }
+        //TODO complete
+//        List<String> trendWords = TrendFinder.getInstance().findTrendWords();
+//        for(String word: trendWords) {
+//            System.out.println(word);
+//            System.out.println("------------");
+//        }
     }
+
     @Command
     public void getTrendNewsWithTweets(){
-
+//        ArrayList<String> trends = ElasticsearchHandler..findTrendWords();
+//        ArrayList<SearchHit> ans = ElasticClient.getInstance().jimboElasticSearch(new ArrayList<>(), new ArrayList<>(), trends);
+//        printAns(ans);
     }
 
 

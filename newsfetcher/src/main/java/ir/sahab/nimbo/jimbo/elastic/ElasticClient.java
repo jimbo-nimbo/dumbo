@@ -54,11 +54,11 @@ public class ElasticClient {
         SearchRequest searchRequest = new SearchRequest(Config.ES_INDEX_NAME);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        String fields[] = {"url", "content", "title", "description"};
+        String fields[] = {"url", "content", "title", "description", "date"};
         for (String phrase : mustFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
-                            phrase, "url", "content", "title", "description")
+                            phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
             for (String field : fields)
                 multiMatchQueryBuilder.field(field, Config.getScoreField(field));
@@ -67,13 +67,13 @@ public class ElasticClient {
         for (String phrase : mustNotFind) {
             boolQuery.mustNot(
                     QueryBuilders.multiMatchQuery(
-                            phrase, "url", "content", "title", "description")
+                            phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE));
         }
         for (String phrase : shouldFind) {
             MultiMatchQueryBuilder multiMatchQueryBuilder =
                     QueryBuilders.multiMatchQuery(
-                            phrase, "url", "content", "title", "description")
+                            phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
             for (String field : fields)
                 multiMatchQueryBuilder.field(field, Config.getScoreField(field));

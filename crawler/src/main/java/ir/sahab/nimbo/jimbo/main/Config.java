@@ -28,6 +28,7 @@ public class Config {
     public static final int HBASE_DATA_BULK_LIMIT;
     public static final int HBASE_DATA_NUMBER_OF_THREAD;
     public static final int HBASE_BULK_CAPACITY;
+    public static final int HBASE_COFFEIN_CACHE_TIMEOUT;
     public static final Long HBASE_DURATION_MIN;
     public static final Long HBASE_DURATION_MAX;
     public static final String LOG_PROP_DIR;
@@ -97,5 +98,6 @@ public class Config {
         HBASE_DATA_CF_NAME_BYTES = Bytes.toBytes(HBASE_DATA_CF_NAME);
         HBASE_DURATION_MIN = Long.valueOf(props.getProperty("hbase_duration_min"));
         HBASE_DURATION_MAX = Long.valueOf(props.getProperty("hbase_duration_max"));
+        HBASE_COFFEIN_CACHE_TIMEOUT = Integer.valueOf(props.getProperty("hbase_coffein_cache_timeout"));
     }
 }
