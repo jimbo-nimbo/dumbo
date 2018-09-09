@@ -14,6 +14,7 @@
         <module>newsfetcher</module>
         <module>keywords</module>
         <module>domainGraph</module>
+        <module>webui</module>
     </modules>
 
 
