@@ -11,5 +11,19 @@
 
     <artifactId>webui</artifactId>
 
+    <properties>
+        <jetty.version>
+            9.4.12.RC1
+        </jetty.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+    </dependencies>
+
 
 </project>
