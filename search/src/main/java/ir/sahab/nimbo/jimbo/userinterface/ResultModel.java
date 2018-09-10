@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.userinterface;
 
 public class ResultModel {
     private String title;
+    private String url;
     private String description;
     private int numberOfRefrences;
 
@@ -9,10 +10,11 @@ public class ResultModel {
 
     }
 
-    public ResultModel(String title, String description, int numberOfRefrences){
+    public ResultModel(String title, String url, String description, int numberOfRefrences){
         this.title = title;
         this.description = description;
         this.numberOfRefrences = numberOfRefrences;
+        this.url = url;
     }
 
     public String getTitle() {
@@ -37,5 +39,13 @@ public class ResultModel {
 
     public void setNumberOfRefrences(int numberOfRefrences) {
         this.numberOfRefrences = numberOfRefrences;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }
