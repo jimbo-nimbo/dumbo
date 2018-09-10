@@ -91,30 +91,54 @@ public class Main {
         HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
         Response response =
                 restClient.performRequest("GET", "/" + index + "/_doc/" + id + "/_termvectors", params, entity);
-        // System.out.println(response.toString());
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-        StringBuilder out = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            out.append(line);
-        }
-        System.out.println(out.toString());
-        JSONObject jsonObject = new JSONObject(out.toString());
+        JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
         JSONObject jsonArray = jsonObject.getJSONObject("term_vectors").getJSONObject("content").getJSONObject("terms");
         for (String key : jsonArray.keySet()) {
             System.out.println(key + "=" + jsonArray.get(key)); // to get the value
         }
     }*/
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        RestClient restClient = ElasticClientBuilder.buildRest();
+
         HBaseInputScanner.getInstance().initializeScan();
         while (HBaseInputScanner.getInstance().hasNext()) {
             List<String> urls = HBaseInputScanner.getInstance().nextBulk();
+            StringBuilder docIds = new StringBuilder();
             for (String url : urls) {
                 String docKey = DigestUtils.md5Hex(url);
-                System.out.println(docKey);
+                docIds.append('"');
+                docIds.append(docKey);
+                docIds.append("\",\n");
             }
+            if (docIds.length() >= 2) {
+                docIds.deleteCharAt(docIds.length() - 1);
+                docIds.deleteCharAt(docIds.length() - 1);
+            }
+
+            // Getting multi term vectors
+            String jsonString = "{\n" +
+                    "  \"ids\": [" + docIds.toString() + "],\n" +
+                    "  \"parameters\": {\n" +
+                    "    \"fields\": [\n" +
+                    "      \"content\"\n" +
+                    "    ],\n" +
+                    "    \"term_statistics\": true,\n" +
+                    "    \"field_statistics\": false,\n" +
+                    "    \"positions\": false,\n" +
+                    "    \"offsets\": false,\n" +
+                    "    \"filter\": {\n" +
+                    "      \"max_num_terms\": 5,\n" +
+                    "      \"min_term_freq\": 1,\n" +
+                    "      \"min_doc_freq\": 1\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}";
+
+            System.out.println(jsonString);
+            Thread.sleep(10000);
         }
+
+        restClient.close();
     }
 }

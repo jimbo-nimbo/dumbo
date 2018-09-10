@@ -26,7 +26,7 @@ public class ElasticClientBuilder {
     private static List<Host> readHosts() {
         List<Host> hosts = new ArrayList<>();
         String hostsString = ElasticConfig.HOSTS;
-        for (String hostString : hostsString.split("#")) {
+        for (String hostString : hostsString.split(",")) {
             Host host = new Host(hostString.split(":")[0],
                     Integer.parseInt(hostString.split(":")[1]));
             hosts.add(host);
