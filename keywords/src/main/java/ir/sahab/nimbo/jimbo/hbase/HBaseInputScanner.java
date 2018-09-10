@@ -1,10 +1,9 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
 import ir.sahab.nimbo.jimbo.Config;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +20,12 @@ public class HBaseInputScanner extends AbstractHBase {
     private ResultScanner resultScanner = null;
     private boolean nullNext = true;
 
-    private HBaseInputScanner() {
-        super(Config.HBASE_INPUT_TABLE);
-    }
-
     public static HBaseInputScanner getInstance() {
         return ourInstance;
+    }
+
+    private HBaseInputScanner() {
+        super(Config.HBASE_INPUT_TABLE);
     }
 
     @Override

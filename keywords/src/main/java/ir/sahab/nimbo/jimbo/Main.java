@@ -3,6 +3,7 @@ package ir.sahab.nimbo.jimbo;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticClientBuilder;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticConfig;
 import ir.sahab.nimbo.jimbo.hbase.HBaseInputScanner;
+import ir.sahab.nimbo.jimbo.hbase.HBaseOutput;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.search.SearchResponse;
@@ -161,11 +162,11 @@ public class Main {
                 for (String key : terms.keySet()) {
                     keywords.add(key);
                 }
-                System.out.println(urlMap.get(docId) + keywords);
+                HBaseOutput.getInstance().appendPut(urlMap.get(docId), keywords);
             }
 
             // Put keywords to HBase
-            // ToDo...
+            HBaseOutput.getInstance().sendPuts();
         }
 
         restClient.close();
