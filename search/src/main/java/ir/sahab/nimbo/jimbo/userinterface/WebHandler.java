@@ -43,17 +43,17 @@ public class WebHandler {
         }
         System.err.println(System.currentTimeMillis() - a);
         a = System.currentTimeMillis();
-        ArrayList<Integer> finalRefs = HBase.getInstance().getNumberOfReferences(urls);;
+        Integer[] finalRefs = HBase.getInstance().getNumberOfReferences(urls);
         index.sort(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return finalRefs.get(o2) - finalRefs.get(o1);
+                return finalRefs[o2] - finalRefs[o1];
             }
         });
         System.err.println(System.currentTimeMillis() - a);
         for(int i = 0; i < SHOW_LIMIT && i < searchHits.size(); i++) {
             resultModels[i] = new ResultModel(result[index.get(i)].getTitle(), result[index.get(i)].getUrl(),
-                    result[index.get(i)].getDescription(), finalRefs.get(index.get(i)));
+                    result[index.get(i)].getDescription(), finalRefs[index.get(i)]);
         }
         jsonResultModel.setResultModels(resultModels);
         return jsonResultModel;

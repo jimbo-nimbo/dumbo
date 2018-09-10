@@ -9,8 +9,8 @@ public class JsonResultModel {
     public JsonResultModel(){
     }
 
-    public JsonResultModel(int size){
-        resultModels = new ResultModel[size];
+    JsonResultModel(ResultModel[] resultModels){
+        this.resultModels = resultModels;
     }
 
     public ResultModel[] getResultModels() {

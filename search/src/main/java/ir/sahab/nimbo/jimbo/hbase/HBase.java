@@ -30,9 +30,9 @@ public class HBase extends AbstractHBase {
         return hbase;
     }
 
-    public ArrayList<Integer> getNumberOfReferences(List<String> urls) {
+    public Integer[] getNumberOfReferences(List<String> urls) {
         ArrayList<Get> gets = new ArrayList<>();
-        ArrayList<Integer> ans = new ArrayList<>();
+        Integer[] ans = new Integer[urls.size()];
         for (int i = 0; i < urls.size(); i++) {
             Get get = new Get(urls.get(i).getBytes());
             get.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES_BYTES);
@@ -48,13 +48,13 @@ public class HBase extends AbstractHBase {
                         byte[] res = result.getValue(HBASE_MARK_CF_NAME_BYTES,
                                 HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES_BYTES);
                         if (res != null)
-                            ans.add(Bytes.toInt(res));
+                            ans[i] = Bytes.toInt(res);
                         else {
-                            ans.add(0);
+                            ans[i] = 0;
                         }
                     }
                     else {
-                        ans.add(0);
+                        ans[i] = 0;
                     }
                 }
                 return ans;
