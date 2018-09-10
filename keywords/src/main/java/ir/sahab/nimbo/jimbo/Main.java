@@ -2,6 +2,8 @@ package ir.sahab.nimbo.jimbo;
 
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticClientBuilder;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticConfig;
+import ir.sahab.nimbo.jimbo.hbase.HBaseInputScanner;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.transport.TransportClient;
@@ -61,7 +63,7 @@ public class Main {
         client.close();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void clientTest(String[] args) throws IOException {
         RestClient restClient = ElasticClientBuilder.buildRest();
 
 //        Request request = new Request("POST", "/" + ElasticConfig.INDEX_NAME + "/_search");
@@ -104,4 +106,15 @@ public class Main {
             System.out.println(key + "=" + jsonArray.get(key)); // to get the value
         }
     }*/
+
+    public static void main(String[] args) throws IOException {
+        HBaseInputScanner.getInstance().initializeScan();
+        while (HBaseInputScanner.getInstance().hasNext()) {
+            List<String> urls = HBaseInputScanner.getInstance().nextBulk();
+            for (String url : urls) {
+                String docKey = DigestUtils.md5Hex(url);
+                System.out.println(docKey);
+            }
+        }
+    }
 }

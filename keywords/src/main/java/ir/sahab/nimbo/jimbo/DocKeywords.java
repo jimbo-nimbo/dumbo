@@ -32,7 +32,7 @@ public class DocKeywords {
                 .getClassLoader().getResource("core-site.xml")).getPath();
         hConf.addResource(new Path(path));
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_INPUT_TABLE);
-        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.MARK_CF_NAME);
+        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.META_CF_NAME);
 
         SparkConf conf = new SparkConf().setAppName("DocKeywordsApp");
         JavaSparkContext jsc = new JavaSparkContext(conf);
@@ -73,7 +73,7 @@ public class DocKeywords {
         JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = keywordRDD.mapToPair(row -> {
             String rowKey = row._1;
             Put put = new Put(DigestUtils.md5Hex(rowKey).getBytes());
-            put.addColumn(Bytes.toBytes(Config.MARK_CF_NAME), Bytes.toBytes("Refers"), Bytes.toBytes(row._2));
+            put.addColumn(Bytes.toBytes(Config.META_CF_NAME), Bytes.toBytes("Refers"), Bytes.toBytes(row._2));
             return new Tuple2<>(new ImmutableBytesWritable(), put);
         });
         hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());*/

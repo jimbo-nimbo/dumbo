@@ -12,7 +12,9 @@ public class Config {
 
     public static final String HBASE_INPUT_TABLE;
     public static final String HBASE_OUTPUT_TABLE;
-    public static final String MARK_CF_NAME;
+    public static final String META_CF_NAME;
+    public static final Integer BULK_SIZE;
+    public static final String URL_COL_NAME;
 
     static {
         String resourceName = "conf.properties";
@@ -25,6 +27,8 @@ public class Config {
         }
         HBASE_INPUT_TABLE = props.getProperty("hbase_input_table");
         HBASE_OUTPUT_TABLE = props.getProperty("hbase_output_table");
-        MARK_CF_NAME = props.getProperty("hbase_mark_cf_name");
+        META_CF_NAME = props.getProperty("hbase_meta_cf_name");
+        URL_COL_NAME = props.getProperty("hbase_url_col_name");
+        BULK_SIZE = Integer.valueOf(props.getProperty("bulk_size"));
     }
 }
