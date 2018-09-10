@@ -4,7 +4,10 @@ import ir.sahab.nimbo.jimbo.elasticsearch.ElasticClientBuilder;
 import ir.sahab.nimbo.jimbo.elasticsearch.ElasticConfig;
 import ir.sahab.nimbo.jimbo.hbase.HBaseInputScanner;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
@@ -14,11 +17,15 @@ import org.elasticsearch.index.reindex.ReindexAction;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
@@ -100,15 +107,16 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         RestClient restClient = ElasticClientBuilder.buildRest();
-
         HBaseInputScanner.getInstance().initializeScan();
+        Map<String, String> urlMap = new HashMap<>();
         while (HBaseInputScanner.getInstance().hasNext()) {
             List<String> urls = HBaseInputScanner.getInstance().nextBulk();
             StringBuilder docIds = new StringBuilder();
             for (String url : urls) {
-                String docKey = DigestUtils.md5Hex(url);
+                String docId = DigestUtils.md5Hex(url);
+                urlMap.put(docId, url);
                 docIds.append('"');
-                docIds.append(docKey);
+                docIds.append(docId);
                 docIds.append("\",\n");
             }
             if (docIds.length() >= 2) {
@@ -117,7 +125,7 @@ public class Main {
             }
 
             // Getting multi term vectors
-            String jsonString = "{\n" +
+            String requestBody = "{\n" +
                     "  \"ids\": [" + docIds.toString() + "],\n" +
                     "  \"parameters\": {\n" +
                     "    \"fields\": [\n" +
@@ -134,9 +142,30 @@ public class Main {
                     "    }\n" +
                     "  }\n" +
                     "}";
+            Request request = new Request("POST", "/" + ElasticConfig.INDEX_NAME
+                    + "/_doc/_mtermvectors");
+            request.setJsonEntity(requestBody);
+            Response response = restClient.performRequest(request);
+            JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
+            JSONArray docs = jsonObject.getJSONArray("docs");
 
-            System.out.println(jsonString);
-            Thread.sleep(10000);
+            for (int i = 0; i < docs.length(); i++) {
+                JSONObject doc = docs.getJSONObject(i);
+                String docId = doc.getString("_id");
+                boolean found = doc.getBoolean("found");
+                if (!found) {
+                    continue;
+                }
+                List<String> keywords = new ArrayList<>();
+                JSONObject terms = doc.getJSONObject("term_vectors").getJSONObject("content").getJSONObject("terms");
+                for (String key : terms.keySet()) {
+                    keywords.add(key);
+                }
+                System.out.println(urlMap.get(docId) + keywords);
+            }
+
+            // Put keywords to HBase
+            // ToDo...
         }
 
         restClient.close();
