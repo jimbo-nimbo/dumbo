@@ -5,7 +5,7 @@
     </property>
     <property>
         <name>hbase.zookeeper.quorum</name>
-        <value>hitler:2181,genghis:2181</value>
+        <value>hitler:2181,genghis:2181,alexander:2181</value>
     </property>
     <!--<property>-->
         <!--<name>hbase.zookeeper.property.clientPort</name>-->

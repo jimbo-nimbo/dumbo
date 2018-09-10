@@ -127,6 +127,7 @@ HBase mark thread, HBase data thread, fetcher thread, parser thread, elastic thr
 
 ```$xslt
 ./bin/kafka-server-start.sh -daemon config/server.properties
+./bin/zkServer.sh start conf/zoo_hitler.cfg
 ./bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
 
 

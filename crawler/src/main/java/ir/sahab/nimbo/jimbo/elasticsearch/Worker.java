@@ -38,7 +38,8 @@ public class Worker implements Runnable{
         this.client = new RestHighLevelClient(
         RestClient.builder(
                 new HttpHost("hitler", 9200, "http"),
-                new HttpHost("genghis", 9200, "http")));
+                new HttpHost("genghis", 9200, "http"),
+                new HttpHost("alexander", 9200, "http")));
     }
 
     @Override

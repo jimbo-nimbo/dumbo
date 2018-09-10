@@ -7,11 +7,17 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
 /**
  * Simple Jetty FileServer.
@@ -20,11 +26,17 @@ import java.io.IOException;
 public class Main
 {
 
+
     public static void main(String[] args) throws Exception
     {
         Server server = new Server(9129);
 
-        ResourceHandler resource_handler = new ResourceHandler();
+//        ResourceHandler resource_handler = new ResourceHandler();
+//        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+//        context.setContextPath("/");
+//        server.setHandler(context);
+
+
 
 //        resource_handler.setDirectoriesListed(true);
 //        resource_handler.setWelcomeFiles(new String[]{ "index.html" });
@@ -33,7 +45,27 @@ public class Main
 //        handlers.setHandlers(new Handler[] { resource_handler, new DefaultHandler() });
 //        server.setHandler(handlers);
 
-        server.setHandler(new HelloWorld());
+
+//        SearchUIConnector searchUIConnector = new SearchUIConnector();
+//        JsonRpcSearchService jsonRpcSearchService = new JsonRpcSearchService(searchUIConnector);
+//        server.setHandler(new HttpRequestHandler(jsonRpcSearchService));
+
+
+
+        ServletContextHandler servletContextHandler = new ServletContextHandler(NO_SESSIONS);
+
+        servletContextHandler.setContextPath("/");
+        server.setHandler(servletContextHandler);
+
+        ServletHolder servletHolder = servletContextHandler.addServlet(ServletContainer.class, "/api/*");
+        servletHolder.setInitOrder(0);
+        servletHolder.setInitParameter(
+                "jersey.config.server.provider.packages",
+                HelloWorld.class.getCanonicalName()
+        );
+
+
+        //server.setHandler(new HelloWorld());
 
 
         server.start();
@@ -53,6 +85,23 @@ public class Main
             response.setStatus(HttpServletResponse.SC_OK);
             baseRequest.setHandled(true);
             response.getWriter().println("<h1>Hello World</h1>");
+        }
+    }
+
+    public class HelloServlet extends HttpServlet
+    {
+        private String greeting="Hello World";
+        public HelloServlet(){}
+        public HelloServlet(String greeting)
+        {
+            this.greeting=greeting;
+        }
+        protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+        {
+            response.setContentType("text/html");
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().println("<h1>"+greeting+"</h1>");
+            response.getWriter().println("session=" + request.getSession(true).getId());
         }
     }
 
