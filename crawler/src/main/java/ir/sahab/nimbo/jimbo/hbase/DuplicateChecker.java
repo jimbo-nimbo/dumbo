@@ -93,11 +93,11 @@ public class DuplicateChecker {
         return duplicateChecker;
     }
 
-    static Cache<String, HBaseMarkModel> getCache() {
+    public static Cache<String, HBaseMarkModel> getCache() {
         return cache;
     }
 
-    static ArrayBlockingQueue<HBaseMarkModel> getArrayBlockingQueue() {
+    public static ArrayBlockingQueue<HBaseMarkModel> getArrayBlockingQueue() {
         return arrayBlockingQueue;
     }
 

@@ -9,7 +9,7 @@ public class App {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
 
-        Server jettyServer = new Server(12345);
+        Server jettyServer = new Server(41560);
         jettyServer.setHandler(context);
 
         ServletHolder jerseyServlet = context.addServlet(
@@ -20,7 +20,6 @@ public class App {
         jerseyServlet.setInitParameter(
                 "jersey.config.server.provider.classnames",
                 EntryPoint.class.getCanonicalName());
-
         try {
             jettyServer.start();
             jettyServer.join();

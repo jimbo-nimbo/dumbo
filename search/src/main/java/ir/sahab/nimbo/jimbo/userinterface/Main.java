@@ -27,6 +27,13 @@ public class Main {
         }
     }
 
+
+    public JsonResultModel getJsonAns(){
+
+        return new JsonResultModel();
+    }
+
+
     private void printAns(ArrayList<SearchHit> searchHits){
         final int SHOW_LIMIT = 10;
         final int SEARCH_LIMIT = Config.ES_RESULT_SIZE;
