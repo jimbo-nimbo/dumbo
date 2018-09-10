@@ -18,6 +18,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.api.java.function.PairFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,14 +27,12 @@ import scala.Tuple2;
 import java.io.IOException;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public class AnchorFinderTest
-{
+public class AnchorFinderTest {
     private static JavaSparkContext jsc;
-    private static int testGraphSize = 10;
+    private static int testGraphSize = 50;
     private static String testQualifier = "test";
-    private static String testColumnFamily = "test";
 
     @BeforeClass
     public static void createSparkContext() {
@@ -55,16 +54,14 @@ public class AnchorFinderTest
         }
     }
 
-//    @Test
+    @Test
     public void createGraph() throws IOException {
 
-        final Configuration config = AnchorFinder.createHbaseConfiguration();
+        final Configuration hbaseConfig = AnchorFinder.createHbaseConfig();
 
-        config.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-
-        final Job newAPIJobConfiguration = Job.getInstance(config);
-        newAPIJobConfiguration.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
-        newAPIJobConfiguration.setOutputFormatClass(org.apache.hadoop.hbase.mapreduce.TableOutputFormat.class);
+        final Job job = Job.getInstance(hbaseConfig);
+        job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
+        job.setOutputFormatClass(TableOutputFormat.class);
 
         final List<Integer> vertices = new ArrayList<>();
         for (int i = 0; i < testGraphSize; i++) {
@@ -75,19 +72,19 @@ public class AnchorFinderTest
         final JavaPairRDD<String, List<String>> anchorsRdd =
                 verticesRdd.mapToPair((PairFunction<Integer, String, List<String>>) integer -> {
 
-            final List<String> anchors = new ArrayList<>();
-            int src = integer.intValue();
-            for (int i = 1; i < testGraphSize; i++) {
-                final int des = (i + src) % testGraphSize;
-                for (int j = 0; j < testGraphSize - i; j++) {
-                    anchors.add("anchor from " + src + " to " + des);
-                    anchors.add("www.test" + des + ".com");
-                }
-            }
+                    final List<String> anchors = new ArrayList<>();
+                    int src = integer.intValue();
+                    for (int i = 1; i < testGraphSize; i++) {
+                        final int des = (i + src) % testGraphSize;
+                        for (int j = 0; j < testGraphSize - i; j++) {
+                            anchors.add("anchor from " + src + " to " + des);
+                            anchors.add("www.test" + des + ".com");
+                        }
+                    }
 
-            final String srcLink = "www.test" + integer + ".com";
-            return new Tuple2<>(srcLink, anchors);
-        });
+                    final String srcLink = "www.test" + integer + ".com";
+                    return new Tuple2<>(srcLink, anchors);
+                });
 
         final JavaPairRDD<ImmutableBytesWritable, Put> hbasePut = anchorsRdd.mapToPair(
                 (PairFunction<Tuple2<String, List<String>>, ImmutableBytesWritable, Put>) stringListTuple2 -> {
@@ -95,96 +92,26 @@ public class AnchorFinderTest
                     final List<String> anchors = stringListTuple2._2;
 
                     final Put put = new Put(DigestUtils.md5Hex(src).getBytes());
-                    for (int i = 0; i < anchors.size(); i+=2) {
-                        put.addColumn(Config.DATA_CF_NAME.getBytes(), ("anchor" + i).getBytes(), anchors.get(i).getBytes());
-                        put.addColumn(Config.DATA_CF_NAME.getBytes(), ("link" + i).getBytes(), anchors.get(i + 1).getBytes());
+                    for (int i = 0; i < anchors.size(); i += 2) {
+                        put.addColumn(Config.DATA_CF_NAME.getBytes(), ("anchor" + i/2).getBytes(), anchors.get(i).getBytes());
+                        put.addColumn(Config.DATA_CF_NAME.getBytes(), ("link" + i/2).getBytes(), anchors.get(i + 1).getBytes());
                     }
 
                     return new Tuple2<>(new ImmutableBytesWritable(), put);
                 });
-
-//         create Key, Value pair to store in HBase
-//        JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = anchorsRdd.mapToPair(
-//                new PairFunction<Row, ImmutableBytesWritable, Put>() {
-//                    @Override
-//                    public Tuple2<ImmutableBytesWritable, Put> call(Row row) throws Exception {
-//
-//                        Put put = new Put(Bytes.toBytes(row.getString(0)));
-//                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row.getString(1)));
-//                        put.add(Bytes.toBytes("columFamily"), Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row.getString(2)));
-//
-//                        return new Tuple2<ImmutableBytesWritable, Put>(new ImmutableBytesWritable(), put);
-//                    }
-//                });
-
-        // save to HBase- Spark built-in API method
-        hbasePut.saveAsNewAPIHadoopDataset(newAPIJobConfiguration.getConfiguration());
-    }
-
-//    @Test
-    public void pureTest() throws IOException, InterruptedException {
-        // create connection with HBase
-        /*
-        Configuration config = null;
-        try {
-            config = HBaseConfiguration.create();
-            config.set("hbase.zookeeper.quorum", "127.0.0.1");
-            config.set("hbase.zookeeper.property.clientPort","2181");
-            //config.set("hbase.master", "127.0.0.1:60000");
-            HBaseAdmin.checkHBaseAvailable(config);
-            System.out.println("HBase is running!");
-        }
-        catch (MasterNotRunningException e) {
-            System.out.println("HBase is not running!");
-            System.exit(1);
-        }catch (Exception ce){
-            ce.printStackTrace();
+        final List<String> collect = hbasePut.map(t -> t._2)
+                .map((Function<Put, String>) put -> put.getId()).sample(false, 0.02)
+                .collect();
+        for (String o : collect) {
+            System.out.println(o);
         }
 
-        config.set(TableInputFormat.INPUT_TABLE, "testtest");
-
-        *//////////////////////////////////////////////////////////////
-
-        Configuration hConf = HBaseConfiguration.create();
-        String path = Objects.requireNonNull(AnchorFinder.class
-                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
-        hConf.addResource(new Path(path));
-        path = Objects.requireNonNull(AnchorFinder.class
-                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
-        hConf.addResource(new Path(path));
-        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
-
-        Job newAPIJobConfiguration1 = Job.getInstance(hConf);
-        newAPIJobConfiguration1.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, "testtest");
-        newAPIJobConfiguration1.setOutputFormatClass(org.apache.hadoop.hbase.mapreduce.TableOutputFormat.class);
-
-
-        List<Integer> lists = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            lists.add(i);
-        }
-
-        final JavaRDD<Integer> parallelize = jsc.parallelize(lists);
-
-        JavaPairRDD<ImmutableBytesWritable, Put> hbasePuts = parallelize.mapToPair(
-                (PairFunction<Integer, ImmutableBytesWritable, Put>) row -> {
-
-                    Put put = new Put(Bytes.toBytes(row));
-                    put.addColumn(Bytes.toBytes("cf"),
-                            Bytes.toBytes("columnQualifier1"), Bytes.toBytes(row + 1));
-                    put.addColumn(Bytes.toBytes("cf"),
-                            Bytes.toBytes("columnQualifier2"), Bytes.toBytes(row));
-
-                    return new Tuple2<>(new ImmutableBytesWritable(), put);
-                });
-
-        hbasePuts.saveAsNewAPIHadoopDataset(newAPIJobConfiguration1.getConfiguration());
+        hbasePut.saveAsNewAPIHadoopDataset(job.getConfiguration());
     }
 
     @Test
-    public void connTest() throws IOException, InterruptedException {
-        final Configuration hbaseConfig = AnchorFinder.createHbaseConfiguration();
+    public void testHbase() throws IOException, InterruptedException {
+        final Configuration hbaseConfig = AnchorFinder.createHbaseConfig();
 
         final Job job = Job.getInstance(hbaseConfig);
         job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
@@ -196,21 +123,20 @@ public class AnchorFinderTest
                 .mapToPair(row -> {
                     String rowKey = row._1;
                     Put put = new Put(DigestUtils.md5Hex(rowKey).getBytes());
-                    put.addColumn(Bytes.toBytes(testColumnFamily),
+                    put.addColumn(Bytes.toBytes(Config.DATA_CF_NAME),
                             Bytes.toBytes(testQualifier),
                             Bytes.toBytes(row._2));
                     return new Tuple2<>(new ImmutableBytesWritable(), put);
                 });
         hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
 
-        Thread.sleep(10000);
+        Thread.sleep(1000);
 
         final JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD =
                 jsc.newAPIHadoopRDD(
-                        createHbaseConfig(),
+                        AnchorFinder.createHbaseConfig(),
                         TableInputFormat.class,
                         ImmutableBytesWritable.class, Result.class);
-        System.out.println(hbaseRDD.count());
 
         final JavaRDD<Integer> resultRDD = hbaseRDD.map(tuple -> {
             final Cell cell = tuple._2.listCells().get(0);
@@ -219,42 +145,12 @@ public class AnchorFinderTest
 
 
         final List<Integer> collect = resultRDD
-//                .sortBy(new Function<Integer, Object>() {
-//                    @Override
-//                    public Object call(Integer integer) throws Exception {
-//                    }
-//                })
-        .collect();
-        System.out.println(collect.size());
-        for (int i = 0; i < collect.size(); i++) {
-            System.out.println(i);
-            assertEquals(i, collect.get(i).intValue());
-        }
-
-    }
-
-    Configuration createHbaseConfig()
-    {
-        final Configuration hConf = HBaseConfiguration.create();
-
-        final String hbaseSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
-                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
-        final String coreSiteXmlPath = Objects.requireNonNull(AnchorFinder.class
-                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
-
-        hConf.addResource(new Path(hbaseSiteXmlPath));
-        hConf.addResource(new Path(coreSiteXmlPath));
-
-        System.out.println(Config.HBASE_TABLE + "<---");
-
-        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
-
-        return hConf;
+                .collect();
+        assertEquals(10, collect.size());
     }
 
     @Test
-    public void test() {
+    public void readHbase() {
         Configuration hConf = HBaseConfiguration.create();
         String path = Objects.requireNonNull(AnchorFinder.class
                 .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
@@ -271,6 +167,28 @@ public class AnchorFinderTest
                 .newAPIHadoopRDD(hConf, TableInputFormat.class,
                         ImmutableBytesWritable.class, Result.class);
         System.out.println(hbaseRDD.count());
+
+        final List<Tuple2<String, String>> collect = hbaseRDD.map(tuple -> tuple._2)
+                .flatMapToPair((PairFlatMapFunction<Result, String, String>) result -> {
+                    final List<Tuple2<String, String>> list = new ArrayList<>();
+
+                    final List<Cell> cells = result.listCells();
+                    for (int i = 0; i < cells.size(); i += 2) {
+                        String anchor = Bytes.toString(result
+                                        .getValue(Config.DATA_CF_NAME.getBytes(), ("anchor" + i / 2).getBytes()));
+                        String link = Bytes.toString(result
+                                        .getValue(Config.DATA_CF_NAME.getBytes(), ("link" + i / 2).getBytes()));
+
+                        list.add(new Tuple2<>(link, anchor));
+                    }
+
+                    return list.iterator();
+                }).collect();
+
+        for (int i = 0; i < collect.size(); i++) {
+            System.out.println(i + " : " + collect.get(i));
+        }
+
     }
 
 }

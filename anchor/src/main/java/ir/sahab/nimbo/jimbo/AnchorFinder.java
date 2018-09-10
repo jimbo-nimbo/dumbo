@@ -18,16 +18,23 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.VoidFunction;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.util.LongAccumulator;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
+import scala.Serializable;
 import scala.Tuple2;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,21 +42,26 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AnchorFinder {
+public class AnchorFinder implements Serializable {
 
     private static final RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
+                    new HttpHost("genghis", 9200, "http"),
                     new HttpHost("hitler", 9200, "http")));
 
-    void extractAnchorsToHbase() {
+
+
+    void extractAnchorsToHbase() throws InterruptedException, IOException {
 
         final Configuration hConf = createHbaseConfig();
 
         final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
         final JavaSparkContext jsc = new JavaSparkContext(conf);
 
+        final LongAccumulator successful = jsc.sc().longAccumulator();
+        final LongAccumulator failure = jsc.sc().longAccumulator();
         /**
-         * part two read data from HBase
+         * Read data from HBase
          */
 
         JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD =
@@ -60,25 +72,30 @@ public class AnchorFinder {
         System.out.println(hbaseRDD.count());
 
         /**
-         * part 2.5 check cells
+         * Map to datas
          */
 
         final JavaRDD<Result> resultRDD = hbaseRDD.map(tuple -> tuple._2);
 
-//        System.out.println(resultRDD.collect());
-
         /**
-         * part three extract anchors
+         * Extract anchors
          */
-
 
         final JavaPairRDD<String, String> oneRDD = resultRDD.flatMapToPair(result -> {
             final List<Tuple2<String, String>> list = new ArrayList<>();
 
             final List<Cell> cells = result.listCells();
             for (int i = 0; i < cells.size(); i += 2) {
-                final String anchor = Bytes.toString(CellUtil.cloneValue(cells.get(i)));
-                final String link = Bytes.toString(CellUtil.cloneValue(cells.get(i + 1)));
+                String anchor = Bytes.toString(result
+                        .getValue(Config.DATA_CF_NAME.getBytes(), (i / 2 + "anchor").getBytes()));
+                String link = Bytes.toString(result
+                        .getValue(Config.DATA_CF_NAME.getBytes(), (i / 2 + "link").getBytes()));
+                if (anchor == null) {
+                    failure.reset();
+                    failure.add(i/2 + 1);
+                    continue;
+                }
+
                 final String[] split = anchor.split("\\s+");
                 for (String s : split) {
                     list.add(new Tuple2<>(link, s));
@@ -88,13 +105,14 @@ public class AnchorFinder {
             return list.iterator();
         });
 
-        final JavaPairRDD<String, Object> stringObjectJavaPairRDD = oneRDD
+        final JavaPairRDD<String, List> stringObjectJavaPairRDD = oneRDD
                 .groupByKey()
-                .mapValues((org.apache.spark.api.java.function.Function<Iterable<String>, Object>) input -> {
+                .mapValues((org.apache.spark.api.java.function.Function<Iterable<String>, List>) input -> {
                     final List<String> anchors = new ArrayList<>();
                     input.forEach(anchors::add);
 
-                    final List<Object> collect = anchors.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    final List<Object> collect = anchors.stream().collect(Collectors.groupingBy(Function.identity(),
+                            Collectors.counting()))
                             .entrySet()
                             .stream()
                             .sorted((o1, o2) -> (int) (o2.getValue() - o1.getValue()))
@@ -157,61 +175,72 @@ public class AnchorFinder {
 //        });
 
         /**
-         * part seven put to elastic search
+         * Put to elastic search
          */
 
-        final LongAccumulator successful = jsc.sc().longAccumulator();
-        final LongAccumulator failure = jsc.sc().longAccumulator();
 
-        stringObjectJavaPairRDD.foreach((VoidFunction<Tuple2<String, Object>>) stringObjectTuple2 -> {
-            final List<String> list = (List<String>) stringObjectTuple2._2;
+
+        final long count = stringObjectJavaPairRDD.count();
+
+
+
+        stringObjectJavaPairRDD.foreach(stringObjectTuple2 -> {
+            final List<String> list = stringObjectTuple2._2;
             StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < list.size(); i++) {
-                stringBuilder.append(i + "-> " + list.get(i) + " ");
+                stringBuilder.append(list.get(i) + " ");
             }
-            final String id = DigestUtils.md5Hex(stringObjectTuple2._1);
+            final String id = DigestUtils.md5Hex(stringObjectTuple2._1 + 1);
 
             //Create Request
             final UpdateRequest request = new UpdateRequest(
-                    "finaltest",
+                    "jimbo5index",
                     "_doc",
                     id);
 
             //Create document with ContentBuilder
-            XContentBuilder builder = XContentFactory.jsonBuilder();
+            final XContentBuilder builder = XContentFactory.jsonBuilder();
             builder.startObject();
             {
-                builder.field("anchor", stringBuilder.toString());
-                builder.field("content", "updated");
+                builder.field("Anchors", stringBuilder.toString());
             }
             builder.endObject();
 
+            final XContentBuilder defualt = XContentFactory.jsonBuilder();
+            defualt.startObject();
+            {
+                defualt.field("exist", false);
+            }
+            defualt.endObject();
+
             //bind document to request
+            request.upsert(defualt);
             request.doc(builder);
 
-            client.updateAsync(request, new ActionListener<UpdateResponse>() {
-                @Override
-                public void onResponse(UpdateResponse updateResponse) {
-                    successful.add(1);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    failure.add(1);
-                }
-            });
+            final UpdateResponse update = client.update(request, RequestOptions.DEFAULT);
+            successful.add(1);
+//            client.updateAsync(request, RequestOptions.DEFAULT, new ActionListener<UpdateResponse>() {
+//                @Override
+//                public void onResponse(UpdateResponse updateResponse) {
+//                    successful.add(1);
+//                }
+//
+//                @Override
+//                public void onFailure(Exception e) {
+//                    failure.add(1);
+//                }
+//            });
         });
 
-        System.out.println("successful: " + successful.value() + " failure: " + failure.value());
-        //close connection by ac
-//        client.close();
+        while (true) {
+            Thread.sleep(3000);
+            System.out.println("successful: " + successful.value() + " failure: " + failure.value() + " ?= " + count);
+            if (successful.value() + failure.value() == count) {
+                client.close();
+                break;
+            }
+        }
 
-        /*
-        Job job = Job.getInstance(hConf);
-        job.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, Config.HBASE_TABLE);
-        job.setOutputFormatClass(TableOutputFormat.class);
-        hbasePuts.saveAsNewAPIHadoopDataset(job.getConfiguration());
-        */
     }
 
     static Configuration createHbaseConfig()
@@ -226,29 +255,10 @@ public class AnchorFinder {
         hConf.addResource(new Path(hbaseSiteXmlPath));
         hConf.addResource(new Path(coreSiteXmlPath));
 
-        System.out.println(Config.HBASE_TABLE + "<---");
         hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
         hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
 
         return hConf;
-    }
-
-    static Configuration createHbaseConfiguration() {
-        Configuration config = null;
-        try {
-            config = HBaseConfiguration.create();
-            config.set("hbase.zookeeper.quorum", "hitler");
-            config.set("hbase.zookeeper.property.clientPort","2181");
-            HBaseAdmin.checkHBaseAvailable(config);
-            System.out.println("HBase is running!");
-        }
-        catch (MasterNotRunningException e) {
-            System.out.println("HBase is not running!");
-            System.exit(1);
-        }catch (Exception ce){
-            ce.printStackTrace();
-        }
-        return config;
     }
 
 }

@@ -59,27 +59,9 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-//        (new AnchorFinder()).extractAnchorsToHbase();
+        (new AnchorFinder()).extractAnchorsToHbase();
 
 //        tt();
-        Configuration hConf = HBaseConfiguration.create();
-        String path = Objects.requireNonNull(AnchorFinder.class
-                .getClassLoader().getResource(Config.HBASE_SITE_XML)).getPath();
-        hConf.addResource(new Path(path));
-        path = Objects.requireNonNull(AnchorFinder.class
-                .getClassLoader().getResource(Config.CORE_SITE_XML)).getPath();
-        hConf.addResource(new Path(path));
-        hConf.set(TableInputFormat.INPUT_TABLE, Config.HBASE_TABLE);
-        hConf.set(TableInputFormat.SCAN_COLUMN_FAMILY, Config.DATA_CF_NAME);
-        System.out.println(Config.HBASE_TABLE + ", " + Config.DATA_CF_NAME);
-
-        SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
-        JavaSparkContext jsc = new JavaSparkContext(conf);
-
-        JavaPairRDD<ImmutableBytesWritable, Result> hbaseRDD = jsc
-                .newAPIHadoopRDD(hConf, TableInputFormat.class,
-                        ImmutableBytesWritable.class, Result.class);
-        System.out.println(hbaseRDD.count());
 //        Process launcher = new SparkLauncher().setAppName("testLauncher")
 //                .setAppResource("spark-job.jar")
 //                .setSparkHome("spark-home")
