@@ -28,6 +28,7 @@ public class EntryPoint {
     @Path("/ssearch")
     @Produces(MediaType.APPLICATION_JSON)
     public JsonResultModel simpleSearch(SimpleQuerry querry) {
+//        System.err.println("thi");
         return SearchManager.getInstance().simpleSearch(querry.getSearchText());
     }
 

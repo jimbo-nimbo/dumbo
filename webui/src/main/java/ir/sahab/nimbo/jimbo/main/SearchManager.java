@@ -20,6 +20,7 @@ public class SearchManager {
     }
 
     public JsonResultModel simpleSearch(String searchText){
+//        System.err.println("simpleSearch");
         return WebHandler.webSearch(searchText);
     }
 }

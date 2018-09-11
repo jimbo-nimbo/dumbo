@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class Worker implements Runnable{
+public class Worker implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     private final ElasticsearchSetting elasticsearchSetting;
@@ -36,10 +36,12 @@ public class Worker implements Runnable{
         this.elasticQueue = elasticQueue;
 
         this.client = new RestHighLevelClient(
-        RestClient.builder(
-                new HttpHost("hitler", 9200, "http"),
-                new HttpHost("genghis", 9200, "http"),
-                new HttpHost("alexander", 9200, "http")));
+                RestClient.builder(
+                        new HttpHost("hitler", 9200, "http"),
+                        new HttpHost("genghis", 9200, "http")
+//                ,
+//                new HttpHost("alexander", 9200, "http")
+                ));
     }
 
     @Override
@@ -78,9 +80,9 @@ public class Worker implements Runnable{
         for (ElasticsearchWebpageModel model : models) {
 
             final IndexRequest request = new IndexRequest(
-                indexName,
-                "_doc",
-                getId(model.getUrl()));
+                    indexName,
+                    "_doc",
+                    getId(model.getUrl()));
 
             builder = XContentFactory.jsonBuilder();
             builder.startObject()

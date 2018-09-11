@@ -31,11 +31,15 @@ public class Main {
     }
 
     private void printAns(ArrayList<SearchHit> searchHits){
-        getAns(searchHits);
-        //            System.err.println();
-//            System.err.print("#References : ");
-//            System.err.println();
-//            System.err.println("-------------------------------------------------------------\n");
+        JsonResultModel jsonResultModel = getAns(searchHits);
+        for(int i = 0; i < jsonResultModel.getResultModels().length; i++) {
+            System.out.println("title : " + jsonResultModel.getResultModels()[i].getTitle());
+            System.out.println(jsonResultModel.getResultModels()[i].getUrl());
+            System.out.println(jsonResultModel.getResultModels()[i].getDescription());
+            System.out.println("#References : " + jsonResultModel.getResultModels()[i].getNumberOfRefrences());
+            System.out.println("-------------------------------------------------------------\n");
+        }
+
     }
 
 

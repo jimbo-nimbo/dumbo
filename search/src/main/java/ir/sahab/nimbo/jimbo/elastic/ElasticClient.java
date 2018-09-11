@@ -22,6 +22,7 @@ public class ElasticClient {
     private RestHighLevelClient client;
 
     public static ElasticClient getInstance() {
+//        System.err.println("instance");
         return ourInstance;
     }
 
@@ -47,8 +48,11 @@ public class ElasticClient {
     }
 
     public ArrayList<SearchHit> simpleElasticSearch(String mustFind) {
+//        System.err.println("hi");
         ArrayList<String> simpleQuery = new ArrayList<>();
+//        System.err.println("by");
         simpleQuery.add(mustFind);
+//        System.err.println("ti");
         return jimboElasticSearch(simpleQuery, new ArrayList<>(), new ArrayList<>());
     }
 

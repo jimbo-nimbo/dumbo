@@ -4,8 +4,6 @@ import ir.sahab.nimbo.jimbo.elastic.Config;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
 import ir.sahab.nimbo.jimbo.hbase.HBase;
 import org.elasticsearch.search.SearchHit;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
@@ -41,7 +39,7 @@ public class WebHandler {
                 }
             }
         }
-        System.err.println(System.currentTimeMillis() - a);
+//        System.err.println(System.currentTimeMillis() - a);
         a = System.currentTimeMillis();
         Integer[] finalRefs = HBase.getInstance().getNumberOfReferences(urls);
         index.sort(new Comparator<Integer>() {
@@ -50,7 +48,7 @@ public class WebHandler {
                 return finalRefs[o2] - finalRefs[o1];
             }
         });
-        System.err.println(System.currentTimeMillis() - a);
+//        System.err.println(System.currentTimeMillis() - a);
         for(int i = 0; i < SHOW_LIMIT && i < searchHits.size(); i++) {
             resultModels[i] = new ResultModel(result[index.get(i)].getTitle(), result[index.get(i)].getUrl(),
                     result[index.get(i)].getDescription(), finalRefs[index.get(i)]);
@@ -60,6 +58,7 @@ public class WebHandler {
     }
 
     public static JsonResultModel webSearch(String searchText){
+        ElasticClient.getInstance();
         ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleElasticSearch(searchText);
         return getAns(ans);
     }
