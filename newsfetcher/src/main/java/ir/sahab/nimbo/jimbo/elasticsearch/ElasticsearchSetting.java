@@ -10,7 +10,7 @@ public class ElasticsearchSetting extends Setting {
     private final String indexName;
 
     public ElasticsearchSetting() {
-        super("elasticsearch-rss");
+        super("elasticsearch");
         clusterName = properties.getProperty("cluster.name");
         hosts = properties.getProperty("hosts");
         bulkSize = Integer.parseInt(properties.getProperty("bulk_size"));

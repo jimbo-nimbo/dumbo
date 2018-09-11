@@ -3,13 +3,11 @@ package ir.sahab.nimbo.jimbo.main;
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
-import ir.sahab.nimbo.jimbo.elasticsearch.ElasticsearchHandler;
 import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 
@@ -35,25 +33,18 @@ public class Main {
     }
 
     private void printAns(ArrayList<SearchHit> searchHits){
-        final int LIMIT = 10;
-        int count = 0;
-
-        for(SearchHit searchHit : searchHits){
-            if(count <= LIMIT){
-                Map<String, Object> map = searchHit.getSourceAsMap();
-                System.out.print("Title: " + map.get("title") + "\n" +
-                        map.get("url") + "\n");
-                String content = map.get("content").toString();
-                if(content.length() <= 500)
-                    System.out.println(content);
-                else {
-                    System.out.println(content.substring(0, 499) + "...");
-                }
-                System.out.println("-------------------------------------------------------------");
-
-                count++;
-            }
+        JsonResultModel jsonResultModel = WebHandler.getAns(searchHits);
+        for(int i = 0; i < jsonResultModel.getNewsResultModels().length; i++) {
+            System.out.println("title : " + jsonResultModel.getNewsResultModels()[i].getTitle());
+            System.out.println(jsonResultModel.getNewsResultModels()[i].getUrl());
+            System.out.println(jsonResultModel.getNewsResultModels()[i].getContent());
+            System.out.println("-------------------------------------------------------------\n");
         }
+
+    }
+
+    private void printAns2(ArrayList<SearchHit> searchHits){
+
     }
 
     @Command
