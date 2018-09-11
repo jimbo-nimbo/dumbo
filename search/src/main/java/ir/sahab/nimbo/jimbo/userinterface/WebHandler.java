@@ -21,9 +21,9 @@ public class WebHandler {
         Long a = System.currentTimeMillis();
         for(SearchHit searchHit : searchHits){
             if(count < SEARCH_LIMIT){
-                index.add(count);
                 Map<String, Object> map = searchHit.getSourceAsMap();
                 if(map.containsKey("url") && map.containsKey("title") && map.containsKey("content")) {
+                    index.add(count);
                     String url = (String) map.get("url");
                     urls.add(url);
                     result[count] = new ResultModel();

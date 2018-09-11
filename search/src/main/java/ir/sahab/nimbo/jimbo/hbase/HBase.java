@@ -36,7 +36,9 @@ public class HBase extends AbstractHBase {
         for (int i = 0; i < urls.size(); i++) {
             Get get = new Get(urls.get(i).getBytes());
             get.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES_BYTES);
+            get.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES);
             gets.add(get);
+            ans[i] = 0;
         }
         if (urls.size() > 0) {
             Result[] results;
@@ -47,9 +49,16 @@ public class HBase extends AbstractHBase {
                     if (result != null) {
                         byte[] res = result.getValue(HBASE_MARK_CF_NAME_BYTES,
                                 HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES_BYTES);
-                        if (res != null)
-                            ans[i] = Bytes.toInt(res);
-                        else {
+                        byte[] url = result.getValue(HBASE_MARK_CF_NAME_BYTES,
+                                HBASE_MARK_Q_NAME_URL_BYTES);
+                        if (res != null && url != null) {
+                            String urlStr = Bytes.toString(url);
+                            for(int j = 0; j < urls.size(); j++){
+                                if(urls.get(j).equals(urlStr)){
+                                    ans[j] = Bytes.toInt(res);
+                                }
+                            }
+                        } else {
                             ans[i] = 0;
                         }
                     }
@@ -62,7 +71,7 @@ public class HBase extends AbstractHBase {
                 logger.error(e.getMessage());
             }
         }
-        return null;
+        return ans;
     }
 
     @Override
