@@ -9,7 +9,7 @@ public class App {
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
 
-        Server jettyServer = new Server(41560);
+        Server jettyServer = new Server(Config.PORT);
         jettyServer.setHandler(context);
 
         ServletHolder jerseyServlet = context.addServlet(
