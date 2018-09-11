@@ -23,6 +23,7 @@ public class Main {
         RestClient restClient = ElasticClientBuilder.buildRest();
         HBaseInputScanner.getInstance().initializeScan();
         Map<String, String> urlMap = new HashMap<>();
+        int count = 0;
         while (HBaseInputScanner.getInstance().hasNext()) {
             List<String> urls = HBaseInputScanner.getInstance().nextBulk();
             StringBuilder docIds = new StringBuilder();
@@ -81,7 +82,8 @@ public class Main {
             // Put keywords to HBase
             HBaseOutput.getInstance().sendPuts();
 
-            System.out.println("Sent a bulk!");
+            count++;
+            System.out.println("Sent a bulk: #" + count);
         }
 
         restClient.close();
