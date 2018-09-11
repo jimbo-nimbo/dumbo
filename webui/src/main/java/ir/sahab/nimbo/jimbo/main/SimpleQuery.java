@@ -1,9 +1,9 @@
 package ir.sahab.nimbo.jimbo.main;
 
-public class SimpleQuerry {
+public class SimpleQuery {
     private String searchText;
 
-    public SimpleQuerry(){
+    public SimpleQuery(){
 
     }
 

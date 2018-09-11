@@ -2,7 +2,6 @@ package ir.sahab.nimbo.jimbo.main;
 
 
 import ir.sahab.nimbo.jimbo.userinterface.JsonResultModel;
-import ir.sahab.nimbo.jimbo.userinterface.ResultModel;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -27,9 +26,9 @@ public class EntryPoint {
     @POST
     @Path("/ssearch")
     @Produces(MediaType.APPLICATION_JSON)
-    public JsonResultModel simpleSearch(SimpleQuerry querry) {
+    public JsonResultModel simpleSearch(SimpleQuery query) {
 //        System.err.println("thi");
-        return SearchManager.getInstance().simpleSearch(querry.getSearchText());
+        return SearchManager.getInstance().simpleSearch(query.getSearchText());
     }
 
 }
