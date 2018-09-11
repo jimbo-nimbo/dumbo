@@ -1,10 +1,12 @@
 package ir.sahab.nimbo.jimbo.elasticsearch;
 
+import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,5 +94,13 @@ public class ElasticsearchHandler implements Runnable {
     protected void finalize() throws Throwable {
         super.finalize();
         client.close();
+    }
+
+    public ArrayList<String> findTrendWords() {
+        return null;
+    }
+
+    public ArrayList<SearchHit> findTrendNews() {
+        return ElasticClient.getInstance().jimboElasticSearch(new ArrayList<>(), new ArrayList<>(), findTrendWords());
     }
 }

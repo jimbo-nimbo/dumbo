@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Exec extends Thread {
     static ArrayBlockingQueue<ElasticsearchWebpageModel> blockingQueue = new ArrayBlockingQueue<>(1000);
+    ElasticsearchHandler elasticsearchHandler = null;
 
     static String fetch(String url, NewsSite site) {
         try {
@@ -44,7 +45,6 @@ public class Exec extends Thread {
 
     @Override
     public void run() {
-        ElasticsearchHandler elasticsearchHandler = null;
         try {
             elasticsearchHandler = new ElasticsearchHandler(blockingQueue, new ElasticsearchSetting());
         } catch (UnknownHostException e) {
