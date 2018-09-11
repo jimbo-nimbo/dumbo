@@ -23,15 +23,16 @@ public class TestElasticsearch {
         final RestHighLevelClient client = new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost("hitler", 9200, "http"),
-                        new HttpHost("genghis", 9200, "http")));
+                        new HttpHost("genghis", 9200, "http"),
+                        new HttpHost("alexander", 9200, "http")));
 
         final BulkRequest bulkRequest = new BulkRequest();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             //Create Request
             final IndexRequest request = new IndexRequest(
                     "anchorstest",
                     "_doc",
-                    DigestUtils.md5Hex("www.test" + i + ".com"));
+                    DigestUtils.md5Hex("http://www.test" + i + ".com"));
 
             //Create document with ContentBuilder
             XContentBuilder builder = XContentFactory.jsonBuilder();

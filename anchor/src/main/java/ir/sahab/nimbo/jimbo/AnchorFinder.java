@@ -21,6 +21,8 @@ import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.util.LongAccumulator;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -35,10 +37,8 @@ import scala.Serializable;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -47,7 +47,8 @@ public class AnchorFinder implements Serializable {
     private static final RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
                     new HttpHost("genghis", 9200, "http"),
-                    new HttpHost("hitler", 9200, "http")));
+                    new HttpHost("hitler", 9200, "http"),
+                    new HttpHost("alexander", 9200, "http")));
 
 
 
@@ -58,8 +59,8 @@ public class AnchorFinder implements Serializable {
         final SparkConf conf = new SparkConf().setAppName(Config.SPARK_APP_NAME);
         final JavaSparkContext jsc = new JavaSparkContext(conf);
 
-        final LongAccumulator successful = jsc.sc().longAccumulator();
-        final LongAccumulator failure = jsc.sc().longAccumulator();
+        final LongAccumulator successful = jsc.sc().longAccumulator("hit");
+        final LongAccumulator failure = jsc.sc().longAccumulator("miss");
         /**
          * Read data from HBase
          */
@@ -69,7 +70,7 @@ public class AnchorFinder implements Serializable {
                         hConf,
                         TableInputFormat.class,
                         ImmutableBytesWritable.class, Result.class);
-        System.out.println(hbaseRDD.count());
+        System.out.println(hbaseRDD.count() + "<<<<<--------");
 
         /**
          * Map to datas
@@ -91,8 +92,7 @@ public class AnchorFinder implements Serializable {
                 String link = Bytes.toString(result
                         .getValue(Config.DATA_CF_NAME.getBytes(), (i / 2 + "link").getBytes()));
                 if (anchor == null) {
-                    failure.reset();
-                    failure.add(i/2 + 1);
+                    failure.add(i/2);
                     continue;
                 }
 
@@ -178,47 +178,99 @@ public class AnchorFinder implements Serializable {
          * Put to elastic search
          */
 
-
-
         final long count = stringObjectJavaPairRDD.count();
 
+        stringObjectJavaPairRDD.foreachPartitionAsync(new VoidFunction<Iterator<Tuple2<String, List>>>() {
+            @Override
+            public void call(Iterator<Tuple2<String, List>> iterator) throws Exception {
+                final BulkRequest[] bulkRequest = {new BulkRequest()};
+                iterator.forEachRemaining(new Consumer<Tuple2<String, List>>() {
+                    @Override
+                    public void accept(Tuple2<String, List> stringListTuple2) {
 
+                        final List<String> list = stringListTuple2._2;
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (int i = 0; i < list.size(); i++) {
+                            stringBuilder.append(list.get(i) + " ");
+                        }
+                        final String id = DigestUtils.md5Hex(stringListTuple2._1);
 
-        stringObjectJavaPairRDD.foreach(stringObjectTuple2 -> {
-            final List<String> list = stringObjectTuple2._2;
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < list.size(); i++) {
-                stringBuilder.append(list.get(i) + " ");
+                        final UpdateRequest request = new UpdateRequest(
+                                "anchorstest",
+                                "_doc",
+                                id);
+
+                        final XContentBuilder builder;
+                        try {
+                            builder = XContentFactory.jsonBuilder();
+
+                        builder.startObject();
+                        {
+                            builder.field("anchors", stringBuilder.toString());
+                        }
+                        builder.endObject();
+
+//                        final XContentBuilder defualt = XContentFactory.jsonBuilder();
+//                        defualt.startObject();
+//                        {
+//                            defualt.field("exist", false);
+//                        }
+//                        defualt.endObject();
+
+//                        request.upsert(defualt);
+                        request.doc(builder);
+
+                        bulkRequest[0].add(request);
+
+                        if (bulkRequest[0].numberOfActions() > 1000) {
+                            final BulkResponse bulk = client.bulk(bulkRequest[0], RequestOptions.DEFAULT);
+                            successful.add(bulk.getItems().length);
+                            bulkRequest[0] = new BulkRequest();
+                        }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+                final BulkResponse bulk = client.bulk(bulkRequest[0], RequestOptions.DEFAULT);
+                successful.add(bulk.getItems().length);
             }
-            final String id = DigestUtils.md5Hex(stringObjectTuple2._1 + 1);
+        });
 
-            //Create Request
-            final UpdateRequest request = new UpdateRequest(
-                    "jimbo5index",
-                    "_doc",
-                    id);
-
-            //Create document with ContentBuilder
-            final XContentBuilder builder = XContentFactory.jsonBuilder();
-            builder.startObject();
-            {
-                builder.field("Anchors", stringBuilder.toString());
-            }
-            builder.endObject();
-
-            final XContentBuilder defualt = XContentFactory.jsonBuilder();
-            defualt.startObject();
-            {
-                defualt.field("exist", false);
-            }
-            defualt.endObject();
-
-            //bind document to request
-            request.upsert(defualt);
-            request.doc(builder);
-
-            final UpdateResponse update = client.update(request, RequestOptions.DEFAULT);
-            successful.add(1);
+//        stringObjectJavaPairRDD.foreach(stringObjectTuple2 -> {
+//            final List<String> list = stringObjectTuple2._2;
+//            StringBuilder stringBuilder = new StringBuilder();
+//            for (int i = 0; i < list.size(); i++) {
+//                stringBuilder.append(list.get(i) + " ");
+//            }
+//            final String id = DigestUtils.md5Hex(stringObjectTuple2._1 + 1);
+//
+//            final UpdateRequest request = new UpdateRequest(
+//                    "minitest",
+//                    "_doc",
+//                    id);
+//
+//            final XContentBuilder builder = XContentFactory.jsonBuilder();
+//            builder.startObject();
+//            {
+//                builder.field("Anchors", stringBuilder.toString());
+//            }
+//            builder.endObject();
+//
+//            final XContentBuilder defualt = XContentFactory.jsonBuilder();
+//            defualt.startObject();
+//            {
+//                defualt.field("exist", false);
+//            }
+//            defualt.endObject();
+//
+//            request.upsert(defualt);
+//            request.doc(builder);
+//
+//            final UpdateResponse update = client.update(request, RequestOptions.DEFAULT);
+//            successful.add(1);
 //            client.updateAsync(request, RequestOptions.DEFAULT, new ActionListener<UpdateResponse>() {
 //                @Override
 //                public void onResponse(UpdateResponse updateResponse) {
@@ -230,8 +282,12 @@ public class AnchorFinder implements Serializable {
 //                    failure.add(1);
 //                }
 //            });
-        });
+//        });
 
+        System.out.println(failure.value() + " ------- " + successful.value());
+        for (int i = 0; i < 20; i++) {
+            System.out.println();
+        }
         while (true) {
             Thread.sleep(3000);
             System.out.println("successful: " + successful.value() + " failure: " + failure.value() + " ?= " + count);

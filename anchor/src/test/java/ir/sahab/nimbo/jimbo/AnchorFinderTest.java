@@ -78,11 +78,11 @@ public class AnchorFinderTest {
                         final int des = (i + src) % testGraphSize;
                         for (int j = 0; j < testGraphSize - i; j++) {
                             anchors.add("anchor from " + src + " to " + des);
-                            anchors.add("www.test" + des + ".com");
+                            anchors.add("http://www.test" + des + ".com");
                         }
                     }
 
-                    final String srcLink = "www.test" + integer + ".com";
+                    final String srcLink = "http://www.test" + integer + ".com";
                     return new Tuple2<>(srcLink, anchors);
                 });
 
@@ -93,9 +93,11 @@ public class AnchorFinderTest {
 
                     final Put put = new Put(DigestUtils.md5Hex(src).getBytes());
                     for (int i = 0; i < anchors.size(); i += 2) {
-                        put.addColumn(Config.DATA_CF_NAME.getBytes(), ("anchor" + i/2).getBytes(), anchors.get(i).getBytes());
-                        put.addColumn(Config.DATA_CF_NAME.getBytes(), ("link" + i/2).getBytes(), anchors.get(i + 1).getBytes());
+                        put.addColumn(Config.DATA_CF_NAME.getBytes(), (i / 2 + "anchor").getBytes(), anchors.get(i).getBytes());
+                        put.addColumn(Config.DATA_CF_NAME.getBytes(), (i / 2 + "link").getBytes(), anchors.get(i + 1).getBytes());
                     }
+
+                    put.addColumn(Config.DATA_CF_NAME.getBytes(), "url".getBytes(), src.getBytes());
 
                     return new Tuple2<>(new ImmutableBytesWritable(), put);
                 });
@@ -175,9 +177,9 @@ public class AnchorFinderTest {
                     final List<Cell> cells = result.listCells();
                     for (int i = 0; i < cells.size(); i += 2) {
                         String anchor = Bytes.toString(result
-                                        .getValue(Config.DATA_CF_NAME.getBytes(), ("anchor" + i / 2).getBytes()));
+                                        .getValue(Config.DATA_CF_NAME.getBytes(), (i / 2 + "anchor").getBytes()));
                         String link = Bytes.toString(result
-                                        .getValue(Config.DATA_CF_NAME.getBytes(), ("link" + i / 2).getBytes()));
+                                        .getValue(Config.DATA_CF_NAME.getBytes(), (i / 2 + "link").getBytes()));
 
                         list.add(new Tuple2<>(link, anchor));
                     }

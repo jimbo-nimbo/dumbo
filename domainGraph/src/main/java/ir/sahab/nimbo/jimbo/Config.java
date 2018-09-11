@@ -34,5 +34,3 @@ public class Config {
         DATA_CF_NAME = props.getProperty("hbase_data_cf_name");
     }
 }
-
-
