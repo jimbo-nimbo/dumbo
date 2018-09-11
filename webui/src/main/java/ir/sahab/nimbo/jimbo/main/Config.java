@@ -14,7 +14,7 @@ public class Config {
 
 
     static {
-        String resourceName = "conf.properties";
+        String resourceName = "webconf.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Properties props = new Properties();
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
