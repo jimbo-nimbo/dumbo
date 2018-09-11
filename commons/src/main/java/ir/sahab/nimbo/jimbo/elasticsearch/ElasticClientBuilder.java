@@ -101,6 +101,6 @@ public class ElasticClientBuilder {
     public static RestClient buildRest() {
         List<HttpHost> hostsArray = getHttpHosts();
         HttpHost[] hosts = hostsArray.toArray(new HttpHost[hostsArray.size()]);
-        return RestClient.builder(hosts).build();
+        return RestClient.builder(hosts).setMaxRetryTimeoutMillis(100000).build();
     }
 }

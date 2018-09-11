@@ -76,7 +76,7 @@ public class Worker implements Runnable {
                             DuplicateChecker.getInstance().updateLastSeen(markModel, DigestUtils.md5Hex(text));
                             fetcherUpdateSiteHBaseRequestsTimeContext.stop();
                         } catch (IOException | IllegalArgumentException |
-                                StringIndexOutOfBoundsException | ArrayIndexOutOfBoundsException |
+                                IndexOutOfBoundsException |
                                 OutOfMemoryError e) {
                             logger.error(e.getMessage());
                         } finally {

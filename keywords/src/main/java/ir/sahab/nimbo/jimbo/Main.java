@@ -19,10 +19,11 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         RestClient restClient = ElasticClientBuilder.buildRest();
         HBaseInputScanner.getInstance().initializeScan();
         Map<String, String> urlMap = new HashMap<>();
+        int count = 0;
         while (HBaseInputScanner.getInstance().hasNext()) {
             List<String> urls = HBaseInputScanner.getInstance().nextBulk();
             StringBuilder docIds = new StringBuilder();
@@ -80,6 +81,9 @@ public class Main {
 
             // Put keywords to HBase
             HBaseOutput.getInstance().sendPuts();
+
+            count++;
+            System.out.println("Sent a bulk: #" + count);
         }
 
         restClient.close();

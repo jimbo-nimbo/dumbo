@@ -1,10 +1,13 @@
 package ir.sahab.nimbo.jimbo.main;
 
 
+import ir.sahab.nimbo.jimbo.userinterface.JsonResultModel;
+import ir.sahab.nimbo.jimbo.userinterface.ResultModel;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-@Path("/entryPoint")
+@Path("/api")
 public class EntryPoint {
 
     @GET
@@ -17,13 +20,15 @@ public class EntryPoint {
     @GET
     @Path("/{param}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Greeting hello(@PathParam("param") String name) {
-        return new Greeting(name);
+    public String hello(@PathParam("param") String name) {
+        return ":)";
     }
 
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    public String helloUsingJson(Greeting greeting) {
-        return greeting.getMessage() + "\n";
+    @Path("/ssearch")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JsonResultModel simpleSearch(SimpleQuerry querry) {
+        return SearchManager.getInstance().simpleSearch(querry.getSearchText());
     }
+
 }
