@@ -23,12 +23,4 @@ public class TwitterStreamApiTest {
         Thread.sleep(10000);
         assertNotEquals(0L, twitterStreamApi.getCounter());
     }
-    //
-    //
-    // @Test
-    public void getPerSecondNotTest(){
-        while (true) {
-            twitterStreamApi.getSpeedPerSecond();
-        }
-    }
 }
