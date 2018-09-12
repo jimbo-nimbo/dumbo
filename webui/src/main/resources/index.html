@@ -214,45 +214,29 @@ function openTab(evt, tabName) {
 
 <script>
 function requestSearch(tabName, text) {
-  var jqxhr = $.post( "localhost:41560/api/ssearch", {searchText: text}, function(data) {
-    alert("success");
-    var obj = data;
-    var myJSON = JSON.stringify(obj);
-    document.getElementById("result").innerHTML = myJSON;
-  })
-    .done(function() {
-      alert( "second success" );
-    })
-    .fail(function(data) {
-      alert( "error" );
-    var obj = data.statusText;
-    var myJSON = JSON.stringify(obj);
-    document.getElementById("result").innerHTML = myJSON;
-    });
+    var xhr = new XMLHttpRequest();
+    var url = "http://localhost:41560/api/ssearch";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        var data = JSON.parse(xhr.responseText);
+        var result, x = "";
+        for (result in data.resultModels) {
+            x += "<a href='" + data.resultModels[result].url + "'><h2>" + data.resultModels[result].title + "</h2></a>";
+            x += "<h3>" + data.resultModels[result].url + "</h3>";
+            x += "<br>"  + data.resultModels[result].description + "..." + "<br><br>";
+        }
+        document.getElementById("result").innerHTML = data;
+    };
+    var data = JSON.stringify({"searchText": text});
+    xhr.send(data);
 }
-</script>
-
-<p id="sag"></p>
-
-<script>
-var xhr = new XMLHttpRequest();
-var url = "http://localhost:41560/api/ssearch";
-xhr.open("POST", url, true);
-xhr.setRequestHeader("Content-Type", "application/json");
-xhr.onreadystatechange = function () {
-
-var obj = { name: "John", age: 30, city: xhr.responseText};
-var myJSON = JSON.stringify(obj);
-document.getElementById("sag").innerHTML = myJSON;
-};
-var data = JSON.stringify({"searchText": "hello"});
-xhr.send(data);
 </script>
 
 
 <div class="tab">
-  <button class="tablinks" onclick="openTab(event, 'News')">News</button>
   <button class="tablinks" onclick="openTab(event, 'Web')">Web</button>
+  <button class="tablinks" onclick="openTab(event, 'News')">News</button>
   <button class="tablinks" onclick="openTab(event, 'Search Results')">Search Results</button>
 </div>
 

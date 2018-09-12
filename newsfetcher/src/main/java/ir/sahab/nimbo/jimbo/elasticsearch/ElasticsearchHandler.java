@@ -2,19 +2,24 @@ package ir.sahab.nimbo.jimbo.elasticsearch;
 
 import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.nio.entity.NStringEntity;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.SearchHit;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class ElasticsearchHandler implements Runnable {
@@ -97,7 +102,30 @@ public class ElasticsearchHandler implements Runnable {
     }
 
     public ArrayList<String> findTrendWords() {
-        return null;
+        String date = new Date().toString().substring(0, 6);
+        Map<String, String> params = Collections.emptyMap();
+        String jsonString = "{\n" +
+                "  \"query\": {\n" +
+                "    \"range\": {\n" +
+                "      \"date\": {\n" +
+                "        \"gte\": \""+date+"\",\n" +
+                "        \"lte\": \""+date+"\",\n" +
+                "        \"format\": \"MMM dd\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        HttpEntity entity = new NStringEntity(jsonString, ContentType.APPLICATION_JSON);
+        ArrayList<String> links = new ArrayList<>();
+        try {
+//            JSONArray hits = new JSONObject(EntityUtils.toString(response.getEntity())).getJSONObject("hits").getJSONArray("hits");
+//            for (Object bucket : hits) {
+//                links.add(((JSONObject) bucket).getJSONObject("_source").getString("pageLink"));
+//            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return links;
     }
 
     public ArrayList<SearchHit> findTrendNews() {
