@@ -32,8 +32,8 @@ public class Main {
 
     private void printAns(ArrayList<SearchHit> searchHits){
         JsonResultModel jsonResultModel = getAns(searchHits);
-        for (int i = 0; i < jsonResultModel.getSearchKeyWord().length; i++)
-            System.out.print(jsonResultModel.getSearchKeyWord()[i]);
+//        for (int i = 0; i < jsonResultModel.getSearchKeyWord().length; i++)
+//            System.out.print(jsonResultModel.getSearchKeyWord()[i]);
         System.out.println();
         for(int i = 0; i < jsonResultModel.getResultModels().length; i++) {
             System.out.println("title : " + jsonResultModel.getResultModels()[i].getTitle());

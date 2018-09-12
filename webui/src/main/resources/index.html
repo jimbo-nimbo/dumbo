@@ -219,19 +219,39 @@ function requestSearch(tabName, text) {
 
     document.getElementById("result").innerHTML = "Running...";
     xhr.open("POST", url, true);
+
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
-        var data = JSON.parse(xhr.responseText);
-        var result, x = "", i;
-        for (result in data.resultModels) {
-            x += "<a href='" + data.resultModels[result].url + "'><h2>" + data.resultModels[result].title + "</h2></a>";
-            x += "<h3>" + data.resultModels[result].url + "</h3>";
-            x += "<br>"  + data.resultModels[result].description + "...<h3>";
-            for(i in data.resultModels.keyWords)
-                x += " #" + data.resultModels.keyWords[i];
-            x += "</h3><br><br>";
+        if (xhr.readyState==4 && xhr.status==200) {
+
+            var data = JSON.parse(xhr.responseText);
+
+            var result, x = "", i;
+
+            if(tabName == 'snews'){
+
+                for (result in data.newsResultModels) {
+                    x += "<a href='" + data.newsResultModels[result].url + "'><h2>" + data.newsResultModels[result].title + "</h2></a>";
+                    x += "<h3>" + data.newsResultModels[result].url + "</h3>";
+                    x += "<br>" + data.newsResultModels[result].description + "...<h3>";
+                    for (i in data.newsResultModels.keyWords)
+                        x += " #" + data.newsResultModels.keyWords[i];
+                    x += "</h3><br><br>";
+                }
+                document.getElementById("result").innerHTML = x;
+            } else {
+
+                for (result in data.resultModels) {
+                    x += "<a href='" + data.resultModels[result].url + "'><h2>" + data.resultModels[result].title + "</h2></a>";
+                    x += "<h3>" + data.resultModels[result].url + "</h3>";
+                    x += "<br>" + data.resultModels[result].description + "...<h3>";
+                    for (i in data.resultModels.keyWords)
+                        x += " #" + data.resultModels.keyWords[i];
+                    x += "</h3><br><br>";
+                }
+                document.getElementById("result").innerHTML = x;
+            }
         }
-        document.getElementById("result").innerHTML = x;
     };
     var data = JSON.stringify({"searchText": text});
     xhr.send(data);
