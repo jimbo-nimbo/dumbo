@@ -63,7 +63,7 @@ public class ConfigSearch {
     private static Properties props;
     static {
         ES_HOSTS = new ArrayList<>();
-        String resourceName = "conf.properties";
+        String resourceName = "confsearch.properties";
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         props = new Properties();
         try (InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
