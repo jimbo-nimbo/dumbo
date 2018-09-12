@@ -16,7 +16,7 @@
   /* Style the tab */
   .tab {
       overflow: hidden;
-      border: 1px solid #ccc;
+      border: 0px solid #ccc;
       background-color: #f1f1f1;
   }
 
@@ -46,7 +46,7 @@
   .tabcontent {
       display: none;
       padding: 6px 12px;
-      border: 1px solid #ccc;
+      border: 0px solid #ccc;
       border-top: none;
   }
   </style>
@@ -56,7 +56,7 @@
 .centerPhoto {
     margin: auto;
     width: 440px;
-    border: 3px solid #73AD21;
+    border: 0px solid #73AD21;
     padding: 10px;
 }
 </style>
@@ -72,8 +72,7 @@
 
 <style>
 body {
-  background: url(http://www.inkspilldesign.com/demo/wood-tile-background.jpg);
-   background-color: #424242;
+   background-color: #FFFFFF;
   font: 12px Lucida sans, Arial, Helvetica, sans-serif;
 	color: #333;
 	text-align: center;
@@ -210,23 +209,29 @@ function openTab(evt, tabName) {
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
 }
+openTab(event, 'Web');
 </script>
 
 <script>
 function requestSearch(tabName, text) {
     var xhr = new XMLHttpRequest();
-    var url = "http://localhost:41560/api/ssearch";
+    var url = "http://localhost:41560/api/" + tabName;
+
+    document.getElementById("result").innerHTML = "Running...";
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         var data = JSON.parse(xhr.responseText);
-        var result, x = "";
+        var result, x = "", i;
         for (result in data.resultModels) {
             x += "<a href='" + data.resultModels[result].url + "'><h2>" + data.resultModels[result].title + "</h2></a>";
             x += "<h3>" + data.resultModels[result].url + "</h3>";
-            x += "<br>"  + data.resultModels[result].description + "..." + "<br><br>";
+            x += "<br>"  + data.resultModels[result].description + "...<h3>";
+            for(i in data.resultModels.keyWords)
+                x += " #" + data.resultModels.keyWords[i];
+            x += "</h3><br><br>";
         }
-        document.getElementById("result").innerHTML = data;
+        document.getElementById("result").innerHTML = x;
     };
     var data = JSON.stringify({"searchText": text});
     xhr.send(data);
@@ -253,7 +258,7 @@ function requestSearch(tabName, text) {
             <input type="text" style="width: 410px;" id="search" placeholder="Enter phrase to search on news" required name="search">
         </div>
         <div class="centerButton">
-          <input type="button" value="🐘 ‌Submit!🐘" id="submit" onClick="openTab(event, 'Search Results'); requestSearch('News', search.value)">
+          <input type="button" value="🐘 ‌Submit!🐘" id="submit" onClick="openTab(event, 'Search Results'); requestSearch('snews', search.value)">
         </div>
       </div>
     </form>
@@ -268,7 +273,7 @@ function requestSearch(tabName, text) {
             <input type="text" style="width: 410px;" id="search" placeholder="Enter phrase to search on web" required name="search">
         </div>
         <div class="centerButton">
-          <input type="button" value="🐘 ‌Submit!🐘" id="submit" onClick="openTab(event, 'Search Results'); requestSearch('Web', search.value)">
+          <input type="button" value="🐘 ‌Submit!🐘" id="submit" onClick="openTab(event, 'Search Results'); requestSearch('ssearch', search.value)">
         </div>
       </div>
     </form>
@@ -280,6 +285,8 @@ function requestSearch(tabName, text) {
     <p id="result">No results found.</p>
   </div>
 </div>
+
+<p>© 2014-2018 by Jimbo Inc.™</p>
 
 </body>
 </html>
