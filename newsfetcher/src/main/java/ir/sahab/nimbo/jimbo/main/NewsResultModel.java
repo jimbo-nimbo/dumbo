@@ -3,7 +3,7 @@ package ir.sahab.nimbo.jimbo.main;
 public class NewsResultModel {
     String title;
     String url;
-    String content;
+    String description;
 
     public NewsResultModel(){
 
@@ -25,11 +25,11 @@ public class NewsResultModel {
         this.url = url;
     }
 
-    public String getContent() {
-        return content;
+    public String getDescription() {
+        return description;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

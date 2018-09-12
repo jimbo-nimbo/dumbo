@@ -217,7 +217,7 @@ function requestSearch(tabName, text) {
     var xhr = new XMLHttpRequest();
     var url = "http://localhost:41560/api/" + tabName;
 
-    document.getElementById("result").innerHTML = "Running...";
+    document.getElementById("result").innerHTML = "<img src=\"dumbo.gif\" width=\"420\" height=\"213\">";
     xhr.open("POST", url, true);
 
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -226,7 +226,7 @@ function requestSearch(tabName, text) {
 
             var data = JSON.parse(xhr.responseText);
 
-            var result, x = "", i;
+            var result, x = "<p>", i;
 
             if(tabName == 'snews'){
 
@@ -237,8 +237,9 @@ function requestSearch(tabName, text) {
                     for (i in data.newsResultModels.keyWords)
                         x += " #" + data.newsResultModels.keyWords[i];
                     x += "</h3><br><br>";
+
+                    document.getElementById("result").innerHTML = x + "</p>";
                 }
-                document.getElementById("result").innerHTML = x;
             } else {
 
                 for (result in data.resultModels) {
@@ -248,8 +249,8 @@ function requestSearch(tabName, text) {
                     for (i in data.resultModels.keyWords)
                         x += " #" + data.resultModels.keyWords[i];
                     x += "</h3><br><br>";
+                    document.getElementById("result").innerHTML = x + "</p>";
                 }
-                document.getElementById("result").innerHTML = x;
             }
         }
     };
@@ -301,8 +302,8 @@ function requestSearch(tabName, text) {
 </div>
 
 <div id="Search Results" class="tabcontent">
-  <div class="container">
-    <p id="result">No results found.</p>
+  <div class="container" id="result">
+    <p>No results found.</p>
   </div>
 </div>
 

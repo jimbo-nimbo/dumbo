@@ -83,6 +83,14 @@ public class WebHandler {
             resultModels[i] = new ResultModel(result[index.get(i)].getTitle(), result[index.get(i)].getUrl(),
                     result[index.get(i)].getDescription(), finalRefs[index.get(i)]);
         }
+        int resSize = 0;
+        while (resSize < resultModels.length && resultModels[resSize] != null){
+            resSize++;
+        }
+        ResultModel[] finalResult = new ResultModel[resSize];
+        for(int i = 0; i < resSize; i++){
+            finalResult[i] = resultModels[i];
+        }
         jsonResultModel.setResultModels(resultModels);
         String[] searchKeyWords = new String[3];
         for(int i = 0; i < 3; i++){

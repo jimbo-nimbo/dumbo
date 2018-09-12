@@ -20,14 +20,22 @@ public class NewsWebHandler {
                         newsResultModels[count].setUrl((String) map.get("url"));
                 String content = map.get("content").toString();
                 if(content.length() <= 500)
-                    newsResultModels[count].setContent(content);
+                    newsResultModels[count].setDescription(content);
                 else {
-                    newsResultModels[count].setContent(content.substring(0, 499));
+                    newsResultModels[count].setDescription(content.substring(0, 499));
                 }
                 count++;
             }
         }
-        jsonResultModel.setNewsResultModels(newsResultModels);
+        int resSize = 0;
+        while (resSize < newsResultModels.length && newsResultModels[resSize] != null){
+            resSize++;
+        }
+        NewsResultModel[] finalResult = new NewsResultModel[resSize];
+        for(int i = 0; i < resSize; i++){
+            finalResult[i] = newsResultModels[i];
+        }
+        jsonResultModel.setNewsResultModels(finalResult);
         return jsonResultModel;
     }
 
