@@ -6,10 +6,12 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 public class App {
     public static void main(String[] args) throws Exception {
+        Server jettyServer = new Server(Config.PORT);
+
+
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
 
-        Server jettyServer = new Server(Config.PORT);
         jettyServer.setHandler(context);
 
         ServletHolder jerseyServlet = context.addServlet(
@@ -23,6 +25,8 @@ public class App {
         try {
             jettyServer.start();
             jettyServer.join();
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             jettyServer.destroy();
         }

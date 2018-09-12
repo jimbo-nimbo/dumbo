@@ -12,6 +12,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <elastic.search>6.4.0</elastic.search>
     </properties>
 
     <build>
@@ -68,12 +69,12 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>6.3.2</version>
+            <version>${elastic.search}</version>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
-            <version>6.3.2</version>
+            <version>${elastic.search}</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -99,7 +100,7 @@
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>6.3.2</version>
+            <version>${elastic.search}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

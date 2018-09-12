@@ -10,7 +10,7 @@ import javax.ws.rs.core.MediaType;
 public class EntryPoint {
 
     @GET
-    @Path("test")
+    @Path("/test")
     @Produces(MediaType.TEXT_PLAIN)
     public String test() {
         return "Test";
