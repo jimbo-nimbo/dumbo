@@ -30,7 +30,7 @@ public class Main {
         for(int i = 0; i < jsonResultModel.getNewsResultModels().length; i++) {
             System.out.println("title : " + jsonResultModel.getNewsResultModels()[i].getTitle());
             System.out.println(jsonResultModel.getNewsResultModels()[i].getUrl());
-            System.out.println(jsonResultModel.getNewsResultModels()[i].getContent());
+            System.out.println(jsonResultModel.getNewsResultModels()[i].getDescription());
             System.out.println("-------------------------------------------------------------\n");
         }
 
