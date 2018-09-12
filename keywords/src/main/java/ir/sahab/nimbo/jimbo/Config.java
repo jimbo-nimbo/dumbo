@@ -15,6 +15,7 @@ public class Config {
     public static final String META_CF_NAME;
     public static final Integer BULK_SIZE;
     public static final String URL_COL_NAME;
+    public static final Integer START_POINT;
 
     static {
         String resourceName = "conf.properties";
@@ -30,5 +31,6 @@ public class Config {
         META_CF_NAME = props.getProperty("hbase_meta_cf_name");
         URL_COL_NAME = props.getProperty("hbase_url_col_name");
         BULK_SIZE = Integer.valueOf(props.getProperty("bulk_size"));
+        START_POINT = Integer.valueOf(props.getProperty("start_point"));
     }
 }

@@ -26,6 +26,13 @@ public class Main {
         int count = 0;
         while (HBaseInputScanner.getInstance().hasNext()) {
             List<String> urls = HBaseInputScanner.getInstance().nextBulk();
+
+            count++;
+            if (count < Config.START_POINT) {
+                System.out.println("Skipped a bulk: #" + count);
+                continue;
+            }
+
             StringBuilder docIds = new StringBuilder();
             for (String url : urls) {
                 String docId = DigestUtils.md5Hex(url);
@@ -82,7 +89,6 @@ public class Main {
             // Put keywords to HBase
             HBaseOutput.getInstance().sendPuts();
 
-            count++;
             System.out.println("Sent a bulk: #" + count);
         }
 

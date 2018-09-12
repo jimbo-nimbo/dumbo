@@ -9,11 +9,9 @@ public class EntryPointTest {
 
     @Test
     public void simpleSearch(){
-        SimpleQuery simpleQuerry = new SimpleQuery();
-        simpleQuerry.setSearchText("trump");
-        JsonResultModel jsonResultModel = SearchManager.getInstance().simpleSearch(simpleQuerry.getSearchText());
+        SimpleQuery simpleQuery = new SimpleQuery();
+        simpleQuery.setSearchText("trump");
+        JsonResultModel jsonResultModel = SearchManager.getInstance().simpleSearch(simpleQuery.getSearchText());
         assertNotNull(jsonResultModel);
-        System.err.println(jsonResultModel.getResultModels()[0].getTitle());
     }
-
 }

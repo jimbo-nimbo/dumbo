@@ -1,5 +1,6 @@
 package ir.sahab.nimbo.jimbo.hbase;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.Admin;
@@ -34,7 +35,7 @@ public class HBase extends AbstractHBase {
         ArrayList<Get> gets = new ArrayList<>();
         Integer[] ans = new Integer[urls.size()];
         for (int i = 0; i < urls.size(); i++) {
-            Get get = new Get(urls.get(i).getBytes());
+            Get get = new Get(DigestUtils.md5Hex(urls.get(i)).getBytes());
             get.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_NUMBER_OF_REFERENCES_BYTES);
             get.addColumn(HBASE_MARK_CF_NAME_BYTES, HBASE_MARK_Q_NAME_URL_BYTES);
             gets.add(get);

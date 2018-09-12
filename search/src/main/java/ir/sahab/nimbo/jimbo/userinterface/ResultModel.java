@@ -5,6 +5,7 @@ public class ResultModel {
     private String url;
     private String description;
     private int numberOfRefrences;
+    private String[] keyWords = new String[3];
 
     public ResultModel(){
 
@@ -47,5 +48,13 @@ public class ResultModel {
 
     public void setNumberOfRefrences(int numberOfRefrences) {
         this.numberOfRefrences = numberOfRefrences;
+    }
+
+    public String[] getKeyWords() {
+        return keyWords;
+    }
+
+    public void setKeyWords(String[] keyWords) {
+        this.keyWords = keyWords;
     }
 }

@@ -8,6 +8,6 @@ public class HBaseTest {
 
     @Test
     public void getNumberOfReferences() {
-        System.err.println(HBase.getInstance().getNumberOfReferences(Arrays.asList("https://celia14.itch.io/hello-hello")));
+        System.err.println(HBase.getInstance().getNumberOfReferences(Arrays.asList("https://scenesofeating.com/category/language/"))[0]);
     }
 }
