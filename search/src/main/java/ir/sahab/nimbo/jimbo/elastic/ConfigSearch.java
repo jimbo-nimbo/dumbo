@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class Config {
+public class ConfigSearch {
 
 
 
@@ -54,7 +54,7 @@ public class Config {
     public static final String ES_CLUSTER_NAME;
     public static final String ES_INDEX_NAME;
     public static final String ES_SCHEME;
-    public static final ArrayList<Host> ES_HOSTS;
+    public static final ArrayList<HostSearch> ES_HOSTS;
     public static final int ES_CONNECTION_TIMEOUT;
     public static final int ES_SOCKET_TIMEOUT;
     public static final int ES_MAXRETRY_TIMEOUT;
@@ -114,7 +114,7 @@ public class Config {
         ES_SCHEME = props.getProperty("es.scheme");
         String[] tempArr = props.getProperty("es.hosts").split("#");
         for(String s : tempArr) {
-            ES_HOSTS.add(new Host(s));
+            ES_HOSTS.add(new HostSearch(s));
         }
         ES_INDEX_NAME = props.getProperty("es.index.name");
         ES_CONNECTION_TIMEOUT = Integer.valueOf(props.getProperty("es.connection.timeout"));

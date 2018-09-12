@@ -2,7 +2,7 @@ package ir.sahab.nimbo.jimbo.userinterface;
 
 import asg.cliche.Command;
 import asg.cliche.ShellFactory;
-import ir.sahab.nimbo.jimbo.elastic.ElasticClient;
+import ir.sahab.nimbo.jimbo.elastic.ElasticClientSearch;
 import org.elasticsearch.search.SearchHit;
 
 import java.io.IOException;
@@ -32,10 +32,17 @@ public class Main {
 
     private void printAns(ArrayList<SearchHit> searchHits){
         JsonResultModel jsonResultModel = getAns(searchHits);
+        for (int i = 0; i < jsonResultModel.getSearchKeyWord().length; i++)
+            System.out.print(jsonResultModel.getSearchKeyWord()[i]);
+        System.out.println();
         for(int i = 0; i < jsonResultModel.getResultModels().length; i++) {
             System.out.println("title : " + jsonResultModel.getResultModels()[i].getTitle());
             System.out.println(jsonResultModel.getResultModels()[i].getUrl());
             System.out.println(jsonResultModel.getResultModels()[i].getDescription());
+            System.out.println("#References : " + jsonResultModel.getResultModels()[i].getNumberOfRefrences());
+            for(int j = 0; j < 3 && j < jsonResultModel.getResultModels()[j].getKeyWords().length; j++){
+                System.out.println("keyword : " + jsonResultModel.getResultModels()[j].getKeyWords()[j]);
+            }
             System.out.println("#References : " + jsonResultModel.getResultModels()[i].getNumberOfRefrences());
             System.out.println("-------------------------------------------------------------\n");
         }
@@ -49,7 +56,7 @@ public class Main {
     public void search() throws IOException {
         System.out.println("enter search text");
         String searchText = inp.nextLine();
-        ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleElasticSearch(searchText);
+        ArrayList<SearchHit> ans = ElasticClientSearch.getInstance().simpleElasticSearch(searchText);
         printAns(ans);
     }
 
@@ -80,7 +87,7 @@ public class Main {
                     should.add(inp.nextLine());
                     break;
                 case "done":
-                    ArrayList<SearchHit> ans = ElasticClient.getInstance().jimboElasticSearch(must, mustNot, should);
+                    ArrayList<SearchHit> ans = ElasticClientSearch.getInstance().jimboElasticSearch(must, mustNot, should);
                     printAns(ans);
                     return;
                 default:

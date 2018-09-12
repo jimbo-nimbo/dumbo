@@ -30,5 +30,12 @@ public class EntryPoint {
 //        System.err.println("thi");
         return SearchManager.getInstance().simpleSearch(query.getSearchText());
     }
+    @POST
+    @Path("/snews")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JsonNewsResultModel simpleNewsSearch(SimpleQuery query) {
+//        System.err.println("thi");
+        return SearchManager.getInstance().simpleNewsSearch(query.getSearchText());
+    }
 
 }

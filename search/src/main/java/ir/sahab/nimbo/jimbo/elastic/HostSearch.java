@@ -1,14 +1,14 @@
 package ir.sahab.nimbo.jimbo.elastic;
 
-public class Host {
+public class HostSearch {
         private String hostName;
         private int port;
 
-        Host(String hostWithPort){
+        HostSearch(String hostWithPort){
             this.hostName = hostWithPort.split(":")[0];
             this.port = Integer.valueOf(hostWithPort.split(":")[1]);
         }
-        Host(String hostName, int port) {
+        HostSearch(String hostName, int port) {
             this.hostName = hostName;
             this.port = port;
         }

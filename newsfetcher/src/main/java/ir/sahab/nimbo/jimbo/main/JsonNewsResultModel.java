@@ -1,9 +1,9 @@
 package ir.sahab.nimbo.jimbo.main;
 
-public class JsonResultModel {
+public class JsonNewsResultModel {
     NewsResultModel[] newsResultModels;
 
-    public JsonResultModel(){
+    public JsonNewsResultModel(){
 
     }
 

@@ -6,11 +6,11 @@ import org.elasticsearch.search.SearchHit;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class WebHandler {
-    static JsonResultModel getAns(ArrayList<SearchHit> searchHits){
+public class NewsWebHandler {
+    static JsonNewsResultModel getAns(ArrayList<SearchHit> searchHits){
         final int LIMIT = 10;
         int count = 0;
-        JsonResultModel jsonResultModel = new JsonResultModel();
+        JsonNewsResultModel jsonResultModel = new JsonNewsResultModel();
         NewsResultModel[] newsResultModels = new NewsResultModel[LIMIT];
         for(SearchHit searchHit : searchHits){
             if(count < LIMIT){
@@ -31,7 +31,7 @@ public class WebHandler {
         return jsonResultModel;
     }
 
-    public static JsonResultModel newsSearch(String searchText){
+    public static JsonNewsResultModel newsSearch(String searchText){
         ElasticClient.getInstance();
         ArrayList<SearchHit> ans = ElasticClient.getInstance().simpleElasticSearch(searchText);
         return getAns(ans);

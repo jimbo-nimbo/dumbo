@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class JsonResultModel {
 
     private ResultModel[] resultModels;
+    private String[] searchKeyWord;
 
     public JsonResultModel(){
     }
@@ -19,5 +20,13 @@ public class JsonResultModel {
 
     public void setResultModels(ResultModel[] resultModels) {
         this.resultModels = resultModels;
+    }
+
+    public String[] getSearchKeyWord() {
+        return searchKeyWord;
+    }
+
+    public void setSearchKeyWord(String[] searchKeyWord) {
+        this.searchKeyWord = searchKeyWord;
     }
 }

@@ -16,34 +16,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ElasticClient {
+public class ElasticClientSearch {
 
-    private static ElasticClient ourInstance = new ElasticClient();
+    private static ElasticClientSearch ourInstance = new ElasticClientSearch();
     private RestHighLevelClient client;
 
-    public static ElasticClient getInstance() {
+    public static ElasticClientSearch getInstance() {
 //        System.err.println("instance");
         return ourInstance;
     }
 
-    private ElasticClient() {
+    private ElasticClientSearch() {
         client = new RestHighLevelClient(
-                RestClient.builder(new HttpHost(Config.ES_HOSTS.get(0).getHostName(),
-                                Config.ES_HOSTS.get(0).getPort(),
-                                Config.ES_SCHEME),
-                        new HttpHost(Config.ES_HOSTS.get(1).getHostName(),
-                                Config.ES_HOSTS.get(1).getPort(),
-                                Config.ES_SCHEME),
-                        new HttpHost(Config.ES_HOSTS.get(2).getHostName(),
-                                Config.ES_HOSTS.get(2).getPort(),
-                                Config.ES_SCHEME)
+                RestClient.builder(new HttpHost(ConfigSearch.ES_HOSTS.get(0).getHostName(),
+                                ConfigSearch.ES_HOSTS.get(0).getPort(),
+                                ConfigSearch.ES_SCHEME),
+                        new HttpHost(ConfigSearch.ES_HOSTS.get(1).getHostName(),
+                                ConfigSearch.ES_HOSTS.get(1).getPort(),
+                                ConfigSearch.ES_SCHEME),
+                        new HttpHost(ConfigSearch.ES_HOSTS.get(2).getHostName(),
+                                ConfigSearch.ES_HOSTS.get(2).getPort(),
+                                ConfigSearch.ES_SCHEME)
                         )
                         .setRequestConfigCallback(
                                 requestConfigBuilder ->
                                         requestConfigBuilder
-                                                .setConnectTimeout(Config.ES_CONNECTION_TIMEOUT)
-                                                .setSocketTimeout(Config.ES_SOCKET_TIMEOUT))
-                        .setMaxRetryTimeoutMillis(Config.ES_MAXRETRY_TIMEOUT));
+                                                .setConnectTimeout(ConfigSearch.ES_CONNECTION_TIMEOUT)
+                                                .setSocketTimeout(ConfigSearch.ES_SOCKET_TIMEOUT))
+                        .setMaxRetryTimeoutMillis(ConfigSearch.ES_MAXRETRY_TIMEOUT));
     }
 
     public ArrayList<SearchHit> simpleElasticSearch(String mustFind) {
@@ -59,7 +59,7 @@ public class ElasticClient {
             ArrayList<String> mustFind,
             ArrayList<String> mustNotFind,
             ArrayList<String> shouldFind) {
-        SearchRequest searchRequest = new SearchRequest(Config.ES_INDEX_NAME);
+        SearchRequest searchRequest = new SearchRequest(ConfigSearch.ES_INDEX_NAME);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         String fields[] = {"url", "content", "title", "description"};
@@ -69,7 +69,7 @@ public class ElasticClient {
                             phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
             for (String field : fields)
-                multiMatchQueryBuilder.field(field, Config.getScoreField(field));
+                multiMatchQueryBuilder.field(field, ConfigSearch.getScoreField(field));
             boolQuery.must(multiMatchQueryBuilder);
         }
         for (String phrase : mustNotFind) {
@@ -84,11 +84,11 @@ public class ElasticClient {
                             phrase, fields)
                             .type(MultiMatchQueryBuilder.Type.PHRASE);
             for (String field : fields)
-                multiMatchQueryBuilder.field(field, Config.getScoreField(field));
+                multiMatchQueryBuilder.field(field, ConfigSearch.getScoreField(field));
             boolQuery.should(multiMatchQueryBuilder);
         }
         searchSourceBuilder.query(boolQuery);
-        searchSourceBuilder.size(Config.ES_RESULT_SIZE);
+        searchSourceBuilder.size(ConfigSearch.ES_RESULT_SIZE);
         searchRequest.source(searchSourceBuilder);
         try {
             SearchResponse searchResponse = client.search(searchRequest);

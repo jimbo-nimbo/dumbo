@@ -26,7 +26,7 @@ public class Main {
     }
 
     private void printAns(ArrayList<SearchHit> searchHits){
-        JsonResultModel jsonResultModel = WebHandler.getAns(searchHits);
+        JsonNewsResultModel jsonResultModel = NewsWebHandler.getAns(searchHits);
         for(int i = 0; i < jsonResultModel.getNewsResultModels().length; i++) {
             System.out.println("title : " + jsonResultModel.getNewsResultModels()[i].getTitle());
             System.out.println(jsonResultModel.getNewsResultModels()[i].getUrl());
