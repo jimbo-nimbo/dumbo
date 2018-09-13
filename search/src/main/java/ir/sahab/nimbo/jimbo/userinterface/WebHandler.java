@@ -2,6 +2,7 @@ package ir.sahab.nimbo.jimbo.userinterface;
 
 import ir.sahab.nimbo.jimbo.elastic.ConfigSearch;
 import ir.sahab.nimbo.jimbo.elastic.ElasticClientSearch;
+import ir.sahab.nimbo.jimbo.hbase.HBaseKeyWord;
 import ir.sahab.nimbo.jimbo.hbase.HBaseSearch;
 import org.elasticsearch.search.SearchHit;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class WebHandler {
 //        System.err.println(System.currentTimeMillis() - a);
         a = System.currentTimeMillis();
         Integer[] finalRefs = HBaseSearch.getInstance().getNumberOfReferences(urls);
-        String[] keyWords = HBaseSearch.getInstance().getKeywords(urls);
+        String[] keyWords = HBaseKeyWord.getInstance().getKeywords(urls);
         Boolean[] markKeyWords = new Boolean[3*urls.size()];
         for(int i = 0; i < 3*urls.size(); i++) {
             markKeyWords[i] = true;

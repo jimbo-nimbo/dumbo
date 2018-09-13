@@ -10,8 +10,8 @@ public class EntryPointTest {
     @Test
     public void simpleSearch(){
         SimpleQuery simpleQuery = new SimpleQuery();
-        simpleQuery.setSearchText("trump");
+        simpleQuery.setSearchText("hay in art");
         JsonResultModel jsonResultModel = SearchManager.getInstance().simpleSearch(simpleQuery.getSearchText());
-        assertNotNull(jsonResultModel);
+        assertNotNull(jsonResultModel.getResultModels()[0].getKeyWords()[0]);
     }
 }
